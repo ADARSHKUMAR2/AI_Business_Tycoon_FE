@@ -1,0 +1,18 @@
+{
+    "name": "AIBusinessTycoon.Multiplayer",
+    "rootNamespace": "",
+    "references": [
+        "GUID:864e94a5cec754af0a17fd6612c6f685",
+        "GUID:a101473ebbf47459da618efac266b085",
+        "GUID:bffac3bd84ea94a358da9aa7d6314145"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

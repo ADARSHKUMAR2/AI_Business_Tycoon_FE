@@ -1,0 +1,18 @@
+{
+    "name": "AIBusinessTycoon.Managers",
+    "rootNamespace": "",
+    "references": [
+        "GUID:bffac3bd84ea94a358da9aa7d6314145",
+        "GUID:d4a3d4b9c280a47cdb186442a0169323",
+        "GUID:a101473ebbf47459da618efac266b085"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

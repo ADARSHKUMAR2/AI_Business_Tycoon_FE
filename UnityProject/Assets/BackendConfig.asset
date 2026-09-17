@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb30991cb48d44ee6b1fa27a58808c3e, type: 3}
+  m_Name: BackendConfig
+  m_EditorClassIdentifier: AIBusinessTycoon.Config::AIBusinessTycoon.Config.BackendConfig
+  localBackendURL: http://localhost:8000
+  productionBackendURL: https://api.yourgame.com
+  useLocalBackend: 1
+  getPlayerDataEndpoint: /api/game/player/{0}
+  updatePlayerDataEndpoint: /api/game/player/{0}
