@@ -53,8 +53,12 @@
     <Analyzer Include="/Applications/Unity/Hub/Editor/6000.5.6f1/Unity.app/Contents/Resources/Scripting/BCLExtensions/TargetingPacks/netstandard2.1/analyzers/dotnet/roslyn4.0/cs/System.Text.Json.SourceGeneration.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets/Scripts/Data/LandTileData.cs" />
+    <Compile Include="Assets/Scripts/Data/EmployeeData.cs" />
+    <Compile Include="Assets/Scripts/Data/InventoryData.cs" />
     <Compile Include="Assets/Scripts/Data/APIResponse.cs" />
     <Compile Include="Assets/Scripts/Data/PlayerTycoonData.cs" />
+    <Compile Include="Assets/Scripts/Data/BusinessData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets/Scripts/Data/AIBusinessTycoon.Data.asmdef" />

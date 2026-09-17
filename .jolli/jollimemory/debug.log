@@ -78,3 +78,74 @@
 [2026-09-17T10:07:10.018Z] INFO  [Installer] Checking Jolli Memory status
 [2026-09-17T10:07:10.038Z] INFO  [StorageFactory] StorageFactory.create: route=uncutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
 [2026-09-17T10:07:10.482Z] INFO  [Installer] Status: enabled=true, claude=true, git=true, geminiHook=true, hermesHook=false, worktreeHooks=true, sessions=3, summaries=0, codex=false/undefined, gemini=true/true, enabledWorktrees=1, opencode=false/undefined, cursor=true/true, copilot=false/true, copilotChat=true, cline=true/true
+[2026-09-17T14:53:09.080Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook started (source: message) ===
+[2026-09-17T14:53:09.181Z] INFO  [RepoProfile] manual-disable read → false (by=manuallyDisabled, pid=89018, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=none)
+[2026-09-17T14:53:09.214Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook finished ===
+[2026-09-17T14:53:10.084Z] INFO  [RepoProfile] [trace=eb0eefa3338cda277e62ed5967be70c1] manual-disable read → false (by=manuallyDisabled, pid=89049, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=none)
+[2026-09-17T14:53:10.096Z] INFO  [PostCommitHook] [trace=eb0eefa3338cda277e62ed5967be70c1] Detected operation: commit
+[2026-09-17T14:53:10.114Z] INFO  [PostCommitHook] [trace=eb0eefa3338cda277e62ed5967be70c1] Enqueued: type=commit hash=1e400580
+[2026-09-17T14:53:10.114Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Launching background worker
+[2026-09-17T14:53:10.116Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Background worker spawned (PID: 89054)
+[2026-09-17T14:53:10.117Z] INFO  [EnsureGlobalDaemon] [trace=eb0eefa3338cda277e62ed5967be70c1] spawned global daemon ensure helper (pid 89055)
+[2026-09-17T14:53:10.266Z] INFO  [RepoProfile] [trace=eb0eefa3338cda277e62ed5967be70c1] manual-disable read → false (by=manuallyDisabled, pid=89054, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=none)
+[2026-09-17T14:53:10.436Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] === Queue worker started === node=24.13.0 kind=vscode-plugin source=vscode pkgVer=0.99.17 cliVer=0.99.17 dist=/Users/adarsh/.vscode/extensions/jolli.jollimemory-vscode-0.99.17/dist
+[2026-09-17T14:53:10.466Z] INFO  [StorageFactory] [trace=eb0eefa3338cda277e62ed5967be70c1] StorageFactory.create: route=uncutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-17T14:53:10.859Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Processing queue entry: type=commit hash=1e400580
+[2026-09-17T14:53:10.876Z] INFO  [GitOps] [trace=eb0eefa3338cda277e62ed5967be70c1] Commit 1e400580: unity FE setup
+[2026-09-17T14:53:10.876Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Commit: 1e400580 - unity FE setup (10ms)
+[2026-09-17T14:53:11.066Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Discovered 1 Copilot Chat session(s)
+[2026-09-17T14:53:11.144Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Discovered 3 Cline CLI session(s)
+[2026-09-17T14:53:11.216Z] WARN  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Transcript source read to zero conversation entries: source=copilot-chat path=/Users/adarsh/Library/Application Support/Code/User/workspaceStorage/eca56aa02e0bf820211f40d229056872/chatSessions/9da78dc1-82a8-488d-a880-86c3cd0863b1.jsonl lines=0→0 unrecognizedRows=0
+[2026-09-17T14:53:11.216Z] WARN  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Not advancing read cursor: source recognized nothing in consumed lines: source=copilot-chat path=/Users/adarsh/Library/Application Support/Code/User/workspaceStorage/eca56aa02e0bf820211f40d229056872/chatSessions/9da78dc1-82a8-488d-a880-86c3cd0863b1.jsonl lines=0→0 unrecognizedRows=0
+[2026-09-17T14:53:11.233Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Transcript source: session=1789627114770_8gmsm, lines=0→50, entries=18
+[2026-09-17T14:53:11.239Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Transcript source: session=1789633159905_tlicj, lines=0→132, entries=70
+[2026-09-17T14:53:11.251Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Transcript source: session=1789644636025_55tf7, lines=0→107, entries=40
+[2026-09-17T14:53:11.341Z] WARN  [GitOps] [trace=eb0eefa3338cda277e62ed5967be70c1] Diff exceeds 150000-char budget (937393 chars) — prepending --stat file list and truncating body
+[2026-09-17T14:53:11.407Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Git diff: 118 files changed, +18848 -0 (155ms)
+[2026-09-17T14:53:11.451Z] INFO  [TranscriptReader] [trace=eb0eefa3338cda277e62ed5967be70c1] Conversation budget reached: kept 66/128 transcript entries (~149934/150000 chars); older turns dropped
+[2026-09-17T14:53:11.654Z] WARN  [GitOps] [trace=eb0eefa3338cda277e62ed5967be70c1] Diff exceeds 60000-char budget (937393 chars) — prepending --stat file list and truncating body
+[2026-09-17T14:53:11.666Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Prompt blocks: plans=0 notes=0 references=0 (+0 track-only archived, not prompted) (AI soft-excluded 0)
+[2026-09-17T14:53:11.667Z] INFO  [Summarizer] [trace=eb0eefa3338cda277e62ed5967be70c1] Generating summary for commit 1e400580
+[2026-09-17T14:53:11.667Z] INFO  [Summarizer] [trace=eb0eefa3338cda277e62ed5967be70c1] Context: transcript=128, files=118, lines=18848+0
+[2026-09-17T14:53:11.668Z] WARN  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] First API attempt failed: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).. Retrying in 2000ms...
+[2026-09-17T14:53:13.669Z] INFO  [Summarizer] [trace=eb0eefa3338cda277e62ed5967be70c1] Generating summary for commit 1e400580
+[2026-09-17T14:53:13.669Z] INFO  [Summarizer] [trace=eb0eefa3338cda277e62ed5967be70c1] Context: transcript=128, files=118, lines=18848+0
+[2026-09-17T14:53:13.670Z] ERROR [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] API call failed after retry: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).
+[2026-09-17T14:53:13.670Z] WARN  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Saving summary with empty topics + llm-failed marker for commit 1e400580
+[2026-09-17T14:53:13.671Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] API summary generated (2.0s)
+[2026-09-17T14:53:13.671Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Plan registry scan: found 0 uncommitted slug(s) on main: []
+[2026-09-17T14:53:13.672Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Plan association: detected 0 slug(s) from transcripts: []
+[2026-09-17T14:53:13.672Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Note registry scan: found 0 uncommitted note(s) on main: []
+[2026-09-17T14:53:13.672Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Note association: detected 0 note(s): []
+[2026-09-17T14:53:13.672Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Reference association: detected 0 ref(s) for branch main
+[2026-09-17T14:53:13.679Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Summary built for 1e400580: recap=no, topics=0, plans=absent, notes=absent, references=absent
+[2026-09-17T14:53:13.715Z] INFO  [GitOps] [trace=eb0eefa3338cda277e62ed5967be70c1] Creating orphan branch 'jollimemory/summaries/v3' using plumbing commands
+[2026-09-17T14:53:13.749Z] INFO  [GitOps] [trace=eb0eefa3338cda277e62ed5967be70c1] Orphan branch 'jollimemory/summaries/v3' created successfully
+[2026-09-17T14:53:13.835Z] INFO  [GitOps] [trace=eb0eefa3338cda277e62ed5967be70c1] Updated branch 'jollimemory/summaries/v3': 4 written, 0 deleted (via fast-import)
+[2026-09-17T14:53:13.837Z] INFO  [MetadataManager] [trace=eb0eefa3338cda277e62ed5967be70c1] Branch mapping created: main → main
+[2026-09-17T14:53:13.879Z] INFO  [MetadataManager] [trace=eb0eefa3338cda277e62ed5967be70c1] Manifest updated: main/unity-fe-setup-1e400580.md (commit)
+[2026-09-17T14:53:13.879Z] INFO  [FolderStorage] [trace=eb0eefa3338cda277e62ed5967be70c1] Markdown generated: main/unity-fe-setup-1e400580.md
+[2026-09-17T14:53:13.883Z] INFO  [FolderStorage] [trace=eb0eefa3338cda277e62ed5967be70c1] Wrote 4 files, deleted 0 (Add summary for 1e400580: unity FE setup)
+[2026-09-17T14:53:13.883Z] INFO  [SummaryStore] [trace=eb0eefa3338cda277e62ed5967be70c1] Summary stored successfully for commit 1e400580
+[2026-09-17T14:53:13.887Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Summary stored successfully for commit 1e400580 (209ms, 0 plans, 0 notes, 0 references)
+[2026-09-17T14:53:13.888Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] === Pipeline completed in 3.0s ===
+[2026-09-17T14:53:13.888Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] === Summary content (0 topics) ===
+[2026-09-17T14:53:13.899Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] Processed 1 queue entries
+[2026-09-17T14:53:13.899Z] INFO  [PushExecutor] [trace=eb0eefa3338cda277e62ed5967be70c1] Post-queue push trigger: scheduling drain for 1 newly generated summar(ies)
+[2026-09-17T14:53:13.959Z] INFO  [GitOps] [trace=eb0eefa3338cda277e62ed5967be70c1] Commit 1e400580: unity FE setup
+[2026-09-17T14:53:14.008Z] INFO  [StatsWriter] [trace=eb0eefa3338cda277e62ed5967be70c1] pruned 27 projected events older than 2026-09-03
+[2026-09-17T14:53:14.011Z] INFO  [StorageFactory] [trace=eb0eefa3338cda277e62ed5967be70c1] StorageFactory.create: route=uncutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-17T14:53:14.046Z] INFO  [PrePushHook] [trace=49f6f69e5d1b694a045ba99fba203c42] pre-push hook: remote=origin budget=3000ms
+[2026-09-17T14:53:14.048Z] INFO  [RepoProfile] [trace=49f6f69e5d1b694a045ba99fba203c42] manual-disable read → false (by=manuallyDisabled, pid=89358, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=none)
+[2026-09-17T14:53:14.057Z] INFO  [PushPendingStore] [trace=49f6f69e5d1b694a045ba99fba203c42] Enqueued 1 new push-pending entries (branch=main)
+[2026-09-17T14:53:14.057Z] INFO  [PrePushHook] [trace=49f6f69e5d1b694a045ba99fba203c42] pre-push: recorded 1 commit(s) across 1 pushed ref(s)
+[2026-09-17T14:53:14.063Z] INFO  [PrePushHook] [trace=49f6f69e5d1b694a045ba99fba203c42] Recorded 1 commit(s) for later sync — not signed in to Jolli
+[2026-09-17T14:53:14.078Z] INFO  [QueueWorker] [trace=eb0eefa3338cda277e62ed5967be70c1] === Queue worker finished ===
+[2026-09-17T14:53:14.078Z] INFO  [SessionStartHook] [trace=eb0eefa3338cda277e62ed5967be70c1] Briefing cache not warmed — nothing to brief on this branch
+[2026-09-17T14:53:14.091Z] INFO  [AutoCutover] [trace=eb0eefa3338cda277e62ed5967be70c1] auto-cutover: attempting for /Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-17T14:53:14.074Z] WARN  [CutoverRouter] [trace=49f6f69e5d1b694a045ba99fba203c42] database unavailable for un-cutover repo (database is locked) — orphan remains authoritative
+[2026-09-17T14:53:14.075Z] INFO  [StorageFactory] [trace=49f6f69e5d1b694a045ba99fba203c42] StorageFactory.create: route=uncutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-17T14:53:14.250Z] INFO  [SotImport] [trace=eb0eefa3338cda277e62ed5967be70c1] orphan import for https://github.com/adarshkumar2/ai_business_tycoon_fe: %o
+[2026-09-17T14:53:14.344Z] INFO  [CutoverEngine] [trace=eb0eefa3338cda277e62ed5967be70c1] cutover committed for https://github.com/adarshkumar2/ai_business_tycoon_fe at version 1
+[2026-09-17T14:53:14.344Z] INFO  [AutoCutover] [trace=eb0eefa3338cda277e62ed5967be70c1] auto-cutover: /Users/adarsh/AI_Business_Tycoon_FE is now served from SQLite
+[2026-09-17T14:53:14.345Z] INFO  [SessionSync] [trace=eb0eefa3338cda277e62ed5967be70c1] session sync: not uploading — no API key configured

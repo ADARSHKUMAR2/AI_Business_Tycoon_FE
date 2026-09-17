@@ -1,3 +1,11 @@
 {
-	"manuallyDisabled": false
+	"manuallyDisabled": false,
+	"cutoverAttemptedAtMs": 1789656794078,
+	"cutoverFence": {
+		"reason": "cutover to sqlite",
+		"at": "2026-09-17T14:53:14.093Z",
+		"tips": {
+			"/Users/adarsh/AI_Business_Tycoon_FE": "d19f19452790e785efae536981036839c84c0d94"
+		}
+	}
 }
