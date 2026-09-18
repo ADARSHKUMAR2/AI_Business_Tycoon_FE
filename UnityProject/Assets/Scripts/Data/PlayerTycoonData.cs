@@ -28,12 +28,16 @@ namespace AIBusinessTycoon.Data
         public string player_id;
         public string name;
         public float money;
+        
+        // NEW: Added the arrays to store the actual tiles and buildings!
+        public List<LandTile> land_tiles = new List<LandTile>();
+        public List<BusinessData> businesses = new List<BusinessData>();
+        
         public PlayerStats stats;
         public string created_at;
         public string last_login;
         public string last_updated;
         
-        // Simplified properties for easy access
         public string PlayerId => player_id;
         public string PlayerName => name;
         public float CurrentMoney => money;
@@ -50,7 +54,7 @@ namespace AIBusinessTycoon.Data
         
         public override string ToString()
         {
-            return $"Player: {name} (ID: {player_id}), Money: ₹{money}, Level: {Level}, Businesses: {OwnedBusinessCount}";
+            return $"Player: {name} (ID: {player_id}), Money: Rs.{money}, Level: {Level}, Businesses: {OwnedBusinessCount}";
         }
     }
 }

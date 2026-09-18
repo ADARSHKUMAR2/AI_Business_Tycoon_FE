@@ -65,16 +65,26 @@ namespace AIBusinessTycoon.Managers
             // Clear existing grid
             ClearGrid();
             
-            // If player has no land tiles, give them a starter tile at (0,0)
-            if (playerData.stats.land_tiles_owned == 0)
+            // Check if player has land tiles in the array
+            if (playerData.land_tiles == null || playerData.land_tiles.Count == 0)
             {
                 Debug.Log("[GridManager] Player has no land. Creating starter tile at (0,0)");
                 CreateStarterTile();
             }
+            else
+            {
+                Debug.Log($"[GridManager] Found {playerData.land_tiles.Count} land tiles to draw.");
+                
+                // Draw every tile the player owns
+                foreach (LandTile tile in playerData.land_tiles)
+                {
+                    AddLandTile(tile);
+                }
+            }
             
             Debug.Log($"[GridManager] Grid initialized with {landTiles.Count} tiles");
         }
-        
+
         /// <summary>
         /// Create a starter tile for new players.
         /// </summary>

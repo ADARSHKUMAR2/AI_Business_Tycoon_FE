@@ -55,6 +55,10 @@
   <ItemGroup>
     <Compile Include="Assets/Scripts/Game/Managers/GridManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/ConnectionTestManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/BuildMenuManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/HUDManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/GameManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/BuildingPlacementManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GridVisualizer.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CameraController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/APITestManager.cs" />
@@ -1249,6 +1253,10 @@
     </Reference>
     <Reference Include="System.Text.Json">
       <HintPath>/Applications/Unity/Hub/Editor/6000.5.6f1/Unity.app/Contents/Resources/Scripting/BCLExtensions/TargetingPacks/netstandard2.1/ref/System.Text.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.UI">
