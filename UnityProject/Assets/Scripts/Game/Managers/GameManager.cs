@@ -272,6 +272,17 @@ namespace AIBusinessTycoon.Managers
         {
             if (CurrentPlayer == null) return;
             CurrentPlayer.money -= amount;
+
+            // If amount is negative, it means we EARNED money (revenue)
+            if (amount < 0)
+            {
+                // Ensure stats exists
+                if (CurrentPlayer.stats == null) 
+                    CurrentPlayer.stats = new PlayerStats();
+                    
+                CurrentPlayer.stats.total_revenue += Mathf.Abs(amount);
+            }
+            
             OnPlayerDataUpdated?.Invoke(CurrentPlayer);
         }
 

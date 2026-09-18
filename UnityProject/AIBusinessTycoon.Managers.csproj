@@ -69,6 +69,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/PlayerController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/StoreUIManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CameraController.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/CheckoutCounter.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/APITestManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CustomerSpawner.cs" />
   </ItemGroup>

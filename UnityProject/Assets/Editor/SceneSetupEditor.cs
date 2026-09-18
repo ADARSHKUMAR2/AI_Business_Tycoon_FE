@@ -251,31 +251,49 @@ namespace AIBusinessTycoon.Editor
             counter.transform.localPosition = new Vector3(0, 0.5f, -2.5f);
             counter.transform.localScale = new Vector3(3.5f, 1f, 1f);
             if (counterMat != null) counter.GetComponent<Renderer>().material = counterMat;
+            counter.AddComponent<AIBusinessTycoon.Managers.CheckoutCounter>();
 
                         // 6. Shelves (Left & Right)
             GameObject shelf1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
             shelf1.name = "Shelf_1";
             shelf1.transform.SetParent(building.transform);
             shelf1.transform.localPosition = new Vector3(-2.5f, 1f, 1.5f);
-            shelf1.transform.localScale = new Vector3(1f, 2f, 4f);
+            
+            // Visual size of the shelf
+            Vector3 shelfScale = new Vector3(1f, 2f, 4f);
+            shelf1.transform.localScale = shelfScale;
             if (shelfMat != null) shelf1.GetComponent<Renderer>().material = shelfMat;
             
-            // Add interaction trigger
+            // The default primitive cube comes with a BoxCollider perfectly sized (1x1x1 scaled to the object).
+            // We KEEP this as the physical wall so people don't walk through the wood.
+            BoxCollider physicalCollider1 = shelf1.GetComponent<BoxCollider>();
+            physicalCollider1.isTrigger = false;
+            
+            // Now add a SECOND BoxCollider to act as the Interaction Trigger Zone.
+            // We make it slightly larger than the visual shelf (e.g., 1 meter wider on the X axis)
             BoxCollider trigger1 = shelf1.AddComponent<BoxCollider>();
             trigger1.isTrigger = true;
-            trigger1.size = new Vector3(3f, 2f, 6f); // Larger interaction zone around the shelf
+            // The size is relative to the scale. A size of 2 on X means it extends 0.5 units past the visual edge.
+            trigger1.size = new Vector3(2.5f, 1.5f, 1.2f); 
+            
             shelf1.AddComponent<AIBusinessTycoon.Managers.InteractableShelf>();
 
+
+            // --- Shelf 2 (Right) ---
             GameObject shelf2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
             shelf2.name = "Shelf_2";
             shelf2.transform.SetParent(building.transform);
             shelf2.transform.localPosition = new Vector3(2.5f, 1f, 1.5f);
-            shelf2.transform.localScale = new Vector3(1f, 2f, 4f);
+            shelf2.transform.localScale = shelfScale;
             if (shelfMat != null) shelf2.GetComponent<Renderer>().material = shelfMat;
+
+            BoxCollider physicalCollider2 = shelf2.GetComponent<BoxCollider>();
+            physicalCollider2.isTrigger = false;
 
             BoxCollider trigger2 = shelf2.AddComponent<BoxCollider>();
             trigger2.isTrigger = true;
-            trigger2.size = new Vector3(3f, 2f, 6f);
+            trigger2.size = new Vector3(2.5f, 1.5f, 1.2f); // Slightly larger interaction zone
+            
             shelf2.AddComponent<AIBusinessTycoon.Managers.InteractableShelf>();
 
             int buildingLayer = LayerMask.NameToLayer("Building");
@@ -395,6 +413,7 @@ namespace AIBusinessTycoon.Editor
         {
             GameObject playerObj = GameObject.Find("PlayerAvatar");
             if (playerObj == null) playerObj = new GameObject("PlayerAvatar");
+            playerObj.tag = "Player";
             
             CharacterController cc = playerObj.GetComponent<CharacterController>();
             if (cc == null) cc = playerObj.AddComponent<CharacterController>();
@@ -780,7 +799,7 @@ namespace AIBusinessTycoon.Editor
 
             if (gridManager != null)
             {
-                SetFieldValue(gridManager, "tileSize", 10f); 
+                SetFieldValue(gridManager, "tileSize", 20f); 
                 SetFieldValue(gridManager, "emptyTileMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Grid/EmptyTile.mat"));
                 SetFieldValue(gridManager, "ownedTileMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Grid/OwnedTile.mat"));
                 SetFieldValue(gridManager, "validPlacementMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Grid/ValidPlacement.mat"));

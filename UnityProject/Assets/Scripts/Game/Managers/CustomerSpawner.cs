@@ -28,14 +28,20 @@ namespace AIBusinessTycoon.Managers
 
         private void Start()
         {
+            // Failsafe: if spawnPoint is lost, create a temporary one
             if (spawnPoint == null)
             {
                 GameObject sp = new GameObject("CustomerSpawnPoint");
-                sp.transform.position = new Vector3(0, 0, -20); // Spawns out on the "street"
+                sp.transform.position = new Vector3(0, 0.5f, -20f); 
                 spawnPoint = sp.transform;
             }
 
-            // Start spawning logic
+            if (customerPrefab == null)
+            {
+                Debug.LogError("❌ [CustomerSpawner] customerPrefab is NULL! Please assign the Customer.prefab in the Inspector.");
+                return; // Stop spawning so we don't spam errors or empty cubes
+            }
+
             isSpawning = true;
             StartCoroutine(SpawnRoutine());
         }
@@ -60,13 +66,9 @@ namespace AIBusinessTycoon.Managers
 
         private void SpawnCustomer()
         {
-            if (customerPrefab == null || spawnPoint == null)
-            {
-                Debug.LogWarning("[CustomerSpawner] Missing Prefab or SpawnPoint!");
-                return;
-            }
+            if (customerPrefab == null || spawnPoint == null) return;
 
-            // Spawn the customer at the spawn point
+            // Spawn the actual assigned prefab
             GameObject customer = Instantiate(customerPrefab, spawnPoint.position, Quaternion.identity);
             customer.name = "Customer_" + Random.Range(1000, 9999);
             customer.SetActive(true);
