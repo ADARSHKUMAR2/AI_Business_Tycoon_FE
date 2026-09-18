@@ -59,8 +59,10 @@
     <Compile Include="Assets/Scripts/Game/Managers/BuildMenuManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/HUDManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GameManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/PlayerInventory.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CustomerAI.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/StoreInteractionManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/InteractableShelf.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/BuildingPlacementManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GridVisualizer.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/LandPurchaseUIManager.cs" />

@@ -49,6 +49,7 @@ namespace AIBusinessTycoon.Editor
             
             CreateUISystem();
             ConnectComponents();
+            CreateSupplyZone();
             
             Debug.Log("=== UI & Scene Setup Complete! ===");
         }
@@ -251,12 +252,19 @@ namespace AIBusinessTycoon.Editor
             counter.transform.localScale = new Vector3(3.5f, 1f, 1f);
             if (counterMat != null) counter.GetComponent<Renderer>().material = counterMat;
 
+                        // 6. Shelves (Left & Right)
             GameObject shelf1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
             shelf1.name = "Shelf_1";
             shelf1.transform.SetParent(building.transform);
             shelf1.transform.localPosition = new Vector3(-2.5f, 1f, 1.5f);
             shelf1.transform.localScale = new Vector3(1f, 2f, 4f);
             if (shelfMat != null) shelf1.GetComponent<Renderer>().material = shelfMat;
+            
+            // Add interaction trigger
+            BoxCollider trigger1 = shelf1.AddComponent<BoxCollider>();
+            trigger1.isTrigger = true;
+            trigger1.size = new Vector3(3f, 2f, 6f); // Larger interaction zone around the shelf
+            shelf1.AddComponent<AIBusinessTycoon.Managers.InteractableShelf>();
 
             GameObject shelf2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
             shelf2.name = "Shelf_2";
@@ -264,6 +272,11 @@ namespace AIBusinessTycoon.Editor
             shelf2.transform.localPosition = new Vector3(2.5f, 1f, 1.5f);
             shelf2.transform.localScale = new Vector3(1f, 2f, 4f);
             if (shelfMat != null) shelf2.GetComponent<Renderer>().material = shelfMat;
+
+            BoxCollider trigger2 = shelf2.AddComponent<BoxCollider>();
+            trigger2.isTrigger = true;
+            trigger2.size = new Vector3(3f, 2f, 6f);
+            shelf2.AddComponent<AIBusinessTycoon.Managers.InteractableShelf>();
 
             int buildingLayer = LayerMask.NameToLayer("Building");
             if (buildingLayer > -1)
@@ -416,6 +429,9 @@ namespace AIBusinessTycoon.Editor
             SetFieldValue(playerController, "moveSpeed", 8f);
 
             playerObj.layer = LayerMask.NameToLayer("Default");
+                        // Add Inventory System
+            playerObj.AddComponent<AIBusinessTycoon.Managers.PlayerInventory>();
+
             playerObj.SetActive(false);
         }
 
@@ -630,6 +646,41 @@ namespace AIBusinessTycoon.Editor
 
             return btnObj;
         }
+
+        private void CreateSupplyZone()
+        {
+            GameObject supplyZone = GameObject.Find("SupplyZone");
+            if (supplyZone == null)
+            {
+                supplyZone = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                supplyZone.name = "SupplyZone";
+                supplyZone.tag = "SupplyZone";
+                
+                // Put it on the street
+                supplyZone.transform.position = new Vector3(5f, 0.5f, -15f);
+                supplyZone.transform.localScale = new Vector3(4f, 1f, 4f);
+
+                // Make it a trigger
+                supplyZone.GetComponent<Collider>().isTrigger = true;
+
+                // Color it yellow to look like a loading pad
+                Shader urpShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+                Material mat = new Material(urpShader);
+                mat.SetColor("_BaseColor", new Color(0.9f, 0.8f, 0.2f, 0.8f));
+                
+                // Transparency
+                mat.SetFloat("_Surface", 1);
+                mat.SetFloat("_Blend", 0);
+                mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                mat.SetFloat("_ZWrite", 0);
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = 3000;
+
+                supplyZone.GetComponent<Renderer>().material = mat;
+            }
+        }
+
 
         private void CreateLandPurchasePopup(Transform parent, AIBusinessTycoon.UI.LandPurchaseUIManager landPurchaseManager)
         {
