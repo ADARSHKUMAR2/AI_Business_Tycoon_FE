@@ -53,14 +53,18 @@
     <Analyzer Include="/Applications/Unity/Hub/Editor/6000.5.6f1/Unity.app/Contents/Resources/Scripting/BCLExtensions/TargetingPacks/netstandard2.1/analyzers/dotnet/roslyn4.0/cs/System.Text.Json.SourceGeneration.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets/Scripts/Game/Managers/JoystickController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GridManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/ConnectionTestManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/BuildMenuManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/HUDManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GameManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/StoreInteractionManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/BuildingPlacementManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GridVisualizer.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/LandPurchaseUIManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/PlayerController.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/StoreUIManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CameraController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/APITestManager.cs" />
   </ItemGroup>

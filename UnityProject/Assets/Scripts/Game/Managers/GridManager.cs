@@ -329,10 +329,14 @@ namespace AIBusinessTycoon.Managers
         /// </summary>
         private float CalculateLandCost(Position pos)
         {
-            float distanceFromOrigin = Mathf.Abs(pos.x) + Mathf.Abs(pos.y);
+            // Count how many tiles we currently own
+            int currentTilesCount = landTiles.Count;
+            
             float baseCost = 2000f;
-            float costPerTile = 500f;
-            return baseCost + (distanceFromOrigin * costPerTile);
+            // Cost increases by 20% (1.2 multiplier) for each tile owned
+            float multiplier = Mathf.Pow(1.2f, currentTilesCount);
+            
+            return Mathf.Round(baseCost * multiplier);
         }
         
         /// <summary>

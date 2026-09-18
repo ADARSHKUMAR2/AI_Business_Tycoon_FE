@@ -45,6 +45,7 @@ namespace AIBusinessTycoon.Editor
             CreateEventSystem();
             CreateUISystem();
             ConnectComponents();
+            CreatePlayerAvatar(); 
             
             Debug.Log("=== UI & Scene Setup Complete! ===");
         }
@@ -224,6 +225,13 @@ namespace AIBusinessTycoon.Editor
                 }
             }
 
+            // This is required for StoreInteractionManager.OnMouseDown() to work!
+            BoxCollider interactionCollider = building.AddComponent<BoxCollider>();
+            interactionCollider.center = new Vector3(0, wallHeight / 2f, 0);
+            interactionCollider.size = new Vector3(buildingSize, wallHeight, buildingSize);
+            // Make it a trigger so player avatar doesn't bump into the invisible ceiling
+            interactionCollider.isTrigger = true; 
+
             // Save and clean up
             PrefabUtility.SaveAsPrefabAsset(building, path);
             DestroyImmediate(building);
@@ -297,7 +305,117 @@ namespace AIBusinessTycoon.Editor
             
             CreateHUD(canvasObj.transform);
             CreateBuildMenu(canvasObj.transform);
+            CreateStoreUI(canvasObj.transform);
             CreateLandPurchasePopup(canvasObj.transform);
+        }
+
+        private void CreatePlayerAvatar()
+        {
+            // Create root object
+            GameObject playerObj = new GameObject("PlayerAvatar");
+            
+            // Add Character Controller
+            CharacterController cc = playerObj.AddComponent<CharacterController>();
+            cc.radius = 0.5f;
+            cc.height = 2f;
+            cc.center = new Vector3(0, 1f, 0);
+
+            // Add PlayerController script
+            var playerController = playerObj.AddComponent<AIBusinessTycoon.Managers.PlayerController>();
+
+            // Create Visual body (Capsule)
+            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            visual.name = "Visual";
+            visual.transform.SetParent(playerObj.transform);
+            visual.transform.localPosition = new Vector3(0, 1f, 0);
+            
+            // Create "face" (so you can see which way it's looking)
+            GameObject face = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            face.name = "Face";
+            face.transform.SetParent(visual.transform);
+            face.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            face.transform.localPosition = new Vector3(0, 0.5f, 0.5f); // Sticks out the front
+
+            // Connect visual to script
+            SetFieldValue(playerController, "avatarVisual", visual);
+            SetFieldValue(playerController, "moveSpeed", 8f);
+
+            // Put it on a separate layer if needed, or default
+            playerObj.layer = LayerMask.NameToLayer("Default");
+            
+            // Player starts hidden (Macro mode)
+            playerObj.SetActive(false);
+            
+            Debug.Log("Created Player Avatar");
+        }
+
+
+        private void CreateStoreUI(Transform parent)
+        {
+            // Store UI root (hidden by default)
+            GameObject storeUIObj = CreateUIObject("StoreUI", parent);
+            StretchToParent(storeUIObj);
+            var storeUIManager = storeUIObj.AddComponent<AIBusinessTycoon.UI.StoreUIManager>();
+
+            // === TOP BAR (Store name) ===
+            GameObject topBar = CreatePanel("StoreTopBar", storeUIObj.transform,
+                new Vector2(0, 0.85f), new Vector2(1, 1), new Vector2(0.5f, 1), Vector2.zero, Vector2.zero);
+            topBar.GetComponent<Image>().color = new Color(0.1f, 0.1f, 0.1f, 0.85f);
+
+            var storeNameObj = CreateText("StoreName", topBar.transform, "Kirana Store", 55, FontStyles.Bold, Color.white,
+                new Vector2(0.05f, 0.5f), new Vector2(0.95f, 0.95f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            storeNameObj.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.BottomLeft;
+
+            var storeTypeObj = CreateText("StoreType", topBar.transform, "KIRANA", 30, FontStyles.Normal, new Color(1f, 0.76f, 0.03f),
+                new Vector2(0.05f, 0.1f), new Vector2(0.95f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            storeTypeObj.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.TopLeft;
+
+            // === EXIT BUTTON (Top right) ===
+            GameObject exitBtn = CreatePanel("ExitButton", topBar.transform,
+                new Vector2(0.78f, 0.1f), new Vector2(0.98f, 0.9f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            exitBtn.GetComponent<Image>().color = new Color(0.85f, 0.2f, 0.2f);
+            exitBtn.AddComponent<Button>();
+            var exitTxt = CreateText("Text", exitBtn.transform, "Exit Store", 30, FontStyles.Bold, Color.white,
+                Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            exitTxt.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
+            exitTxt.GetComponent<TextMeshProUGUI>().enableWordWrapping = false;
+
+            // === JOYSTICK (Bottom left) ===
+            GameObject joystickPanel = CreateUIObject("JoystickPanel", storeUIObj.transform);
+            RectTransform joystickRect = joystickPanel.GetComponent<RectTransform>();
+            joystickRect.anchorMin = new Vector2(0, 0);
+            joystickRect.anchorMax = new Vector2(0.35f, 0.25f);
+            joystickRect.anchoredPosition = Vector2.zero;
+            joystickRect.sizeDelta = Vector2.zero;
+
+            // Joystick background circle
+            GameObject joystickBg = CreatePanel("JoystickBackground", joystickPanel.transform,
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(220, 220));
+            joystickBg.GetComponent<Image>().color = new Color(1, 1, 1, 0.15f);
+
+            // Joystick handle
+            GameObject joystickHandle = CreatePanel("JoystickHandle", joystickBg.transform,
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                Vector2.zero, new Vector2(100, 100));
+            joystickHandle.GetComponent<Image>().color = new Color(1, 1, 1, 0.6f);
+
+            // Attach JoystickController script to background
+            var joystickComp = joystickBg.AddComponent<AIBusinessTycoon.UI.JoystickController>();
+            SetFieldValue(joystickComp, "joystickBackground", joystickBg.GetComponent<RectTransform>());
+            SetFieldValue(joystickComp, "joystickHandle", joystickHandle.GetComponent<RectTransform>());
+            SetFieldValue(joystickComp, "handleRange", 80f);
+
+            // Connect all references to StoreUIManager
+            SetFieldValue(storeUIManager, "storeUIPanel", storeUIObj);
+            SetFieldValue(storeUIManager, "storeNameText", storeNameObj.GetComponent<TextMeshProUGUI>());
+            SetFieldValue(storeUIManager, "storeTypeText", storeTypeObj.GetComponent<TextMeshProUGUI>());
+            SetFieldValue(storeUIManager, "joystickPanel", joystickPanel);
+            SetFieldValue(storeUIManager, "joystick", joystickComp);
+            SetFieldValue(storeUIManager, "exitButton", exitBtn.GetComponent<Button>());
+
+            // Hide by default
+            storeUIObj.SetActive(false);
         }
         
         private void CreateHUD(Transform parent)
@@ -492,10 +610,18 @@ namespace AIBusinessTycoon.Editor
         
         private void ConnectComponents()
         {
+            var gameManager = FindObjectOfType<AIBusinessTycoon.Managers.GameManager>();
             var buildMenuManager = FindObjectOfType<AIBusinessTycoon.UI.BuildMenuManager>();
             var placementManager = FindObjectOfType<AIBusinessTycoon.Managers.BuildingPlacementManager>();
             var gridManager = FindObjectOfType<AIBusinessTycoon.Managers.GridManager>();
             var cameraController = FindObjectOfType<AIBusinessTycoon.Managers.CameraController>();
+
+            var playerController = FindObjectOfType<AIBusinessTycoon.Managers.PlayerController>(true); // true = include inactive
+            
+            if (gameManager != null && playerController != null)
+            {
+                SetFieldValue(gameManager, "playerController", playerController);
+            }
             
             if (buildMenuManager != null)
             {
