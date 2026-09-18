@@ -59,6 +59,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/BuildMenuManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/HUDManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GameManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/CustomerAI.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/StoreInteractionManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/BuildingPlacementManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GridVisualizer.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/StoreUIManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CameraController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/APITestManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/CustomerSpawner.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets/Scripts/Game/Managers/AIBusinessTycoon.Managers.asmdef" />
