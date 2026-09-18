@@ -1,33 +1,29 @@
 using UnityEngine;
+using System.Collections.Generic;
 using AIBusinessTycoon.Data;
 
 namespace AIBusinessTycoon.Managers
 {
-    /// <summary>
-    /// Sits on each spawned store building. Detects click in Macro mode
-    /// to allow player to enter. Also defines the entrance position.
-    /// </summary>
     public class StoreInteractionManager : MonoBehaviour
     {
         [Header("Store Data")]
         public BusinessData BusinessData;
 
         [Header("Entrance")]
-        [SerializeField] private Transform entrancePoint; // Place this child at the store's front door
+        [SerializeField] private Transform entrancePoint;
 
         [Header("Interaction Prompt")]
-        [SerializeField] private GameObject interactionPromptUI; // World-space canvas that shows "Tap to Enter"
+        [SerializeField] private GameObject interactionPromptUI;
 
         private bool isHovered = false;
+        private bool employeesSpawned = false; // Prevent double-spawning
 
-        private void Start()
+        private void Awake()
         {
-            // Auto-create an entrance point if none assigned
             if (entrancePoint == null)
             {
                 GameObject ep = new GameObject("EntrancePoint");
                 ep.transform.SetParent(transform);
-                // Default entrance: front-center of the building, slightly inside
                 ep.transform.localPosition = new Vector3(0, 0.1f, -3f);
                 entrancePoint = ep.transform;
             }
@@ -35,11 +31,42 @@ namespace AIBusinessTycoon.Managers
             HidePrompt();
         }
 
+        // --- Spawns employees saved in the backend ---
+        public void SpawnSavedEmployees(GameObject cashierPrefab, GameObject restockerPrefab)
+        {
+            if (employeesSpawned || BusinessData == null || BusinessData.employees == null) return;
+
+            foreach (Employee emp in BusinessData.employees)
+            {
+                GameObject prefab = null;
+                Vector3 spawnOffset = Vector3.zero;
+
+                if (emp.role == "cashier")
+                {
+                    prefab = cashierPrefab;
+                    spawnOffset = new Vector3(2f, 0.5f, 0f);
+                }
+                else if (emp.role == "restocker")
+                {
+                    prefab = restockerPrefab;
+                    spawnOffset = new Vector3(-2f, 0.5f, 0f);
+                }
+
+                if (prefab != null)
+                {
+                    Vector3 spawnPos = GetEntrancePosition() + spawnOffset;
+                    GameObject ai = Instantiate(prefab, spawnPos, Quaternion.identity, transform);
+                    ai.name = $"{emp.role}_{emp.employee_id.Substring(0, 4)}";
+                    Debug.Log($"[StoreInteractionManager] Respawned saved {emp.role}");
+                }
+            }
+
+            employeesSpawned = true;
+        }
+
         private void OnMouseEnter()
         {
-            // Only respond in Macro mode
-            if (GameManager.Instance == null) return;
-            if (CameraController.Instance == null) return;
+            if (GameManager.Instance == null || CameraController.Instance == null) return;
             if (CameraController.Instance.CurrentMode != CameraController.CameraMode.MacroView) return;
 
             isHovered = true;
@@ -54,16 +81,12 @@ namespace AIBusinessTycoon.Managers
 
         private void OnMouseDown()
         {
-            // Only respond in Macro mode
-            if (GameManager.Instance == null) return;
-            if (CameraController.Instance == null) return;
+            if (GameManager.Instance == null || CameraController.Instance == null) return;
             if (CameraController.Instance.CurrentMode != CameraController.CameraMode.MacroView) return;
 
-            // Prevent click-through from UI
             if (UnityEngine.EventSystems.EventSystem.current != null &&
                 UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
 
-            Debug.Log($"[StoreInteractionManager] Entering store: {BusinessData?.name}");
             GameManager.Instance.EnterStore(this);
         }
 

@@ -66,6 +66,17 @@ namespace AIBusinessTycoon.UI
         {
             UpdateAllUI(player);
         }
+
+        public void ShowHUD(bool show)
+        {
+            // Toggles the entire HUD visual container on/off
+            if (transform.childCount > 0)
+            {
+                // The first child is usually "HUD_Visuals" created by the Editor script
+                transform.GetChild(0).gameObject.SetActive(show);
+            }
+        }
+
         
         private void UpdateAllUI(PlayerTycoonData player)
         {

@@ -29,6 +29,10 @@ namespace AIBusinessTycoon.Managers
         [SerializeField] private GameObject pizzaPrefab;
         [SerializeField] private GameObject cafePrefab;
 
+        [Header("Employee Prefabs")]
+        [SerializeField] public GameObject cashierPrefab;
+        [SerializeField] public GameObject restockerPrefab;
+
         // State
         public PlayerTycoonData CurrentPlayer { get; private set; }
         public bool IsLoading { get; private set; }
@@ -202,6 +206,9 @@ namespace AIBusinessTycoon.Managers
 
             // Hide macro-only UI
             UI.BuildMenuManager.Instance?.HideMenu();
+            
+            // Hide the Macro HUD so it doesn't overlap the Store UI
+            UI.HUDManager.Instance?.ShowHUD(false);
 
             // Teleport and activate avatar
             if (playerController != null)
@@ -211,8 +218,8 @@ namespace AIBusinessTycoon.Managers
             if (cameraController != null && playerController != null)
                 cameraController.EnterMicroView(playerController.transform);
 
-            // Show store UI
-            UI.StoreUIManager.Instance?.ShowStoreUI(store.BusinessData);
+            // Show store UI — pass both business data AND the store manager
+            UI.StoreUIManager.Instance?.ShowStoreUI(store.BusinessData, store);
 
             OnEnteredStore?.Invoke();
             Debug.Log($"[GameManager] Entered store: {store.BusinessData?.name}");
@@ -230,6 +237,9 @@ namespace AIBusinessTycoon.Managers
 
             // Hide store UI
             UI.StoreUIManager.Instance?.HideStoreUI();
+            
+            // Show the Macro HUD again
+            UI.HUDManager.Instance?.ShowHUD(true);
 
             // Deactivate avatar
             if (playerController != null)
@@ -282,8 +292,18 @@ namespace AIBusinessTycoon.Managers
                     
                 CurrentPlayer.stats.total_revenue += Mathf.Abs(amount);
             }
-            
+
             OnPlayerDataUpdated?.Invoke(CurrentPlayer);
+
+            if (apiService != null)
+            {
+                apiService.UpdatePlayerData(CurrentPlayer, (success) => {
+                    if (!success)
+                    {
+                        Debug.LogWarning("[GameManager] Failed to sync money/revenue to backend.");
+                    }
+                });
+            }
         }
 
         #endregion
@@ -310,6 +330,8 @@ namespace AIBusinessTycoon.Managers
             sim.BusinessData = business;
 
             spawnedBuildings[business.business_id] = buildingObj;
+
+            sim.SpawnSavedEmployees(cashierPrefab, restockerPrefab);
 
             Debug.Log($"[GameManager] Spawned: {business.name} at ({business.position_x}, {business.position_y})");
             return buildingObj;

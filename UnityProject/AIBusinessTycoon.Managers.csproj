@@ -58,6 +58,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/ConnectionTestManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/BuildMenuManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/HUDManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/RestockerAI.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GameManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/PlayerInventory.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CustomerAI.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/BuildingPlacementManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GridVisualizer.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/LandPurchaseUIManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/CashierAI.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/PlayerController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/StoreUIManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CameraController.cs" />

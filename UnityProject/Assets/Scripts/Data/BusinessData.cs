@@ -77,6 +77,7 @@ namespace AIBusinessTycoon.Data
         public int position_y;
         public float price_multiplier = 1.0f;
         public bool is_open = true;
+        public List<Employee> employees = new List<Employee>();
         public BusinessStats stats;
         public string created_at;
         public string last_updated;
