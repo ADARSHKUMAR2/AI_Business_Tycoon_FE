@@ -31,6 +31,8 @@ namespace AIBusinessTycoon.Managers
 
         // Visuals
         private TextMeshProUGUI floatingLabel;
+        private Transform carryPoint;  
+        private GameObject boxPrefab;  
 
         private IEnumerator Start()
         {
@@ -87,6 +89,16 @@ namespace AIBusinessTycoon.Managers
                 // === STEP 3: Load up at supply zone ===
                 agent.ResetPath();
                 ShowLabel("📦", Color.cyan);
+
+                // Pick up items one by one visually
+                float pickUpDelay = supplyLoadTime / carryCapacity;
+                while (currentCarrying < carryCapacity)
+                {
+                    yield return new WaitForSeconds(pickUpDelay);
+                    currentCarrying++;
+                    UpdateVisuals();
+                }
+
                 yield return new WaitForSeconds(supplyLoadTime);
                 currentCarrying = carryCapacity;
 
@@ -120,6 +132,7 @@ namespace AIBusinessTycoon.Managers
                     yield return new WaitForSeconds(fillTime);
                     targetShelf.AddStock(1);
                     currentCarrying--;
+                    UpdateVisuals();
                 }
 
                 // Brief pause before next loop
@@ -158,6 +171,20 @@ namespace AIBusinessTycoon.Managers
             if (renderer != null)
                 renderer.material.color = new Color(1f, 0.5f, 0.1f); // Orange
 
+            // --- Setup Carry Point and Box Prefab ---
+            GameObject cp = new GameObject("CarryPoint");
+            cp.transform.SetParent(transform);
+            cp.transform.localPosition = new Vector3(0, 2.2f, 0.5f); // Above head, slightly forward
+            carryPoint = cp.transform;
+
+            boxPrefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            boxPrefab.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
+            boxPrefab.GetComponent<Renderer>().material.color = Color.yellow;
+            Destroy(boxPrefab.GetComponent<Collider>());
+            boxPrefab.SetActive(false);
+            // -----------------------------------------------
+
+
             // Floating label
             GameObject canvasObj = new GameObject("RestockerCanvas");
             canvasObj.transform.SetParent(transform);
@@ -183,6 +210,26 @@ namespace AIBusinessTycoon.Managers
             rect.localPosition = Vector3.zero;
             rect.localRotation = Quaternion.identity;
             rect.localScale = Vector3.one;
+        }
+
+        // --- Visual Box Stacking ---
+        private void UpdateVisuals()
+        {
+            if (carryPoint == null || boxPrefab == null) return;
+
+            // Clear current visuals
+            foreach (Transform child in carryPoint)
+            {
+                Destroy(child.gameObject);
+            }
+
+            // Stack new boxes
+            for (int i = 0; i < currentCarrying; i++)
+            {
+                GameObject box = Instantiate(boxPrefab, carryPoint);
+                box.SetActive(true);
+                box.transform.localPosition = new Vector3(0, i * 0.45f, 0); // Stack upwards
+            }
         }
 
         private void ShowLabel(string emoji, Color color)

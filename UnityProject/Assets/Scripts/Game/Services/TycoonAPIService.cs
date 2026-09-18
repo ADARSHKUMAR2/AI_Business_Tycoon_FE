@@ -214,6 +214,36 @@ namespace AIBusinessTycoon.Services
                 }
             }
         }
+
+        /// <summary>
+        /// Generic PUT request that only returns success/fail boolean.
+        /// </summary>
+        private IEnumerator PutRequestSimple<TRequest>(string url, TRequest payload, Action<bool> onComplete)
+        {
+            Debug.Log($"[TycoonAPIService] PUT request to: {url}");
+
+            string jsonData = JsonUtility.ToJson(payload);
+            
+            using (UnityWebRequest request = UnityWebRequest.Put(url, jsonData))
+            {
+                request.timeout = requestTimeout;
+                request.SetRequestHeader("Content-Type", "application/json");
+
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    Debug.Log($"[TycoonAPIService] PUT request successful");
+                    onComplete?.Invoke(true);
+                }
+                else
+                {
+                    Debug.LogError($"[TycoonAPIService] Request failed: {request.error}\nURL: {url}");
+                    onComplete?.Invoke(false);
+                }
+            }
+        }
+
         
         /// <summary>
         /// Generic PUT request with JSON request body and response deserialization.
@@ -294,9 +324,9 @@ namespace AIBusinessTycoon.Services
                 onComplete?.Invoke(false);
                 return;
             }
-            
-            string url = backendConfig.GetUpdatePlayerDataURL();
-            StartCoroutine(PostRequestSimple(url, data, onComplete));
+
+            string url = backendConfig.GetUpdatePlayerDataURL(data.player_id);
+            StartCoroutine(PutRequestSimple(url, data, onComplete));
         }
         
         #endregion

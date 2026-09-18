@@ -43,9 +43,9 @@ namespace AIBusinessTycoon.Config
         /// <summary>
         /// Builds the full URL for updating player data.
         /// </summary>
-        public string GetUpdatePlayerDataURL()
+        public string GetUpdatePlayerDataURL(string playerId)
         {
-            return GetActiveURL() + updatePlayerDataEndpoint;
+            return string.Format(GetActiveURL() + updatePlayerDataEndpoint, playerId);
         }
     }
 }
