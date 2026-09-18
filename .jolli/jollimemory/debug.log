@@ -209,3 +209,63 @@
 [2026-09-17T16:39:12.729Z] INFO  [QueueWorker] [trace=cf7acc0c70c1fbe5b77d126b9c9295d6] === Queue worker finished ===
 [2026-09-17T16:39:12.730Z] INFO  [SessionStartHook] [trace=cf7acc0c70c1fbe5b77d126b9c9295d6] Briefing cache not warmed — nothing to brief on this branch
 [2026-09-17T16:39:12.749Z] INFO  [SessionSync] [trace=cf7acc0c70c1fbe5b77d126b9c9295d6] session sync: not uploading — no API key configured
+[2026-09-18T07:53:05.957Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook started (source: message) ===
+[2026-09-18T07:53:06.122Z] INFO  [RepoProfile] manual-disable read → false (by=manuallyDisabled, pid=41646, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-18T07:53:06.251Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook finished ===
+[2026-09-18T07:53:08.332Z] INFO  [RepoProfile] [trace=7b3eda0f7d010c2df0d09949871c66c4] manual-disable read → false (by=manuallyDisabled, pid=41665, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-18T07:53:08.346Z] INFO  [PostCommitHook] [trace=7b3eda0f7d010c2df0d09949871c66c4] Detected operation: commit
+[2026-09-18T07:53:08.362Z] INFO  [PostCommitHook] [trace=7b3eda0f7d010c2df0d09949871c66c4] Enqueued: type=commit hash=14bcde2d
+[2026-09-18T07:53:08.362Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Launching background worker
+[2026-09-18T07:53:08.363Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Background worker spawned (PID: 41672)
+[2026-09-18T07:53:08.364Z] INFO  [EnsureGlobalDaemon] [trace=7b3eda0f7d010c2df0d09949871c66c4] spawned global daemon ensure helper (pid 41673)
+[2026-09-18T07:53:08.586Z] INFO  [RepoProfile] [trace=7b3eda0f7d010c2df0d09949871c66c4] manual-disable read → false (by=manuallyDisabled, pid=41672, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-18T07:53:08.919Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] === Queue worker started === node=24.13.0 kind=vscode-plugin source=vscode pkgVer=0.99.17 cliVer=0.99.17 dist=/Users/adarsh/.vscode/extensions/jolli.jollimemory-vscode-0.99.17/dist
+[2026-09-18T07:53:08.926Z] INFO  [StorageFactory] [trace=7b3eda0f7d010c2df0d09949871c66c4] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-18T07:53:09.191Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Processing queue entry: type=commit hash=14bcde2d
+[2026-09-18T07:53:09.299Z] INFO  [GitOps] [trace=7b3eda0f7d010c2df0d09949871c66c4] Commit 14bcde2d: buying and spawning buildings now
+[2026-09-18T07:53:09.299Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Commit: 14bcde2d - buying and spawning buildings now (81ms)
+[2026-09-18T07:53:09.660Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Discovered 1 Copilot Chat session(s)
+[2026-09-18T07:53:09.715Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Discovered 3 Cline CLI session(s)
+[2026-09-18T07:53:09.729Z] WARN  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Transcript source read to zero conversation entries: source=copilot-chat path=/Users/adarsh/Library/Application Support/Code/User/workspaceStorage/eca56aa02e0bf820211f40d229056872/chatSessions/9da78dc1-82a8-488d-a880-86c3cd0863b1.jsonl lines=0→0 unrecognizedRows=0
+[2026-09-18T07:53:09.729Z] WARN  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Not advancing read cursor: source recognized nothing in consumed lines: source=copilot-chat path=/Users/adarsh/Library/Application Support/Code/User/workspaceStorage/eca56aa02e0bf820211f40d229056872/chatSessions/9da78dc1-82a8-488d-a880-86c3cd0863b1.jsonl lines=0→0 unrecognizedRows=0
+[2026-09-18T07:53:09.952Z] WARN  [GitOps] [trace=7b3eda0f7d010c2df0d09949871c66c4] Diff exceeds 150000-char budget (4030914 chars) — prepending --stat file list and truncating body
+[2026-09-18T07:53:09.996Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Git diff: 139 files changed, +71174 -333 (251ms)
+[2026-09-18T07:53:10.157Z] WARN  [GitOps] [trace=7b3eda0f7d010c2df0d09949871c66c4] Diff exceeds 60000-char budget (4030914 chars) — prepending --stat file list and truncating body
+[2026-09-18T07:53:10.160Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Prompt blocks: plans=0 notes=0 references=0 (+0 track-only archived, not prompted) (AI soft-excluded 0)
+[2026-09-18T07:53:10.160Z] INFO  [Summarizer] [trace=7b3eda0f7d010c2df0d09949871c66c4] Generating summary for commit 14bcde2d
+[2026-09-18T07:53:10.160Z] INFO  [Summarizer] [trace=7b3eda0f7d010c2df0d09949871c66c4] Context: transcript=0, files=139, lines=71174+333
+[2026-09-18T07:53:10.160Z] WARN  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] First API attempt failed: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).. Retrying in 2000ms...
+[2026-09-18T07:53:11.854Z] INFO  [PrePushHook] [trace=6cc07cb41c95d730e44e811a28f8a22c] pre-push hook: remote=origin budget=3000ms
+[2026-09-18T07:53:11.856Z] INFO  [RepoProfile] [trace=6cc07cb41c95d730e44e811a28f8a22c] manual-disable read → false (by=manuallyDisabled, pid=41775, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-18T07:53:11.865Z] INFO  [PushPendingStore] [trace=6cc07cb41c95d730e44e811a28f8a22c] Enqueued 1 new push-pending entries (branch=main)
+[2026-09-18T07:53:11.865Z] INFO  [PrePushHook] [trace=6cc07cb41c95d730e44e811a28f8a22c] pre-push: recorded 1 commit(s) across 1 pushed ref(s)
+[2026-09-18T07:53:11.871Z] INFO  [PrePushHook] [trace=6cc07cb41c95d730e44e811a28f8a22c] Recorded 1 commit(s) for later sync — not signed in to Jolli
+[2026-09-18T07:53:11.882Z] INFO  [StorageFactory] [trace=6cc07cb41c95d730e44e811a28f8a22c] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-18T07:53:12.164Z] INFO  [Summarizer] [trace=7b3eda0f7d010c2df0d09949871c66c4] Generating summary for commit 14bcde2d
+[2026-09-18T07:53:12.165Z] INFO  [Summarizer] [trace=7b3eda0f7d010c2df0d09949871c66c4] Context: transcript=0, files=139, lines=71174+333
+[2026-09-18T07:53:12.171Z] ERROR [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] API call failed after retry: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).
+[2026-09-18T07:53:12.172Z] WARN  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Saving summary with empty topics + llm-failed marker for commit 14bcde2d
+[2026-09-18T07:53:12.176Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] API summary generated (2.0s)
+[2026-09-18T07:53:12.177Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Plan registry scan: found 0 uncommitted slug(s) on main: []
+[2026-09-18T07:53:12.178Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Plan association: detected 0 slug(s) from transcripts: []
+[2026-09-18T07:53:12.179Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Note registry scan: found 0 uncommitted note(s) on main: []
+[2026-09-18T07:53:12.179Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Note association: detected 0 note(s): []
+[2026-09-18T07:53:12.179Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Reference association: detected 0 ref(s) for branch main
+[2026-09-18T07:53:12.181Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Summary built for 14bcde2d: recap=no, topics=0, plans=absent, notes=absent, references=absent
+[2026-09-18T07:53:12.260Z] INFO  [MetadataManager] [trace=7b3eda0f7d010c2df0d09949871c66c4] Manifest updated: main/buying-and-spawning-buildings-now-14bcde2d.md (commit)
+[2026-09-18T07:53:12.260Z] INFO  [FolderStorage] [trace=7b3eda0f7d010c2df0d09949871c66c4] Markdown generated: main/buying-and-spawning-buildings-now-14bcde2d.md
+[2026-09-18T07:53:12.262Z] INFO  [FolderStorage] [trace=7b3eda0f7d010c2df0d09949871c66c4] Wrote 3 files, deleted 0 (Add summary for 14bcde2d: buying and spawning buildings now)
+[2026-09-18T07:53:12.262Z] INFO  [SummaryStore] [trace=7b3eda0f7d010c2df0d09949871c66c4] Summary stored successfully for commit 14bcde2d
+[2026-09-18T07:53:12.270Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Summary stored successfully for commit 14bcde2d (89ms, 0 plans, 0 notes, 0 references)
+[2026-09-18T07:53:12.270Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] === Pipeline completed in 3.1s ===
+[2026-09-18T07:53:12.270Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] === Summary content (0 topics) ===
+[2026-09-18T07:53:12.274Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] Processed 1 queue entries
+[2026-09-18T07:53:12.275Z] INFO  [PushExecutor] [trace=7b3eda0f7d010c2df0d09949871c66c4] Post-queue push trigger: scheduling drain for 1 newly generated summar(ies)
+[2026-09-18T07:53:12.278Z] INFO  [PushExecutor] [trace=7b3eda0f7d010c2df0d09949871c66c4] processPushPending(post-queue): 3 pending entr(ies) (filtered to 1 hash(es))
+[2026-09-18T07:53:12.286Z] INFO  [PushExecutor] [trace=7b3eda0f7d010c2df0d09949871c66c4] processPushPending(post-queue): not signed in — keeping 3 entries for later
+[2026-09-18T07:53:12.335Z] INFO  [GitOps] [trace=7b3eda0f7d010c2df0d09949871c66c4] Commit 14bcde2d: buying and spawning buildings now
+[2026-09-18T07:53:12.562Z] INFO  [StatsWriter] [trace=7b3eda0f7d010c2df0d09949871c66c4] pruned 6 projected events older than 2026-09-04
+[2026-09-18T07:53:12.569Z] INFO  [StorageFactory] [trace=7b3eda0f7d010c2df0d09949871c66c4] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-18T07:53:12.652Z] INFO  [QueueWorker] [trace=7b3eda0f7d010c2df0d09949871c66c4] === Queue worker finished ===
+[2026-09-18T07:53:12.653Z] INFO  [SessionStartHook] [trace=7b3eda0f7d010c2df0d09949871c66c4] Briefing cache not warmed — nothing to brief on this branch
+[2026-09-18T07:53:12.700Z] INFO  [SessionSync] [trace=7b3eda0f7d010c2df0d09949871c66c4] session sync: not uploading — no API key configured

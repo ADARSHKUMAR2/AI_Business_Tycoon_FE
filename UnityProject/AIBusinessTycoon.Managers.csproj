@@ -60,6 +60,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/GameManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/BuildingPlacementManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GridVisualizer.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/LandPurchaseUIManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CameraController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/APITestManager.cs" />
   </ItemGroup>

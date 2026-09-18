@@ -39,7 +39,7 @@ namespace AIBusinessTycoon.Editor
             SetupLayers();
             CreateFolderStructure();
             CreateMaterials();
-            CreatePrefabs();
+            CreatePrefabs(); // Will now generate open-room interiors!
             
             ClearScene();
             CreateEventSystem();
@@ -76,39 +76,32 @@ namespace AIBusinessTycoon.Editor
             CreateMaterial("Assets/Materials/Grid/OwnedTile.mat", new Color(0.4f, 0.8f, 0.4f, 0.5f), true);
             CreateMaterial("Assets/Materials/Grid/ValidPlacement.mat", new Color(0.2f, 1f, 0.2f, 0.6f), true);
             CreateMaterial("Assets/Materials/Grid/InvalidPlacement.mat", new Color(1f, 0.2f, 0.2f, 0.6f), true);
+            CreateMaterial("Assets/Materials/Grid/PurchasableTile.mat", new Color(0.2f, 0.6f, 1f, 0.5f), true);
             
-            // Building Materials
-            CreateMaterial("Assets/Materials/Buildings/Kirana.mat", new Color(0.95f, 0.6f, 0.3f), false);
-            CreateMaterial("Assets/Materials/Buildings/Pizza.mat", new Color(0.9f, 0.3f, 0.3f), false);
-            CreateMaterial("Assets/Materials/Buildings/Cafe.mat", new Color(0.4f, 0.3f, 0.2f), false);
+            // Building Theme Materials (Floors/Walls)
+            CreateMaterial("Assets/Materials/Buildings/Kirana_Theme.mat", new Color(0.95f, 0.85f, 0.7f), false);
+            CreateMaterial("Assets/Materials/Buildings/Pizza_Theme.mat", new Color(0.95f, 0.7f, 0.7f), false);
+            CreateMaterial("Assets/Materials/Buildings/Cafe_Theme.mat", new Color(0.85f, 0.75f, 0.65f), false);
+            
+            // Prop Materials
+            CreateMaterial("Assets/Materials/Buildings/Prop_Counter.mat", new Color(0.8f, 0.9f, 0.8f), false);
+            CreateMaterial("Assets/Materials/Buildings/Prop_Shelf.mat", new Color(0.6f, 0.4f, 0.2f), false);
             
             AssetDatabase.SaveAssets();
         }
 
-        // --- FIXED URP MATERIAL CREATOR ---
         private void CreateMaterial(string path, Color color, bool isTransparent)
         {
             if (AssetDatabase.LoadAssetAtPath<Material>(path) == null)
             {
-                // URP uses the Lit shader instead of Standard
-                Shader urpShader = Shader.Find("Universal Render Pipeline/Lit");
-                
-                if (urpShader == null)
-                {
-                    Debug.LogWarning("URP Lit shader not found! Falling back to Standard.");
-                    urpShader = Shader.Find("Standard");
-                }
-                
+                Shader urpShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
                 Material mat = new Material(urpShader);
-                
-                // URP uses _BaseColor instead of _Color
                 mat.SetColor("_BaseColor", color);
                 
                 if (isTransparent)
                 {
-                    // URP Transparency Setup
-                    mat.SetFloat("_Surface", 1); // 1 = Transparent, 0 = Opaque
-                    mat.SetFloat("_Blend", 0); // 0 = Alpha, 1 = Premultiply
+                    mat.SetFloat("_Surface", 1);
+                    mat.SetFloat("_Blend", 0);
                     mat.SetFloat("_AlphaClip", 0);
                     mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
                     mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
@@ -118,7 +111,6 @@ namespace AIBusinessTycoon.Editor
                 }
                 else
                 {
-                    // URP Opaque Setup
                     mat.SetFloat("_Surface", 0);
                     mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.One);
                     mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.Zero);
@@ -126,23 +118,7 @@ namespace AIBusinessTycoon.Editor
                     mat.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
                     mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Geometry;
                 }
-                
                 AssetDatabase.CreateAsset(mat, path);
-            }
-            else
-            {
-                // If it exists but is pink (Standard), upgrade it to URP
-                Material mat = AssetDatabase.LoadAssetAtPath<Material>(path);
-                if (mat.shader.name == "Standard")
-                {
-                    Shader urpShader = Shader.Find("Universal Render Pipeline/Lit");
-                    if (urpShader != null)
-                    {
-                        mat.shader = urpShader;
-                        mat.SetColor("_BaseColor", color);
-                        EditorUtility.SetDirty(mat);
-                    }
-                }
             }
         }
 
@@ -152,29 +128,105 @@ namespace AIBusinessTycoon.Editor
             if (AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Grid/TilePrefab.prefab") == null)
             {
                 GameObject tile = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                tile.transform.rotation = Quaternion.Euler(90, 0, 0); // Lay flat
-                DestroyImmediate(tile.GetComponent<Collider>()); // Remove collider so it doesn't block raycasts
+                tile.transform.rotation = Quaternion.Euler(90, 0, 0); 
+                DestroyImmediate(tile.GetComponent<Collider>()); 
                 PrefabUtility.SaveAsPrefabAsset(tile, "Assets/Prefabs/Grid/TilePrefab.prefab");
                 DestroyImmediate(tile);
             }
 
-            // Building Prefabs
-            CreateBuildingPrefab("KiranaStore", "Assets/Materials/Buildings/Kirana.mat", new Vector3(0.9f, 1.5f, 0.9f));
-            CreateBuildingPrefab("PizzaOutlet", "Assets/Materials/Buildings/Pizza.mat", new Vector3(0.9f, 1f, 0.9f));
-            CreateBuildingPrefab("Cafe", "Assets/Materials/Buildings/Cafe.mat", new Vector3(0.9f, 2f, 0.9f));
+            // NEW: Generate Interior-Style Buildings
+            CreateInteriorPrefab("KiranaStore", "Assets/Materials/Buildings/Kirana_Theme.mat");
+            CreateInteriorPrefab("PizzaOutlet", "Assets/Materials/Buildings/Pizza_Theme.mat");
+            CreateInteriorPrefab("Cafe", "Assets/Materials/Buildings/Cafe_Theme.mat");
         }
 
-        private void CreateBuildingPrefab(string name, string matPath, Vector3 scale)
+        private void CreateInteriorPrefab(string name, string floorMatPath)
         {
             string path = $"Assets/Prefabs/Buildings/{name}.prefab";
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null)
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null) return; // Skip if exists
+
+            // Base parent object
+            GameObject building = new GameObject(name);
+            
+            // Materials
+            Material floorMat = AssetDatabase.LoadAssetAtPath<Material>(floorMatPath);
+            Material wallMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Buildings/Prop_Counter.mat"); // Light color for walls
+            Material counterMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Buildings/Prop_Counter.mat");
+            Material shelfMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Buildings/Prop_Shelf.mat");
+
+            // Build dimensions (assuming TileSize is 10, building footprint is 9.6x9.6 to leave a small path)
+            float buildingSize = 9.6f;
+            float wallHeight = 3.0f;
+            float wallThickness = 0.4f;
+
+            // 1. Floor
+            GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            floor.name = "Floor";
+            floor.transform.SetParent(building.transform);
+            floor.transform.localPosition = new Vector3(0, 0.1f, 0);
+            floor.transform.localScale = new Vector3(buildingSize, 0.2f, buildingSize);
+            if (floorMat != null) floor.GetComponent<Renderer>().material = floorMat;
+
+            // 2. Back Wall
+            GameObject backWall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            backWall.name = "BackWall";
+            backWall.transform.SetParent(building.transform);
+            backWall.transform.localPosition = new Vector3(0, wallHeight/2f, buildingSize/2f - wallThickness/2f);
+            backWall.transform.localScale = new Vector3(buildingSize, wallHeight, wallThickness);
+            if (wallMat != null) backWall.GetComponent<Renderer>().material = wallMat;
+
+            // 3. Left Wall
+            GameObject leftWall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            leftWall.name = "LeftWall";
+            leftWall.transform.SetParent(building.transform);
+            leftWall.transform.localPosition = new Vector3(-buildingSize/2f + wallThickness/2f, wallHeight/2f, 0);
+            leftWall.transform.localScale = new Vector3(wallThickness, wallHeight, buildingSize);
+            if (wallMat != null) leftWall.GetComponent<Renderer>().material = wallMat;
+
+            // 4. Right Wall (Front is open so player can see inside)
+            GameObject rightWall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            rightWall.name = "RightWall";
+            rightWall.transform.SetParent(building.transform);
+            rightWall.transform.localPosition = new Vector3(buildingSize/2f - wallThickness/2f, wallHeight/2f, 0);
+            rightWall.transform.localScale = new Vector3(wallThickness, wallHeight, buildingSize);
+            if (wallMat != null) rightWall.GetComponent<Renderer>().material = wallMat;
+
+            // 5. Checkout Counter
+            GameObject counter = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            counter.name = "CheckoutCounter";
+            counter.transform.SetParent(building.transform);
+            counter.transform.localPosition = new Vector3(0, 0.5f, -2.5f);
+            counter.transform.localScale = new Vector3(3.5f, 1f, 1f);
+            if (counterMat != null) counter.GetComponent<Renderer>().material = counterMat;
+
+            // 6. Shelves (Left & Right)
+            GameObject shelf1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            shelf1.name = "Shelf_1";
+            shelf1.transform.SetParent(building.transform);
+            shelf1.transform.localPosition = new Vector3(-2.5f, 1f, 1.5f);
+            shelf1.transform.localScale = new Vector3(1f, 2f, 4f);
+            if (shelfMat != null) shelf1.GetComponent<Renderer>().material = shelfMat;
+
+            GameObject shelf2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            shelf2.name = "Shelf_2";
+            shelf2.transform.SetParent(building.transform);
+            shelf2.transform.localPosition = new Vector3(2.5f, 1f, 1.5f);
+            shelf2.transform.localScale = new Vector3(1f, 2f, 4f);
+            if (shelfMat != null) shelf2.GetComponent<Renderer>().material = shelfMat;
+
+            // Put everything on the "Building" layer
+            int buildingLayer = LayerMask.NameToLayer("Building");
+            if (buildingLayer > -1)
             {
-                GameObject building = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                building.transform.localScale = scale;
-                building.GetComponent<Renderer>().material = AssetDatabase.LoadAssetAtPath<Material>(matPath);
-                PrefabUtility.SaveAsPrefabAsset(building, path);
-                DestroyImmediate(building);
+                foreach(Transform child in building.GetComponentsInChildren<Transform>())
+                {
+                    child.gameObject.layer = buildingLayer;
+                }
             }
+
+            // Save and clean up
+            PrefabUtility.SaveAsPrefabAsset(building, path);
+            DestroyImmediate(building);
         }
 
         #endregion
@@ -245,6 +297,7 @@ namespace AIBusinessTycoon.Editor
             
             CreateHUD(canvasObj.transform);
             CreateBuildMenu(canvasObj.transform);
+            CreateLandPurchasePopup(canvasObj.transform);
         }
         
         private void CreateHUD(Transform parent)
@@ -374,6 +427,51 @@ namespace AIBusinessTycoon.Editor
             return btnObj;
         }
 
+        private void CreateLandPurchasePopup(Transform parent)
+        {
+            GameObject popupObj = CreateUIObject("LandPurchasePopup", parent);
+            StretchToParent(popupObj);
+            var landPurchaseManager = popupObj.AddComponent<AIBusinessTycoon.UI.LandPurchaseUIManager>();
+            
+            GameObject overlay = CreatePanel("Overlay", popupObj.transform, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            overlay.GetComponent<Image>().color = new Color(0, 0, 0, 0.6f);
+            
+            GameObject popupCard = CreatePanel("PopupCard", popupObj.transform, new Vector2(0.1f, 0.3f), new Vector2(0.9f, 0.7f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            popupCard.GetComponent<Image>().color = new Color(0.95f, 0.95f, 0.97f, 1f);
+            
+            GameObject accentBar = CreatePanel("AccentBar", popupCard.transform, new Vector2(0, 0.8f), new Vector2(1, 1), new Vector2(0.5f, 1), Vector2.zero, Vector2.zero);
+            accentBar.GetComponent<Image>().color = primaryColor;
+            
+            var titleObj = CreateText("Title", accentBar.transform, "Purchase Land?", 52, FontStyles.Bold, Color.white, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            
+            var costObj = CreateText("Cost", popupCard.transform, "Rs.2,000", 80, FontStyles.Bold, primaryColor, new Vector2(0, 0.55f), new Vector2(1, 0.8f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            var posObj = CreateText("Position", popupCard.transform, "Location: (0, 0)", 30, FontStyles.Normal, new Color(0.5f, 0.5f, 0.5f), new Vector2(0, 0.45f), new Vector2(1, 0.58f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            var moneyObj = CreateText("PlayerMoney", popupCard.transform, "Your Balance: Rs.10,000", 32, FontStyles.Normal, new Color(0.2f, 0.2f, 0.2f), new Vector2(0, 0.33f), new Vector2(1, 0.46f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            var affordObj = CreateText("Affordability", popupCard.transform, "Remaining: Rs.8,000", 32, FontStyles.Bold, Color.green, new Vector2(0, 0.22f), new Vector2(1, 0.35f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            
+            GameObject cancelBtn = CreatePanel("CancelButton", popupCard.transform, new Vector2(0.05f, 0.03f), new Vector2(0.47f, 0.2f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            cancelBtn.GetComponent<Image>().color = new Color(0.8f, 0.8f, 0.8f);
+            cancelBtn.AddComponent<Button>();
+            CreateText("Text", cancelBtn.transform, "Cancel", 40, FontStyles.Bold, new Color(0.3f, 0.3f, 0.3f), Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            
+            GameObject confirmBtn = CreatePanel("ConfirmButton", popupCard.transform, new Vector2(0.53f, 0.03f), new Vector2(0.95f, 0.2f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            confirmBtn.GetComponent<Image>().color = secondaryColor;
+            confirmBtn.AddComponent<Button>();
+            var confirmTxtObj = CreateText("Text", confirmBtn.transform, "Buy Land", 40, FontStyles.Bold, Color.white, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            
+            SetFieldValue(landPurchaseManager, "popupPanel", popupObj);
+            SetFieldValue(landPurchaseManager, "titleText", titleObj.GetComponent<TextMeshProUGUI>());
+            SetFieldValue(landPurchaseManager, "costText", costObj.GetComponent<TextMeshProUGUI>());
+            SetFieldValue(landPurchaseManager, "positionText", posObj.GetComponent<TextMeshProUGUI>());
+            SetFieldValue(landPurchaseManager, "playerMoneyText", moneyObj.GetComponent<TextMeshProUGUI>());
+            SetFieldValue(landPurchaseManager, "affordabilityText", affordObj.GetComponent<TextMeshProUGUI>());
+            SetFieldValue(landPurchaseManager, "cancelButton", cancelBtn.GetComponent<Button>());
+            SetFieldValue(landPurchaseManager, "confirmButton", confirmBtn.GetComponent<Button>());
+            SetFieldValue(landPurchaseManager, "confirmButtonText", confirmTxtObj.GetComponent<TextMeshProUGUI>());
+            
+            popupObj.SetActive(false);
+        }
+
         private void StretchToParent(GameObject obj)
         {
             RectTransform rect = obj.GetComponent<RectTransform>();
@@ -397,6 +495,7 @@ namespace AIBusinessTycoon.Editor
             var buildMenuManager = FindObjectOfType<AIBusinessTycoon.UI.BuildMenuManager>();
             var placementManager = FindObjectOfType<AIBusinessTycoon.Managers.BuildingPlacementManager>();
             var gridManager = FindObjectOfType<AIBusinessTycoon.Managers.GridManager>();
+            var cameraController = FindObjectOfType<AIBusinessTycoon.Managers.CameraController>();
             
             if (buildMenuManager != null)
             {
@@ -420,16 +519,34 @@ namespace AIBusinessTycoon.Editor
 
             if (gridManager != null)
             {
+                // CRITICAL: SET TILE SIZE TO 10
+                SetFieldValue(gridManager, "tileSize", 10f); 
+
                 SetFieldValue(gridManager, "emptyTileMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Grid/EmptyTile.mat"));
                 SetFieldValue(gridManager, "ownedTileMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Grid/OwnedTile.mat"));
                 SetFieldValue(gridManager, "validPlacementMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Grid/ValidPlacement.mat"));
                 SetFieldValue(gridManager, "invalidPlacementMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Grid/InvalidPlacement.mat"));
+                SetFieldValue(gridManager, "purchasableTileMaterial", AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Grid/PurchasableTile.mat"));
                 SetFieldValue(gridManager, "tilePrefab", AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Grid/TilePrefab.prefab"));
-                Debug.Log("Successfully assigned all fields in GridManager!");
+            }
+
+            // CRITICAL: UPDATE CAMERA SETTINGS FOR LARGER SCALE
+            if (cameraController != null)
+            {
+                SetFieldValue(cameraController, "panSpeed", 50f);
+                SetFieldValue(cameraController, "zoomSpeed", 20f);
+                SetFieldValue(cameraController, "minZoom", 10f);
+                SetFieldValue(cameraController, "maxZoom", 100f);
+                
+                Camera.main.transform.localPosition = new Vector3(0, 30, -30); // Pull camera back initially
             }
             
             GameObject ground = GameObject.Find("Ground");
-            if (ground != null) ground.layer = LayerMask.NameToLayer("Grid");
+            if (ground != null) 
+            {
+                ground.layer = LayerMask.NameToLayer("Grid");
+                ground.transform.localScale = new Vector3(100, 1, 100); // Scale up ground plane
+            }
         }
 
         #endregion

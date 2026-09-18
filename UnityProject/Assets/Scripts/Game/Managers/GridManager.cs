@@ -4,10 +4,6 @@ using AIBusinessTycoon.Data;
 
 namespace AIBusinessTycoon.Managers
 {
-    /// <summary>
-    /// Manages the grid-based land system synced with backend.
-    /// Handles tile ownership, building placement validation, and visual feedback.
-    /// </summary>
     public class GridManager : MonoBehaviour
     {
         public static GridManager Instance { get; private set; }
@@ -23,6 +19,7 @@ namespace AIBusinessTycoon.Managers
         [SerializeField] private Material ownedTileMaterial;
         [SerializeField] private Material validPlacementMaterial;
         [SerializeField] private Material invalidPlacementMaterial;
+        [SerializeField] private Material purchasableTileMaterial; // NEW: Blue glow for buyable tiles
         
         [Header("Prefabs")]
         [SerializeField] private GameObject tilePrefab;
@@ -30,42 +27,52 @@ namespace AIBusinessTycoon.Managers
         // Data structures
         private Dictionary<string, LandTile> landTiles = new Dictionary<string, LandTile>();
         private Dictionary<string, GameObject> tileVisuals = new Dictionary<string, GameObject>();
+        
+        // Highlight tracking
         private GameObject currentHighlightedTile;
         private string currentHighlightedKey;
         
-        // Layer for raycasting
+        // Purchasable tile visuals (temporary quads for unowned adjacent tiles)
+        private Dictionary<string, GameObject> purchasableVisuals = new Dictionary<string, GameObject>();
+        
+        // Layers
         private LayerMask gridLayer;
         
+        // State
+        private bool isInLandPurchaseMode = false;
+        
+        // Events
+        public System.Action<Position, float> OnTileClickedForPurchase; // Position + cost
+
         private void Awake()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-            }
-            else
-            {
-                Destroy(gameObject);
-            }
+            if (Instance == null) Instance = this;
+            else Destroy(gameObject);
         }
         
         private void Start()
         {
             gridLayer = LayerMask.GetMask("Grid");
         }
+
+        private void Update()
+        {
+            // Only handle land purchase clicks when NOT placing a building
+            if (BuildingPlacementManager.Instance != null && BuildingPlacementManager.Instance.IsPlacing)
+                return;
+
+            HandleLandPurchaseHover();
+            HandleLandPurchaseClick();
+        }
         
         #region Initialization
         
-        /// <summary>
-        /// Initialize grid from player data received from backend.
-        /// </summary>
         public void InitializeFromPlayerData(PlayerTycoonData playerData)
         {
             Debug.Log($"[GridManager] Initializing grid for player: {playerData.player_id}");
             
-            // Clear existing grid
             ClearGrid();
             
-            // Check if player has land tiles in the array
             if (playerData.land_tiles == null || playerData.land_tiles.Count == 0)
             {
                 Debug.Log("[GridManager] Player has no land. Creating starter tile at (0,0)");
@@ -74,20 +81,18 @@ namespace AIBusinessTycoon.Managers
             else
             {
                 Debug.Log($"[GridManager] Found {playerData.land_tiles.Count} land tiles to draw.");
-                
-                // Draw every tile the player owns
                 foreach (LandTile tile in playerData.land_tiles)
                 {
                     AddLandTile(tile);
                 }
             }
             
+            // After drawing owned tiles, show adjacent purchasable tiles
+            RefreshPurchasableTiles();
+            
             Debug.Log($"[GridManager] Grid initialized with {landTiles.Count} tiles");
         }
-
-        /// <summary>
-        /// Create a starter tile for new players.
-        /// </summary>
+        
         private void CreateStarterTile()
         {
             LandTile starterTile = new LandTile
@@ -98,13 +103,9 @@ namespace AIBusinessTycoon.Managers
                 purchased_at = System.DateTime.UtcNow.ToString("o"),
                 business_id = null
             };
-            
             AddLandTile(starterTile);
         }
         
-        /// <summary>
-        /// Add a land tile and create its visual representation.
-        /// </summary>
         public void AddLandTile(LandTile tile)
         {
             string key = GetPositionKey(tile.position);
@@ -117,11 +118,15 @@ namespace AIBusinessTycoon.Managers
             
             landTiles[key] = tile;
             CreateTileVisual(tile);
+            
+            // Remove from purchasable visuals if it was showing there
+            if (purchasableVisuals.ContainsKey(key))
+            {
+                Destroy(purchasableVisuals[key]);
+                purchasableVisuals.Remove(key);
+            }
         }
         
-        /// <summary>
-        /// Create visual GameObject for a tile.
-        /// </summary>
         private void CreateTileVisual(LandTile tile)
         {
             string key = GetPositionKey(tile.position);
@@ -131,11 +136,11 @@ namespace AIBusinessTycoon.Managers
             
             if (tilePrefab != null)
             {
-                tileObj = Instantiate(tilePrefab, worldPos, Quaternion.identity, transform);
+                tileObj = Instantiate(tilePrefab, worldPos, Quaternion.Euler(90, 0, 0), transform);
+                tileObj.transform.localScale = Vector3.one * tileSize * 0.95f;
             }
             else
             {
-                // Create default quad if no prefab assigned
                 tileObj = GameObject.CreatePrimitive(PrimitiveType.Quad);
                 tileObj.transform.position = worldPos;
                 tileObj.transform.rotation = Quaternion.Euler(90, 0, 0);
@@ -146,7 +151,10 @@ namespace AIBusinessTycoon.Managers
             tileObj.name = $"Tile_{tile.position.x}_{tile.position.y}";
             tileObj.layer = LayerMask.NameToLayer("Grid");
             
-            // Set material based on ownership
+            // Remove collider from tile visual (we use plane raycast instead)
+            Collider col = tileObj.GetComponent<Collider>();
+            if (col != null) Destroy(col);
+            
             Renderer renderer = tileObj.GetComponent<Renderer>();
             if (renderer != null)
             {
@@ -156,48 +164,200 @@ namespace AIBusinessTycoon.Managers
             tileVisuals[key] = tileObj;
         }
         
-        /// <summary>
-        /// Clear all grid tiles and visuals.
-        /// </summary>
         private void ClearGrid()
         {
             foreach (var visual in tileVisuals.Values)
-            {
-                if (visual != null)
-                    Destroy(visual);
-            }
+                if (visual != null) Destroy(visual);
+            
+            foreach (var visual in purchasableVisuals.Values)
+                if (visual != null) Destroy(visual);
             
             landTiles.Clear();
             tileVisuals.Clear();
+            purchasableVisuals.Clear();
+        }
+        
+        #endregion
+        
+        #region Land Purchase System
+        
+        /// <summary>
+        /// Refreshes the blue purchasable tile indicators around all owned tiles.
+        /// </summary>
+        public void RefreshPurchasableTiles()
+        {
+            // Clear old purchasable visuals
+            foreach (var visual in purchasableVisuals.Values)
+                if (visual != null) Destroy(visual);
+            purchasableVisuals.Clear();
+            
+            // Get all adjacent unowned positions
+            List<Position> purchasable = GetAdjacentUnownedPositions();
+            
+            foreach (Position pos in purchasable)
+            {
+                CreatePurchasableTileVisual(pos);
+            }
+        }
+        
+        private void CreatePurchasableTileVisual(Position pos)
+        {
+            string key = GetPositionKey(pos);
+            Vector3 worldPos = GridToWorldPosition(pos);
+
+            GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            quad.transform.position = worldPos + Vector3.up * 0.005f; // Slightly above ground
+            quad.transform.rotation = Quaternion.Euler(90, 0, 0);
+            quad.transform.localScale = Vector3.one * tileSize * 0.95f;
+            quad.transform.SetParent(transform);
+            quad.name = $"Purchasable_{pos.x}_{pos.y}";
+            quad.layer = LayerMask.NameToLayer("Grid");
+            
+            // Remove collider (we use plane raycast)
+            Collider col = quad.GetComponent<Collider>();
+            if (col != null) Destroy(col);
+            
+            Renderer renderer = quad.GetComponent<Renderer>();
+            if (renderer != null && purchasableTileMaterial != null)
+            {
+                renderer.material = purchasableTileMaterial;
+            }
+            
+            purchasableVisuals[key] = quad;
+        }
+        
+        private List<Position> GetAdjacentUnownedPositions()
+        {
+            // The 4 cardinal directions
+            int[] dx = { 1, -1, 0,  0 };
+            int[] dy = { 0,  0, 1, -1 };
+            
+            List<Position> result = new List<Position>();
+            HashSet<string> seen = new HashSet<string>();
+            
+            foreach (var key in landTiles.Keys)
+            {
+                LandTile tile = landTiles[key];
+                
+                for (int i = 0; i < 4; i++)
+                {
+                    Position neighbour = new Position
+                    {
+                        x = tile.position.x + dx[i],
+                        y = tile.position.y + dy[i]
+                    };
+                    
+                    string neighbourKey = GetPositionKey(neighbour);
+                    
+                    // Add if not already owned and not already in our result list
+                    if (!landTiles.ContainsKey(neighbourKey) && !seen.Contains(neighbourKey))
+                    {
+                        seen.Add(neighbourKey);
+                        result.Add(neighbour);
+                    }
+                }
+            }
+            
+            return result;
+        }
+        
+        public bool IsAdjacentToOwnedTile(Position pos)
+        {
+            int[] dx = { 1, -1, 0,  0 };
+            int[] dy = { 0,  0, 1, -1 };
+            
+            for (int i = 0; i < 4; i++)
+            {
+                string neighbourKey = GetPositionKey(pos.x + dx[i], pos.y + dy[i]);
+                if (landTiles.ContainsKey(neighbourKey)) return true;
+            }
+            return false;
+        }
+        
+        private void HandleLandPurchaseHover()
+        {
+            Position pos = GetGridPositionFromMouse();
+            if (pos == null) return;
+            
+            string key = GetPositionKey(pos);
+            
+            // Pulse/tint the purchasable tile on hover
+            if (purchasableVisuals.ContainsKey(key))
+            {
+                // Tile is purchasable - show a brighter highlight
+                foreach (var kvp in purchasableVisuals)
+                {
+                    Renderer r = kvp.Value.GetComponent<Renderer>();
+                    if (r == null) continue;
+                    
+                    if (kvp.Key == key)
+                        r.material.color = new Color(0.3f, 0.6f, 1f, 0.9f); // Bright blue on hover
+                    else if (purchasableTileMaterial != null)
+                        r.material.color = purchasableTileMaterial.color; // Reset others
+                }
+            }
+        }
+        
+        private void HandleLandPurchaseClick()
+        {
+            if (!Input.GetMouseButtonDown(0)) return;
+            
+            // Don't handle if pointer is over UI
+            if (UnityEngine.EventSystems.EventSystem.current != null &&
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                return;
+            
+            Position pos = GetGridPositionFromMouse();
+            if (pos == null) return;
+            
+            string key = GetPositionKey(pos);
+            
+            // Check if clicking on a purchasable (unowned adjacent) tile
+            if (purchasableVisuals.ContainsKey(key))
+            {
+                // Calculate land cost based on distance from origin
+                float cost = CalculateLandCost(pos);
+                Debug.Log($"[GridManager] Clicked purchasable tile at ({pos.x}, {pos.y}). Cost: Rs.{cost}");
+                
+                // Fire event for LandPurchaseUIManager to catch
+                OnTileClickedForPurchase?.Invoke(pos, cost);
+            }
+        }
+        
+        /// <summary>
+        /// Land cost increases slightly the further you are from origin.
+        /// </summary>
+        private float CalculateLandCost(Position pos)
+        {
+            float distanceFromOrigin = Mathf.Abs(pos.x) + Mathf.Abs(pos.y);
+            float baseCost = 2000f;
+            float costPerTile = 500f;
+            return baseCost + (distanceFromOrigin * costPerTile);
+        }
+        
+        /// <summary>
+        /// Called after land is successfully purchased. Updates the grid.
+        /// </summary>
+        public void OnLandPurchaseSuccess(LandTile tile)
+        {
+            AddLandTile(tile);
+            RefreshPurchasableTiles(); // Recalculate neighbours
         }
         
         #endregion
         
         #region Grid Queries
         
-        /// <summary>
-        /// Convert grid position to world position.
-        /// </summary>
         public Vector3 GridToWorldPosition(Position gridPos)
         {
-            return gridOrigin + new Vector3(
-                gridPos.x * tileSize,
-                0f,
-                gridPos.y * tileSize
-            );
+            return gridOrigin + new Vector3(gridPos.x * tileSize, 0f, gridPos.y * tileSize);
         }
         
-        /// <summary>
-        /// Convert grid position to world position (int overload).
-        /// </summary>
         public Vector3 GridToWorldPosition(int x, int y)
         {
             return GridToWorldPosition(new Position { x = x, y = y });
         }
         
-        /// <summary>
-        /// Convert world position to grid position.
-        /// </summary>
         public Position WorldToGridPosition(Vector3 worldPos)
         {
             Vector3 localPos = worldPos - gridOrigin;
@@ -208,14 +368,9 @@ namespace AIBusinessTycoon.Managers
             };
         }
         
-        /// <summary>
-        /// Get grid position under mouse cursor using raycast.
-        /// </summary>
         public Position GetGridPositionFromMouse()
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            
-            // Raycast against horizontal plane at y=0
             Plane gridPlane = new Plane(Vector3.up, Vector3.zero);
             
             if (gridPlane.Raycast(ray, out float distance))
@@ -223,43 +378,20 @@ namespace AIBusinessTycoon.Managers
                 Vector3 hitPoint = ray.GetPoint(distance);
                 return WorldToGridPosition(hitPoint);
             }
-            
             return null;
         }
         
-        /// <summary>
-        /// Check if player owns a tile at the given position.
-        /// </summary>
-        public bool IsTileOwned(Position pos)
-        {
-            string key = GetPositionKey(pos);
-            return landTiles.ContainsKey(key);
-        }
+        public bool IsTileOwned(Position pos) => landTiles.ContainsKey(GetPositionKey(pos));
         
-        /// <summary>
-        /// Check if a tile is empty (owned but no building).
-        /// </summary>
         public bool IsTileEmpty(Position pos)
         {
             string key = GetPositionKey(pos);
-            
-            if (!landTiles.ContainsKey(key))
-                return false;
-            
+            if (!landTiles.ContainsKey(key)) return false;
             return landTiles[key].IsEmpty;
         }
         
-        /// <summary>
-        /// Check if a tile is valid for building placement.
-        /// </summary>
-        public bool IsValidBuildingPlacement(Position pos)
-        {
-            return IsTileOwned(pos) && IsTileEmpty(pos);
-        }
+        public bool IsValidBuildingPlacement(Position pos) => IsTileOwned(pos) && IsTileEmpty(pos);
         
-        /// <summary>
-        /// Get land tile at position.
-        /// </summary>
         public LandTile GetTileAt(Position pos)
         {
             string key = GetPositionKey(pos);
@@ -270,24 +402,22 @@ namespace AIBusinessTycoon.Managers
         
         #region Visual Feedback
         
-        /// <summary>
-        /// Highlight a tile with valid/invalid placement color.
-        /// </summary>
         public void HighlightTile(Position pos, bool isValid)
         {
-            // Clear previous highlight
             ClearHighlight();
             
             string key = GetPositionKey(pos);
             
             if (!tileVisuals.ContainsKey(key))
             {
-                // Create temporary highlight for unowned tiles
                 Vector3 worldPos = GridToWorldPosition(pos);
                 GameObject highlight = GameObject.CreatePrimitive(PrimitiveType.Quad);
                 highlight.transform.position = worldPos + Vector3.up * 0.01f;
                 highlight.transform.rotation = Quaternion.Euler(90, 0, 0);
                 highlight.transform.localScale = Vector3.one * tileSize * 0.9f;
+                
+                Collider col = highlight.GetComponent<Collider>();
+                if (col != null) Destroy(col);
                 
                 Renderer renderer = highlight.GetComponent<Renderer>();
                 renderer.material = invalidPlacementMaterial;
@@ -299,36 +429,26 @@ namespace AIBusinessTycoon.Managers
             
             GameObject tileObj = tileVisuals[key];
             Renderer tileRenderer = tileObj.GetComponent<Renderer>();
-            
             if (tileRenderer != null)
-            {
                 tileRenderer.material = isValid ? validPlacementMaterial : invalidPlacementMaterial;
-            }
             
             currentHighlightedTile = tileObj;
             currentHighlightedKey = key;
         }
         
-        /// <summary>
-        /// Clear tile highlight and restore original material.
-        /// </summary>
         public void ClearHighlight()
         {
             if (currentHighlightedTile != null)
             {
                 if (currentHighlightedKey != null && landTiles.ContainsKey(currentHighlightedKey))
                 {
-                    // Restore original material
                     LandTile tile = landTiles[currentHighlightedKey];
                     Renderer renderer = currentHighlightedTile.GetComponent<Renderer>();
                     if (renderer != null)
-                    {
                         renderer.material = tile.IsEmpty ? ownedTileMaterial : emptyTileMaterial;
-                    }
                 }
                 else
                 {
-                    // Destroy temporary highlight
                     Destroy(currentHighlightedTile);
                 }
                 
@@ -337,26 +457,19 @@ namespace AIBusinessTycoon.Managers
             }
         }
         
-        /// <summary>
-        /// Update tile visual after business is placed.
-        /// </summary>
         public void UpdateTileAfterBuildingPlaced(Position pos, string businessId)
         {
             string key = GetPositionKey(pos);
-            
             if (landTiles.ContainsKey(key))
             {
                 landTiles[key].business_id = businessId;
                 landTiles[key].tile_type = "shop";
                 
-                // Update visual material
                 if (tileVisuals.ContainsKey(key))
                 {
                     Renderer renderer = tileVisuals[key].GetComponent<Renderer>();
                     if (renderer != null)
-                    {
                         renderer.material = emptyTileMaterial;
-                    }
                 }
             }
         }
@@ -365,15 +478,8 @@ namespace AIBusinessTycoon.Managers
         
         #region Helpers
         
-        private string GetPositionKey(Position pos)
-        {
-            return $"{pos.x}_{pos.y}";
-        }
-        
-        private string GetPositionKey(int x, int y)
-        {
-            return $"{x}_{y}";
-        }
+        private string GetPositionKey(Position pos) => $"{pos.x}_{pos.y}";
+        private string GetPositionKey(int x, int y) => $"{x}_{y}";
         
         #endregion
         
