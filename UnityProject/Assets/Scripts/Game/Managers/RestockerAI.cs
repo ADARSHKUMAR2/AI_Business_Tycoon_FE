@@ -147,7 +147,8 @@ namespace AIBusinessTycoon.Managers
         /// </summary>
         private InteractableShelf FindShelfNeedingRestock()
         {
-            InteractableShelf[] allShelves = FindObjectsOfType<InteractableShelf>();
+            // Only look for shelves inside THIS store (parent)
+            InteractableShelf[] allShelves = transform.parent.GetComponentsInChildren<InteractableShelf>();
             InteractableShelf emptiest = null;
             int lowestStock = int.MaxValue;
 

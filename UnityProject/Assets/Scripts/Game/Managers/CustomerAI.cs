@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 using AIBusinessTycoon.Data;
-using AIBusinessTycoon.Services; // FIXED: Added this using statement
+using AIBusinessTycoon.Services;
 using TMPro; 
 
 namespace AIBusinessTycoon.Managers
@@ -27,15 +27,33 @@ namespace AIBusinessTycoon.Managers
         
         public bool HasReachedCheckout { get; private set; } = false;
 
-        private IEnumerator Start()
+        // ── Object Pooling: Awake runs ONCE when the prefab is created ──
+        private void Awake()
         {
             agent = GetComponent<NavMeshAgent>();
-            
             SetupVisuals();
+        }
 
-            yield return new WaitUntil(() => agent.isOnNavMesh);
-            yield return new WaitForSeconds(Random.Range(0.1f, 0.5f));
+        // ── Object Pooling: OnEnable runs EVERY TIME the spawner pulls them from the pool ──
+        private void OnEnable()
+        {
+            // Reset the "brain" and visuals from their previous life
+            currentState = CustomerState.Initializing;
+            hasItem = false;
+            HasReachedCheckout = false;
             
+            if (carriedItemVisual != null) carriedItemVisual.SetActive(false);
+            ShowEmoji("", Color.white);
+            
+            if (agent != null && agent.isOnNavMesh) agent.ResetPath();
+
+            StartCoroutine(BeginShoppingRoutine());
+        }
+
+        private IEnumerator BeginShoppingRoutine()
+        {
+            yield return new WaitUntil(() => agent != null && agent.isOnNavMesh);
+            yield return new WaitForSeconds(Random.Range(0.1f, 0.5f));
             FindRandomStore();
         }
 
@@ -74,8 +92,6 @@ namespace AIBusinessTycoon.Managers
             textRect.localPosition = Vector3.zero;
             textRect.localRotation = Quaternion.identity;
             textRect.localScale = Vector3.one;
-            
-            floatingEmoji.text = ""; 
         }
 
         private void FindRandomStore()
@@ -120,12 +136,19 @@ namespace AIBusinessTycoon.Managers
                     HasReachedCheckout = true;
                     currentState = CustomerState.WaitingInLine;
                     
-                    // Face the counter
                     if (targetCheckout != null)
                     {
                         transform.rotation = Quaternion.LookRotation(targetCheckout.transform.position - transform.position);
                         transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0); 
                     }
+                }
+            }
+            else if (currentState == CustomerState.Leaving)
+            {
+                // ── Object Pooling: Send back to queue instead of destroying ──
+                if (!agent.pathPending && agent.remainingDistance <= 1.0f)
+                {
+                    CustomerSpawner.Instance.ReturnCustomerToPool(gameObject);
                 }
             }
         }
@@ -156,16 +179,11 @@ namespace AIBusinessTycoon.Managers
             Vector3 offset = (transform.position - shelfPos).normalized * 1.5f; 
             
             if (NavMesh.SamplePosition(shelfPos + offset, out NavMeshHit hit, 3.0f, NavMesh.AllAreas))
-            {
                 agent.SetDestination(hit.position);
-            }
             else
-            {
                 agent.SetDestination(shelfPos);
-            }
 
             yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance <= 1.0f);
-            
             yield return new WaitForSeconds(1.5f); 
             
             if (targetShelf.TryTakeStock())
@@ -176,32 +194,26 @@ namespace AIBusinessTycoon.Managers
                 
                 yield return new WaitForSeconds(1f); 
                 
-                // Go to checkout
                 floatingEmoji.text = ""; 
                 currentState = CustomerState.WalkingToCheckout;
                 
-                // FIND THE CHECKOUT COUNTER IN THIS STORE
                 targetCheckout = targetStore.GetComponentInChildren<CheckoutCounter>();
                 
                 if (targetCheckout != null)
                 {
-                    // Ask the counter where to stand
                     Vector3? queuePos = targetCheckout.JoinQueue(this);
-                    
                     if (queuePos.HasValue)
                     {
                         agent.SetDestination(queuePos.Value);
                     }
                     else
                     {
-                        // Line is full! Angry leave.
                         ShowEmoji("😠", Color.red);
                         Leave();
                     }
                 }
                 else
                 {
-                    // No checkout counter found? Just leave.
                     Leave();
                 }
             }
@@ -214,9 +226,6 @@ namespace AIBusinessTycoon.Managers
             }
         }
 
-        /// <summary>
-        /// Called by the CheckoutCounter when the line moves forward.
-        /// </summary>
         public void MoveToNewQueuePosition(Vector3 newPos)
         {
             HasReachedCheckout = false;
@@ -224,27 +233,27 @@ namespace AIBusinessTycoon.Managers
             agent.SetDestination(newPos);
         }
 
-        /// <summary>
-        /// Called by the CheckoutCounter when the player successfully rings them up.
-        /// </summary>
         public void OnPaymentComplete()
         {
             carriedItemVisual.SetActive(false);
             
-            // Drop money
             float purchaseAmount = Random.Range(50f, 200f);
             GameManager.Instance.DeductMoneyLocal(-purchaseAmount); 
             UI.HUDManager.Instance?.ShowNotification($"+Rs.{purchaseAmount:N0} Sale!", 1f);
 
-            // Phase 3: Random chance to drop trash
-            if (UnityEngine.Random.value < 0.3f) // 30% chance
+            if (UnityEngine.Random.value < 0.3f) 
             {
-                DropTrash();
+                StartCoroutine(DelayedDropTrash());
             }
             
             ShowEmoji("💲", Color.yellow);
-            
             StartCoroutine(LeaveAfterDelay());
+        }
+
+        private IEnumerator DelayedDropTrash()
+        {
+            yield return new WaitForSeconds(1.5f);
+            DropTrash();
         }
 
         private void DropTrash()
@@ -252,9 +261,8 @@ namespace AIBusinessTycoon.Managers
             var gm = Managers.GameManager.Instance;
             if (gm?.CurrentPlayer == null || targetStore?.BusinessData == null) return;
 
-            // The trash drops at the customer's current world position
             float worldX = transform.position.x;
-            float worldZ = transform.position.z; // Backend stores as position_y
+            float worldZ = transform.position.z; 
 
             var request = new SpawnTrashRequest(worldX, worldZ);
 
@@ -264,14 +272,9 @@ namespace AIBusinessTycoon.Managers
                 request,
                 (updatedBusiness) =>
                 {
-                    Debug.Log($"[CustomerAI] Dropped trash. Store rating: {updatedBusiness.store_rating}");
-
-                    // Update local business data
                     targetStore.BusinessData.store_rating = updatedBusiness.store_rating;
                     targetStore.BusinessData.trash_items  = updatedBusiness.trash_items;
 
-                    // Notify any CleanerAI in this store about the new trash
-                    // Get the newly created TrashItem (last in the list)
                     var newTrash = updatedBusiness.trash_items;
                     if (newTrash != null && newTrash.Count > 0)
                     {
@@ -300,7 +303,8 @@ namespace AIBusinessTycoon.Managers
             }
             else
             {
-                CustomerSpawner.Instance.RemoveCustomer(gameObject);
+                // Failsafe: if exit can't be reached, pool them immediately
+                CustomerSpawner.Instance.ReturnCustomerToPool(gameObject);
             }
         }
 

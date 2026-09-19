@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using AIBusinessTycoon.Data;
 
 namespace AIBusinessTycoon.Managers
 {
@@ -13,11 +12,13 @@ namespace AIBusinessTycoon.Managers
         [SerializeField] private GameObject customerPrefab;
         [SerializeField] private float spawnInterval = 5f;
         [SerializeField] private int maxCustomers = 10;
-        
+
         [Header("Spawn Location")]
         [SerializeField] private Transform spawnPoint;
 
-        private List<GameObject> activeCustomers = new List<GameObject>();
+        // ── Object Pooling Variables ──
+        private Queue<GameObject> customerPool = new Queue<GameObject>();
+        private int activeCustomerCount = 0;
         private bool isSpawning = false;
 
         private void Awake()
@@ -28,18 +29,27 @@ namespace AIBusinessTycoon.Managers
 
         private void Start()
         {
-            // Failsafe: if spawnPoint is lost, create a temporary one
             if (spawnPoint == null)
             {
                 GameObject sp = new GameObject("CustomerSpawnPoint");
-                sp.transform.position = new Vector3(0, 0.5f, -20f); 
+                sp.transform.position = new Vector3(0, 0.5f, -20f);
                 spawnPoint = sp.transform;
             }
 
             if (customerPrefab == null)
             {
-                Debug.LogError("❌ [CustomerSpawner] customerPrefab is NULL! Please assign the Customer.prefab in the Inspector.");
-                return; // Stop spawning so we don't spam errors or empty cubes
+                Debug.LogError("❌ [CustomerSpawner] customerPrefab is NULL!");
+                return;
+            }
+
+            // ── Pre-warm the Object Pool ──
+            for (int i = 0; i < maxCustomers; i++)
+            {
+                GameObject newCust = Instantiate(customerPrefab, spawnPoint.position, Quaternion.identity);
+                newCust.name = "Customer_" + i;
+                newCust.transform.SetParent(transform); // Keep the hierarchy clean
+                newCust.SetActive(false);               // Hide them immediately
+                customerPool.Enqueue(newCust);
             }
 
             isSpawning = true;
@@ -52,34 +62,43 @@ namespace AIBusinessTycoon.Managers
             {
                 yield return new WaitForSeconds(spawnInterval);
 
-                // Only spawn if we haven't hit the limit and the player is actually playing
-                if (activeCustomers.Count < maxCustomers && GameManager.Instance != null && GameManager.Instance.IsGameReady)
+                if (activeCustomerCount < maxCustomers && GameManager.Instance != null && GameManager.Instance.IsGameReady)
                 {
-                    // Check if player has at least one open store to visit
                     if (GameManager.Instance.CurrentPlayer != null && GameManager.Instance.CurrentPlayer.OwnedBusinessCount > 0)
                     {
-                        SpawnCustomer();
+                        SpawnCustomerFromPool();
                     }
                 }
             }
         }
 
-        private void SpawnCustomer()
+        private void SpawnCustomerFromPool()
         {
-            if (customerPrefab == null || spawnPoint == null) return;
-
-            // Spawn the actual assigned prefab
-            GameObject customer = Instantiate(customerPrefab, spawnPoint.position, Quaternion.identity);
-            customer.name = "Customer_" + Random.Range(1000, 9999);
-            customer.SetActive(true);
-            
-            activeCustomers.Add(customer);
+            if (customerPool.Count > 0)
+            {
+                GameObject customer = customerPool.Dequeue();
+                
+                // Safely teleport NavMeshAgent by disabling it first
+                var agent = customer.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                if (agent != null) agent.enabled = false;
+                
+                customer.transform.position = spawnPoint.position;
+                
+                if (agent != null) agent.enabled = true;
+                
+                customer.SetActive(true); // Wake them up!
+                activeCustomerCount++;
+            }
         }
 
-        public void RemoveCustomer(GameObject customer)
+        /// <summary>
+        /// Called by the CustomerAI when it reaches the exit.
+        /// </summary>
+        public void ReturnCustomerToPool(GameObject customer)
         {
-            activeCustomers.Remove(customer);
-            Destroy(customer);
+            customer.SetActive(false); // Put them back to sleep
+            customerPool.Enqueue(customer);
+            activeCustomerCount--;
         }
     }
 }

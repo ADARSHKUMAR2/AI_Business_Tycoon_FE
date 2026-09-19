@@ -183,7 +183,8 @@ namespace AIBusinessTycoon.UI
             }
 
             cashierHired = true;
-            gm.DeductMoneyLocal(CashierCost);
+            gm.CurrentPlayer.money -= CashierCost;
+            UI.HUDManager.Instance?.UpdateMoney(gm.CurrentPlayer.money);
             SpawnEmployeeAI("cashier");
 
             string cashierName = "Cashier_" + System.Guid.NewGuid().ToString()[..4];

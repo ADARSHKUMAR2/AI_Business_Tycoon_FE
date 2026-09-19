@@ -36,11 +36,8 @@ namespace AIBusinessTycoon.Managers
             yield return new WaitForSeconds(0.2f);
 
             // Find the CheckoutCounter in the same building (parent)
-            assignedCounter = GetComponentInParent<CheckoutCounter>();
-
-            // Fallback: search the whole scene if not found in parent
-            if (assignedCounter == null)
-                assignedCounter = FindObjectOfType<CheckoutCounter>();
+            // search the parent's children instead of just the parent
+            assignedCounter = transform.parent.GetComponentInChildren<CheckoutCounter>();
 
             if (assignedCounter == null)
             {
