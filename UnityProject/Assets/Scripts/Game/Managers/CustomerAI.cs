@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 using AIBusinessTycoon.Data;
+using AIBusinessTycoon.Services; // FIXED: Added this using statement
 using TMPro; 
 
 namespace AIBusinessTycoon.Managers
@@ -87,79 +88,85 @@ namespace AIBusinessTycoon.Managers
                 return;
             }
 
-            targetStore = allStores[Random.Range(0, allStores.Length)];
-            currentState = CustomerState.WalkingToStore;
-            agent.SetDestination(targetStore.GetEntrancePosition());
+            int randomIndex = Random.Range(0, allStores.Length);
+            targetStore = allStores[randomIndex];
+
+            Vector3 entrancePos = targetStore.GetEntrancePosition();
+            if (NavMesh.SamplePosition(entrancePos, out NavMeshHit hit, 5.0f, NavMesh.AllAreas))
+            {
+                currentState = CustomerState.WalkingToStore;
+                agent.SetDestination(hit.position);
+                ShowEmoji("🚶", Color.white);
+            }
+            else
+            {
+                Leave();
+            }
         }
 
         private void Update()
         {
-            if (currentState == CustomerState.Initializing || !agent.isOnNavMesh) return;
-
-            if (floatingEmoji.text != "")
+            if (currentState == CustomerState.WalkingToStore)
             {
-                floatingEmoji.transform.parent.rotation = Camera.main.transform.rotation;
+                if (!agent.pathPending && agent.remainingDistance <= 1.0f)
+                {
+                    OnArrivedAtStore();
+                }
             }
-
-            switch (currentState)
+            else if (currentState == CustomerState.WalkingToCheckout)
             {
-                case CustomerState.WalkingToStore:
-                    if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
-                    {
-                        StartCoroutine(ShopAroundRoutine());
-                    }
-                    break;
+                if (!agent.pathPending && agent.remainingDistance <= 0.5f)
+                {
+                    HasReachedCheckout = true;
+                    currentState = CustomerState.WaitingInLine;
                     
-                case CustomerState.WalkingToCheckout:
-                    if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.1f)
+                    // Face the counter
+                    if (targetCheckout != null)
                     {
-                        // We arrived at our spot in line!
-                        HasReachedCheckout = true;
-                        currentState = CustomerState.WaitingInLine;
-                        
-                        // Look forward toward the counter
-                        if (targetCheckout != null)
-                        {
-                            transform.LookAt(new Vector3(targetCheckout.transform.position.x, transform.position.y, targetCheckout.transform.position.z));
-                        }
+                        transform.rotation = Quaternion.LookRotation(targetCheckout.transform.position - transform.position);
+                        transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0); 
                     }
-                    break;
-
-                case CustomerState.Leaving:
-                    if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
-                    {
-                        CustomerSpawner.Instance.RemoveCustomer(gameObject);
-                    }
-                    break;
+                }
             }
         }
 
-        private IEnumerator ShopAroundRoutine()
+        private void OnArrivedAtStore()
         {
             currentState = CustomerState.Shopping;
             
             InteractableShelf[] shelves = targetStore.GetComponentsInChildren<InteractableShelf>();
-            
-            if (shelves.Length == 0)
+            if (shelves.Length > 0)
             {
-                ShowEmoji("😠", Color.red);
-                Leave();
-                yield break;
+                int randomShelfIndex = Random.Range(0, shelves.Length);
+                targetShelf = shelves[randomShelfIndex];
+                
+                StartCoroutine(ShopAtShelf());
             }
+            else
+            {
+                Leave();
+            }
+        }
 
-            targetShelf = shelves[Random.Range(0, shelves.Length)];
+        private IEnumerator ShopAtShelf()
+        {
+            ShowEmoji("🛒", Color.white);
             
-            Vector3 targetPos = targetShelf.transform.position + new Vector3(1.5f, 0, 0); 
-            if (NavMesh.SamplePosition(targetPos, out NavMeshHit hit, 3.0f, NavMesh.AllAreas))
+            Vector3 shelfPos = targetShelf.transform.position;
+            Vector3 offset = (transform.position - shelfPos).normalized * 1.5f; 
+            
+            if (NavMesh.SamplePosition(shelfPos + offset, out NavMeshHit hit, 3.0f, NavMesh.AllAreas))
             {
                 agent.SetDestination(hit.position);
             }
+            else
+            {
+                agent.SetDestination(shelfPos);
+            }
+
+            yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance <= 1.0f);
             
-            yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.5f);
-            
-            transform.LookAt(new Vector3(targetShelf.transform.position.x, transform.position.y, targetShelf.transform.position.z));
-            
-            yield return new WaitForSeconds(1.5f);
+            yield return new WaitForSeconds(1.5f); 
             
             if (targetShelf.TryTakeStock())
             {
@@ -228,10 +235,52 @@ namespace AIBusinessTycoon.Managers
             float purchaseAmount = Random.Range(50f, 200f);
             GameManager.Instance.DeductMoneyLocal(-purchaseAmount); 
             UI.HUDManager.Instance?.ShowNotification($"+Rs.{purchaseAmount:N0} Sale!", 1f);
+
+            // Phase 3: Random chance to drop trash
+            if (UnityEngine.Random.value < 0.3f) // 30% chance
+            {
+                DropTrash();
+            }
             
             ShowEmoji("💲", Color.yellow);
             
             StartCoroutine(LeaveAfterDelay());
+        }
+
+        private void DropTrash()
+        {
+            var gm = Managers.GameManager.Instance;
+            if (gm?.CurrentPlayer == null || targetStore?.BusinessData == null) return;
+
+            // The trash drops at the customer's current world position
+            float worldX = transform.position.x;
+            float worldZ = transform.position.z; // Backend stores as position_y
+
+            var request = new SpawnTrashRequest(worldX, worldZ);
+
+            TycoonAPIService.Instance.SpawnTrash(
+                gm.CurrentPlayer.player_id,
+                targetStore.BusinessData.business_id,
+                request,
+                (updatedBusiness) =>
+                {
+                    Debug.Log($"[CustomerAI] Dropped trash. Store rating: {updatedBusiness.store_rating}");
+
+                    // Update local business data
+                    targetStore.BusinessData.store_rating = updatedBusiness.store_rating;
+                    targetStore.BusinessData.trash_items  = updatedBusiness.trash_items;
+
+                    // Notify any CleanerAI in this store about the new trash
+                    // Get the newly created TrashItem (last in the list)
+                    var newTrash = updatedBusiness.trash_items;
+                    if (newTrash != null && newTrash.Count > 0)
+                    {
+                        CleanerAI cleaner = targetStore.GetComponentInChildren<CleanerAI>();
+                        cleaner?.NotifyNewTrash(newTrash[newTrash.Count - 1]);
+                    }
+                },
+                (err) => Debug.LogWarning($"[CustomerAI] Failed to spawn trash on backend: {err}")
+            );
         }
 
         private IEnumerator LeaveAfterDelay()

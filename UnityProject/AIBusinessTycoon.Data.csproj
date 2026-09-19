@@ -56,6 +56,7 @@
     <Compile Include="Assets/Scripts/Data/LandTileData.cs" />
     <Compile Include="Assets/Scripts/Data/EmployeeData.cs" />
     <Compile Include="Assets/Scripts/Data/InventoryData.cs" />
+    <Compile Include="Assets/Scripts/Data/TrashData.cs" />
     <Compile Include="Assets/Scripts/Data/APIResponse.cs" />
     <Compile Include="Assets/Scripts/Data/PlayerTycoonData.cs" />
     <Compile Include="Assets/Scripts/Data/BusinessData.cs" />

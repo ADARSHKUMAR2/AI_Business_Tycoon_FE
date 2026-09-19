@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using AIBusinessTycoon.Config;
 using AIBusinessTycoon.Data;
+using System.Collections.Generic;
 
 namespace AIBusinessTycoon.Services
 {
@@ -490,7 +491,138 @@ namespace AIBusinessTycoon.Services
                 }
             }
         }
+
+        /// <summary>
+        /// Phase 3: Upgrade a specific stat for an employee.
+        /// PUT /api/game/employee/{playerId}/{businessId}/{employeeId}/upgrade
+        /// Body: { "stat": "speed" } or { "stat": "carry_capacity" }
+        /// </summary>
+        public void UpgradeEmployee(
+            string playerId, string businessId, string employeeId,
+            EmployeeUpgradeRequest request,
+            Action<Employee> onSuccess, Action<string> onError)
+        {
+            if (backendConfig == null) { onError?.Invoke("BackendConfig not assigned!"); return; }
+
+            string url = $"{backendConfig.GetActiveURL()}/api/game/employee/{playerId}/{businessId}/{employeeId}/upgrade";
+            StartCoroutine(PutRequest(url, request, onSuccess, onError));
+        }
+
+        // ───
         
         #endregion
+
+        #region Phase 3 APIs
+
+        /// <summary>
+        /// Phase 3: Spawn a trash item at a world position.
+        /// Called when a customer drops trash.
+        /// POST /api/game/business/{playerId}/{businessId}/trash
+        /// </summary>
+        public void SpawnTrash(
+            string playerId, string businessId,
+            SpawnTrashRequest request,
+            Action<BusinessData> onSuccess, Action<string> onError)
+        {
+            if (backendConfig == null) { onError?.Invoke("BackendConfig not assigned!"); return; }
+
+            string url = $"{backendConfig.GetActiveURL()}/api/game/business/{playerId}/{businessId}/trash";
+            StartCoroutine(PostRequest(url, request, onSuccess, onError));
+        }
+
+        /// <summary>
+        /// Phase 3: Remove a trash item (Cleaner AI picked it up).
+        /// DELETE /api/game/business/{playerId}/{businessId}/trash/{trashId}
+        /// Returns the updated BusinessData with the new store_rating.
+        /// </summary>
+        public void RemoveTrash(
+            string playerId, string businessId, string trashId,
+            Action<BusinessData> onSuccess, Action<string> onError)
+        {
+            if (backendConfig == null) { onError?.Invoke("BackendConfig not assigned!"); return; }
+
+            string url = $"{backendConfig.GetActiveURL()}/api/game/business/{playerId}/{businessId}/trash/{trashId}";
+            StartCoroutine(DeleteRequestWithResponse(url, onSuccess, onError));
+        }
+
+        /// <summary>
+        /// Phase 3: Get all active trash items for a business on game load.
+        /// GET /api/game/business/{playerId}/{businessId}/trash
+        /// Note: Wraps raw JSON array into { "items": [...] } for JsonUtility.
+        /// </summary>
+        public void GetTrash(
+            string playerId, string businessId,
+            Action<List<TrashItem>> onSuccess, Action<string> onError)
+        {
+            if (backendConfig == null) { onError?.Invoke("BackendConfig not assigned!"); return; }
+
+            string url = $"{backendConfig.GetActiveURL()}/api/game/business/{playerId}/{businessId}/trash";
+            StartCoroutine(GetRequestRaw(url, (rawJson) =>
+            {
+                try
+                {
+                    // JsonUtility cannot parse raw arrays — wrap it first
+                    string wrapped = "{\"items\":" + rawJson + "}";
+                    TrashListWrapper wrapper = JsonUtility.FromJson<TrashListWrapper>(wrapped);
+                    onSuccess?.Invoke(wrapper?.items ?? new List<TrashItem>());
+                }
+                catch (Exception e)
+                {
+                    onError?.Invoke($"Failed to parse trash list: {e.Message}");
+                }
+            }, onError));
+        }
+
+        /// <summary>
+        /// Phase 3: Upgrade a shelf's max capacity.
+        /// POST /api/game/business/{playerId}/{businessId}/shelf/upgrade
+        /// Body: { "item_key": "rice", "target_capacity": 20 }
+        /// </summary>
+        public void UpgradeShelf(
+            string playerId, string businessId,
+            ShelfUpgradeRequest request,
+            Action<BusinessData> onSuccess, Action<string> onError)
+        {
+            if (backendConfig == null) { onError?.Invoke("BackendConfig not assigned!"); return; }
+
+            string url = $"{backendConfig.GetActiveURL()}/api/game/business/{playerId}/{businessId}/shelf/upgrade";
+            StartCoroutine(PostRequest(url, request, onSuccess, onError));
+        }
+
+        #endregion
+
+        // ─── ADD this private helper (DELETE with response body) ───────────────
+        private IEnumerator DeleteRequestWithResponse<T>(
+            string url, Action<T> onSuccess, Action<string> onError)
+        {
+            Debug.Log($"[TycoonAPIService] DELETE (with response) to: {url}");
+
+            using (UnityWebRequest request = new UnityWebRequest(url, "DELETE"))
+            {
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.timeout = requestTimeout;
+                request.SetRequestHeader("Content-Type", "application/json");
+
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    try
+                    {
+                        T data = JsonUtility.FromJson<T>(request.downloadHandler.text);
+                        onSuccess?.Invoke(data);
+                    }
+                    catch (Exception e)
+                    {
+                        onError?.Invoke($"Failed to parse DELETE response: {e.Message}");
+                    }
+                }
+                else
+                {
+                    onError?.Invoke($"DELETE failed: {request.error}");
+                }
+            }
+        }
+
     }
 }

@@ -4,28 +4,29 @@ namespace AIBusinessTycoon.Data
 {
     /// <summary>
     /// Employee role types.
-    /// Mirrors backend EmployeeRole enum.
+    /// Mirrors backend EmployeeRole enum exactly.
+    /// Phase 3: Added cleaner role.
     /// </summary>
     [Serializable]
     public enum EmployeeRole
     {
         cashier,
-        manager,
-        chef,
-        cleaner
+        restocker,  // Phase 2 (was missing!)
+        cleaner     // Phase 3
     }
 
     /// <summary>
     /// Employee performance stats.
-    /// Mirrors backend EmployeeStats model.
+    /// Mirrors backend EmployeeStats model exactly.
+    /// Phase 3: Added carry_capacity.
     /// </summary>
     [Serializable]
     public class EmployeeStats
     {
-        public int speed = 50;
-        public int accuracy = 50;
-        public int customer_care = 50;
-        public int experience_level = 0;
+        public int speed          = 50;
+        public int accuracy       = 50;
+        public int customer_care  = 50;
+        public int carry_capacity = 5;   
 
         public int CalculateOverallRating()
         {
@@ -40,14 +41,16 @@ namespace AIBusinessTycoon.Data
     [Serializable]
     public class Employee
     {
-        public string employee_id;
-        public string name;
-        public string role;
+        public string        employee_id;
+        public string        name;
+        public string        role;
         public EmployeeStats stats;
-        public float salary_per_day;
-        public string hired_at;
+        public float         salary_per_day;
+        public int           experience;
+        public int           level;
+        public string        hired_at;
+        public string        business_id;
 
-        // Convenience properties
         public EmployeeRole RoleEnum
         {
             get
@@ -82,6 +85,22 @@ namespace AIBusinessTycoon.Data
         {
             name = employeeName;
             role = employeeRole;
+        }
+    }
+
+    /// <summary>
+    /// Phase 3: Request to upgrade a specific employee stat.
+    /// Mirrors backend EmployeeUpgradeRequest.
+    /// Valid values for stat: "speed" or "carry_capacity"
+    /// </summary>
+    [Serializable]
+    public class EmployeeUpgradeRequest
+    {
+        public string stat;
+
+        public EmployeeUpgradeRequest(string statName)
+        {
+            stat = statName;
         }
     }
 }

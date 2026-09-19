@@ -123,5 +123,19 @@ namespace AIBusinessTycoon.Managers
                 box.transform.localPosition = new Vector3(xOffset, yOffset, 0);
             }
         }
+
+        // Add a new public method to apply backend data:
+
+        /// <summary>
+        /// Phase 3: Called after business data is loaded to sync shelf capacity
+        /// from the backend's max_stock value.
+        /// </summary>
+        public void InitializeFromBackend(int backendMaxStock, int backendCurrentStock)
+        {
+            maxCapacity  = backendMaxStock;
+            currentStock = Mathf.Min(backendCurrentStock, maxCapacity);
+            UpdateVisuals();
+        }
+
     }
 }

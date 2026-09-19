@@ -101,6 +101,8 @@ GameObject:
   - component: {fileID: 6265104389120749606}
   - component: {fileID: 7716290216011581176}
   - component: {fileID: 6628376738404252575}
+  - component: {fileID: -1504132731173560773}
+  - component: {fileID: 4182463052153157733}
   m_Layer: 0
   m_Name: CashierPrefab
   m_TagString: Untagged
@@ -159,3 +161,53 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: AIBusinessTycoon.Managers::AIBusinessTycoon.Managers.CashierAI
   arrivalThreshold: 0.6
+--- !u!136 &-1504132731173560773
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8105412841406788679}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &4182463052153157733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8105412841406788679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c6532a1ad9484bb29ecbea5526fa4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AIBusinessTycoon.Managers::AIBusinessTycoon.Managers.EmployeeInteractionManager
+  employeeData:
+    employee_id: 
+    name: 
+    role: 
+    stats:
+      speed: 50
+      accuracy: 50
+      customer_care: 50
+      carry_capacity: 5
+    salary_per_day: 0
+    experience: 0
+    level: 0
+    hired_at: 
+    business_id: 
+  outlineMaterial: {fileID: 0}

@@ -101,6 +101,8 @@ GameObject:
   - component: {fileID: 868892765396239025}
   - component: {fileID: 2877208173922618559}
   - component: {fileID: 8402991327625094207}
+  - component: {fileID: 6805488249655404748}
+  - component: {fileID: -8589727480390209108}
   m_Layer: 0
   m_Name: RestockerPrefab
   m_TagString: Untagged
@@ -162,3 +164,53 @@ MonoBehaviour:
   supplyLoadTime: 1
   fillTime: 0.5
   carryCapacity: 5
+--- !u!136 &6805488249655404748
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3322402766245352063}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &-8589727480390209108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3322402766245352063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c6532a1ad9484bb29ecbea5526fa4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AIBusinessTycoon.Managers::AIBusinessTycoon.Managers.EmployeeInteractionManager
+  employeeData:
+    employee_id: 
+    name: 
+    role: 
+    stats:
+      speed: 50
+      accuracy: 50
+      customer_care: 50
+      carry_capacity: 5
+    salary_per_day: 0
+    experience: 0
+    level: 0
+    hired_at: 
+    business_id: 
+  outlineMaterial: {fileID: 0}

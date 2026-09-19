@@ -16,7 +16,7 @@ namespace AIBusinessTycoon.Managers
         [SerializeField] private GameObject interactionPromptUI;
 
         private bool isHovered = false;
-        private bool employeesSpawned = false; // Prevent double-spawning
+        private bool employeesSpawned = false; 
 
         private void Awake()
         {
@@ -31,8 +31,7 @@ namespace AIBusinessTycoon.Managers
             HidePrompt();
         }
 
-        // --- Spawns employees saved in the backend ---
-        public void SpawnSavedEmployees(GameObject cashierPrefab, GameObject restockerPrefab)
+        public void SpawnSavedEmployees(GameObject cashierPrefab, GameObject restockerPrefab, GameObject cleanerPrefab)
         {
             if (employeesSpawned || BusinessData == null || BusinessData.employees == null) return;
 
@@ -51,12 +50,32 @@ namespace AIBusinessTycoon.Managers
                     prefab = restockerPrefab;
                     spawnOffset = new Vector3(-2f, 0.5f, 0f);
                 }
+                else if (emp.role == "cleaner")
+                {
+                    prefab      = cleanerPrefab;
+                    spawnOffset = new Vector3(0f, 0.5f, 2f); 
+                }
 
                 if (prefab != null)
                 {
                     Vector3 spawnPos = GetEntrancePosition() + spawnOffset;
                     GameObject ai = Instantiate(prefab, spawnPos, Quaternion.identity, transform);
                     ai.name = $"{emp.role}_{emp.employee_id.Substring(0, 4)}";
+                    
+                    if (emp.role == "cleaner")
+                    {
+                        CleanerAI cleanerAI = ai.GetComponent<CleanerAI>();
+                        if (cleanerAI != null)
+                            cleanerAI.Initialize(BusinessData.player_id, BusinessData.business_id);
+                    }
+                    
+                    // NEW: Feed the loaded data to the Interaction Manager so clicking works!
+                    var interactionManager = ai.GetComponent<EmployeeInteractionManager>();
+                    if (interactionManager != null)
+                    {
+                        interactionManager.Initialize(emp, BusinessData.business_id);
+                    }
+                    
                     Debug.Log($"[StoreInteractionManager] Respawned saved {emp.role}");
                 }
             }

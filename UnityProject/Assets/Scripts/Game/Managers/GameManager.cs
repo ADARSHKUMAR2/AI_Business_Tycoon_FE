@@ -32,6 +32,7 @@ namespace AIBusinessTycoon.Managers
         [Header("Employee Prefabs")]
         [SerializeField] public GameObject cashierPrefab;
         [SerializeField] public GameObject restockerPrefab;
+        [SerializeField] public GameObject cleanerPrefab;
 
         // State
         public PlayerTycoonData CurrentPlayer { get; private set; }
@@ -204,9 +205,12 @@ namespace AIBusinessTycoon.Managers
             IsInStore    = true;
             currentStore = store;
 
+            var storeCollider = currentStore.GetComponent<Collider>();
+            if (storeCollider != null) storeCollider.enabled = false;
+
             // Hide macro-only UI
             UI.BuildMenuManager.Instance?.HideMenu();
-            
+
             // Hide the Macro HUD so it doesn't overlap the Store UI
             UI.HUDManager.Instance?.ShowHUD(false);
 
@@ -218,8 +222,8 @@ namespace AIBusinessTycoon.Managers
             if (cameraController != null && playerController != null)
                 cameraController.EnterMicroView(playerController.transform);
 
-            // Show store UI — pass both business data AND the store manager
-            UI.StoreUIManager.Instance?.ShowStoreUI(store.BusinessData, store);
+            // Show store UI — using OpenStoreUI instead of ShowStoreUI
+            UI.StoreUIManager.Instance?.OpenStoreUI(store);
 
             OnEnteredStore?.Invoke();
             Debug.Log($"[GameManager] Entered store: {store.BusinessData?.name}");
@@ -232,12 +236,20 @@ namespace AIBusinessTycoon.Managers
         {
             if (!IsInStore) return;
 
+            // Re-enable the store's macro-click collider
+            if (currentStore != null)
+            {
+                var storeCollider = currentStore.GetComponent<Collider>();
+                if (storeCollider != null) storeCollider.enabled = true;
+            }
+
+
             IsInStore    = false;
             currentStore = null;
 
-            // Hide store UI
-            UI.StoreUIManager.Instance?.HideStoreUI();
-            
+            // Hide store UI — using CloseStoreUI instead of HideStoreUI
+            UI.StoreUIManager.Instance?.CloseStoreUI();
+
             // Show the Macro HUD again
             UI.HUDManager.Instance?.ShowHUD(true);
 
@@ -245,12 +257,12 @@ namespace AIBusinessTycoon.Managers
             if (playerController != null)
                 playerController.Deactivate();
 
-            // Swoop camera back up
+            // Return camera to macro view
             if (cameraController != null)
                 cameraController.ExitToMacroView();
 
             OnExitedStore?.Invoke();
-            Debug.Log("[GameManager] Exited store, returned to city view.");
+            Debug.Log("[GameManager] Exited store.");
         }
 
         #endregion
@@ -331,7 +343,7 @@ namespace AIBusinessTycoon.Managers
 
             spawnedBuildings[business.business_id] = buildingObj;
 
-            sim.SpawnSavedEmployees(cashierPrefab, restockerPrefab);
+            sim.SpawnSavedEmployees(cashierPrefab, restockerPrefab, cleanerPrefab);
 
             Debug.Log($"[GameManager] Spawned: {business.name} at ({business.position_x}, {business.position_y})");
             return buildingObj;

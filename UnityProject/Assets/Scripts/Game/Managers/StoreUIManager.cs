@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using AIBusinessTycoon.Data;
 using AIBusinessTycoon.Services;
+using AIBusinessTycoon.Managers; // FIXED: Added this to recognize CleanerAI
 using System.Collections.Generic;
 
 namespace AIBusinessTycoon.UI
@@ -10,6 +11,7 @@ namespace AIBusinessTycoon.UI
     /// <summary>
     /// UI shown when the player is INSIDE a store.
     /// Phase 2: Added Hire Staff panel with Cashier and Restocker hiring buttons.
+    /// Phase 3: Added Cleaner hiring button and store rating.
     /// </summary>
     public class StoreUIManager : MonoBehaviour
     {
@@ -28,7 +30,7 @@ namespace AIBusinessTycoon.UI
         // ── Joystick ─────────────────────────────────────────────────────────
         [Header("Joystick")]
         [SerializeField] private GameObject joystickPanel;
-        [SerializeField] private JoystickController joystick; // Fixed: UI namespace
+        [SerializeField] private JoystickController joystick;
 
         // ── Main Buttons ─────────────────────────────────────────────────────
         [Header("Buttons")]
@@ -40,6 +42,10 @@ namespace AIBusinessTycoon.UI
         [SerializeField] private Button hireCashierButton;   // Rs. 1,000
         [SerializeField] private Button hireRestockerButton; // Rs. 1,500
         [SerializeField] private Button closeHireMenuButton;
+        [SerializeField] private Button             hireCleanerButton;
+        [SerializeField] private TextMeshProUGUI    cleanerStatusText;
+        [SerializeField] private TextMeshProUGUI    storeRatingText;    // Phase 3: shows ⭐ x.x/5.0
+        [SerializeField] private GameObject         cleanerPrefab;
 
         // ── Hire Menu Labels (to show affordability) ──────────────────────────
         [Header("Hire Menu Labels")]
@@ -54,13 +60,14 @@ namespace AIBusinessTycoon.UI
         // ── Costs ─────────────────────────────────────────────────────────────
         private const float CashierCost   = 1000f;
         private const float RestockerCost = 1500f;
+        private const float CleanerCost = 800f;
+        private bool cleanerHired = false;
 
         // ── Internal State ─────────────────────────────────────────────────────
         private BusinessData currentBusiness;
-        private Managers.StoreInteractionManager currentStore; // Fixed: Managers namespace
+        private Managers.StoreInteractionManager currentStore;
 
         // Track which employee types have been hired this session
-        // (prevents hiring duplicates; could be expanded to allow multiples later)
         private bool cashierHired    = false;
         private bool restockerHired  = false;
 
@@ -75,167 +82,178 @@ namespace AIBusinessTycoon.UI
         private void Start()
         {
             // Wire up button listeners
-            if (exitButton        != null) exitButton.onClick.AddListener(OnExitClicked);
-            if (hireStaffButton   != null) hireStaffButton.onClick.AddListener(OnHireStaffClicked);
+            if (exitButton          != null) exitButton.onClick.AddListener(OnExitClicked);
+            if (hireStaffButton     != null) hireStaffButton.onClick.AddListener(OnHireStaffClicked);
             if (closeHireMenuButton != null) closeHireMenuButton.onClick.AddListener(CloseHireMenu);
-            if (hireCashierButton  != null) hireCashierButton.onClick.AddListener(() => OnHireClicked("cashier", CashierCost));
-            if (hireRestockerButton != null) hireRestockerButton.onClick.AddListener(() => OnHireClicked("restocker", RestockerCost));
+            if (hireCashierButton   != null) hireCashierButton.onClick.AddListener(OnHireCashierClicked);
+            if (hireRestockerButton != null) hireRestockerButton.onClick.AddListener(OnHireRestockerClicked);
+            if (hireCleanerButton   != null) hireCleanerButton.onClick.AddListener(OnHireCleanerClicked);
 
-            HideStoreUI();
+            storeUIPanel?.SetActive(false);
+            hireMenuPanel?.SetActive(false);
         }
 
         // ──────────────────────────────────────────────────────────────────────
-        #region Show / Hide
+        #region Public API (Opened by GameManager)
 
-        /// <summary>
-        /// Called by GameManager when the player enters a store.
-        /// Phase 2: also accepts the StoreInteractionManager reference for spawning employees.
-        /// </summary>
-        public void ShowStoreUI(BusinessData business, Managers.StoreInteractionManager store = null)
+        public void OpenStoreUI(Managers.StoreInteractionManager store)
         {
-            currentBusiness = business;
             currentStore    = store;
+            currentBusiness = store.BusinessData;
 
-            if (storeUIPanel  != null) storeUIPanel.SetActive(true);
-            if (joystickPanel != null) joystickPanel.SetActive(true);
-            if (hireMenuPanel != null) hireMenuPanel.SetActive(false); // start hidden
+            if (storeNameText != null) storeNameText.text = currentBusiness.name;
+            if (storeTypeText != null) storeTypeText.text = currentBusiness.business_type.ToUpper();
 
-            if (business != null)
-            {
-                if (storeNameText != null) storeNameText.text = business.name;
-                if (storeTypeText != null) storeTypeText.text = business.business_type.ToUpper();
-            }
-
-            // Reset hire state for this store visit
+            // Check existing employees from backend to set UI state
             cashierHired   = false;
             restockerHired = false;
+            cleanerHired   = false;
 
-            if (business != null && business.employees != null)
+            if (currentBusiness.employees != null)
             {
-                foreach (var emp in business.employees)
+                foreach (var emp in currentBusiness.employees)
                 {
-                    if (emp.role == "cashier") cashierHired = true;
+                    if (emp.role == "cashier")   cashierHired   = true;
                     if (emp.role == "restocker") restockerHired = true;
+                    if (emp.role == "cleaner")   cleanerHired   = true;
                 }
             }
 
-            Debug.Log("[StoreUIManager] Store UI shown");
+            storeUIPanel?.SetActive(true);
+            UI.HUDManager.Instance?.ShowHUD(false); // Hide main HUD
+            EnableJoystick(true);
+
+            Debug.Log($"[StoreUIManager] Opened UI for {currentBusiness.name}");
         }
 
-        public void HideStoreUI()
+        public void CloseStoreUI()
         {
-            if (storeUIPanel  != null) storeUIPanel.SetActive(false);
-            if (joystickPanel != null) joystickPanel.SetActive(false);
-            if (hireMenuPanel != null) hireMenuPanel.SetActive(false);
-
+            storeUIPanel?.SetActive(false);
+            hireMenuPanel?.SetActive(false);
+            UI.HUDManager.Instance?.ShowHUD(true); // Restore main HUD
+            EnableJoystick(false);
+            
             currentBusiness = null;
             currentStore    = null;
-
-            Debug.Log("[StoreUIManager] Store UI hidden");
         }
 
         #endregion
 
         // ──────────────────────────────────────────────────────────────────────
-        #region Button Handlers
+        #region Input / UI Handlers
+
+        private void EnableJoystick(bool enable)
+        {
+            if (joystickPanel != null) joystickPanel.SetActive(enable);
+
+        }
 
         private void OnExitClicked()
         {
-            Managers.GameManager.Instance?.ExitStore();
+            Managers.GameManager.Instance.ExitStore();
         }
 
         private void OnHireStaffClicked()
         {
-            if (hireMenuPanel == null) return;
-
-            // Refresh affordability labels each time the menu opens
+            EnableJoystick(false); // Disable movement while menu is open
             RefreshHireMenuLabels();
-            hireMenuPanel.SetActive(true);
+            hireMenuPanel?.SetActive(true);
         }
 
         private void CloseHireMenu()
         {
-            if (hireMenuPanel != null) hireMenuPanel.SetActive(false);
-        }
-
-        /// <summary>
-        /// Central hiring handler called by both Cashier and Restocker buttons.
-        /// </summary>
-        private void OnHireClicked(string role, float cost)
-        {
-            var gm = Managers.GameManager.Instance;
-            if (gm == null) return;
-
-            // ── Guard: already hired this type? ──
-            if (role == "cashier"   && cashierHired)
-            {
-                HUDManager.Instance?.ShowNotification("Cashier already hired!", 2f); // Fixed HUD namespace
-                return;
-            }
-            if (role == "restocker" && restockerHired)
-            {
-                HUDManager.Instance?.ShowNotification("Restocker already hired!", 2f); // Fixed HUD namespace
-                return;
-            }
-
-            // ── Guard: can afford? ──
-            if (!gm.CanAfford(cost))
-            {
-                HUDManager.Instance?.ShowNotification($"Not enough money! Need Rs.{cost:N0}", 2f); // Fixed HUD namespace
-                return;
-            }
-
-            // ── Guard: need a valid business to save to backend ──
-            if (currentBusiness == null)
-            {
-                Debug.LogError("[StoreUIManager] No current business set — cannot hire.");
-                return;
-            }
-
-            // ── Deduct money immediately (optimistic) ──
-            gm.DeductMoneyLocal(cost);
-            HUDManager.Instance?.ShowNotification($"Hiring {role}... Rs.{cost:N0} paid!", 2f); // Fixed HUD namespace
-
-            // ── Spawn the AI in the scene right now ──
-            SpawnEmployeeAI(role);
-
-            // ── Mark as hired ──
-            if (role == "cashier")   cashierHired   = true;
-            if (role == "restocker") restockerHired = true;
-
-            // Optimistically add to local business data so it persists until next refresh
-            if (currentBusiness.employees == null) currentBusiness.employees = new List<Employee>();
-            currentBusiness.employees.Add(new Employee { role = role, name = "New Hire" });
-
-            // ── Sync to backend ──
-            string[] names = { "Ravi", "Priya", "Amit", "Sunita", "Kiran", "Deepa" };
-            string randomName = names[Random.Range(0, names.Length)] + " " + role[0].ToString().ToUpper() + ".";
-
-            var request = new EmployeeHireRequest(randomName, role);
-            TycoonAPIService.Instance.HireEmployee(
-                gm.CurrentPlayer.player_id,
-                currentBusiness.business_id,
-                request,
-                (emp) => Debug.Log($"[StoreUIManager] Backend confirmed hire: {emp.name}"),
-                (err) => Debug.LogWarning($"[StoreUIManager] Backend hire failed (local hire still active): {err}")
-            );
-
-            // Close the menu
-            CloseHireMenu();
-
-            // Update labels for next open
-            RefreshHireMenuLabels();
+            hireMenuPanel?.SetActive(false);
+            EnableJoystick(true);
         }
 
         #endregion
 
         // ──────────────────────────────────────────────────────────────────────
-        #region Employee Spawning
+        #region Hiring Logic
 
-        /// <summary>
-        /// Instantiates the employee prefab inside the current store building.
-        /// The employee's own AI script takes over from there.
-        /// </summary>
+        private void OnHireCashierClicked()
+        {
+            var gm = Managers.GameManager.Instance;
+            if (gm?.CurrentPlayer == null || currentBusiness == null) return;
+
+            if (gm.CurrentPlayer.money < CashierCost)
+            {
+                UI.HUDManager.Instance?.ShowNotification("❌ Not enough money for Cashier!", 2f);
+                return;
+            }
+
+            cashierHired = true;
+            gm.DeductMoneyLocal(CashierCost);
+            SpawnEmployeeAI("cashier");
+
+            string cashierName = "Cashier_" + System.Guid.NewGuid().ToString()[..4];
+            TycoonAPIService.Instance.HireEmployee(
+                gm.CurrentPlayer.player_id,
+                currentBusiness.business_id,
+                new EmployeeHireRequest(cashierName, "cashier"),
+                (emp) => Debug.Log($"[StoreUIManager] Cashier hired and saved to backend: {emp.name}"),
+                (err) => Debug.LogWarning($"[StoreUIManager] Backend hire failed: {err}")
+            );
+
+            CloseHireMenu();
+            RefreshHireMenuLabels();
+        }
+
+        private void OnHireRestockerClicked()
+        {
+            var gm = Managers.GameManager.Instance;
+            if (gm?.CurrentPlayer == null || currentBusiness == null) return;
+
+            if (gm.CurrentPlayer.money < RestockerCost)
+            {
+                UI.HUDManager.Instance?.ShowNotification("❌ Not enough money for Restocker!", 2f);
+                return;
+            }
+
+            restockerHired = true;
+            gm.DeductMoneyLocal(RestockerCost);
+            SpawnEmployeeAI("restocker");
+
+            string restockerName = "Restocker_" + System.Guid.NewGuid().ToString()[..4];
+            TycoonAPIService.Instance.HireEmployee(
+                gm.CurrentPlayer.player_id,
+                currentBusiness.business_id,
+                new EmployeeHireRequest(restockerName, "restocker"),
+                (emp) => Debug.Log($"[StoreUIManager] Restocker hired and saved to backend: {emp.name}"),
+                (err) => Debug.LogWarning($"[StoreUIManager] Backend hire failed: {err}")
+            );
+
+            CloseHireMenu();
+            RefreshHireMenuLabels();
+        }
+
+        private void OnHireCleanerClicked()
+        {
+            var gm = Managers.GameManager.Instance;
+            if (gm?.CurrentPlayer == null || currentBusiness == null) return;
+
+            if (gm.CurrentPlayer.money < CleanerCost)
+            {
+                UI.HUDManager.Instance?.ShowNotification("❌ Not enough money for Cleaner!", 2f);
+                return;
+            }
+
+            cleanerHired = true;
+            gm.DeductMoneyLocal(CleanerCost);
+            SpawnEmployeeAI("cleaner");
+
+            string cleanerName = "Sweeper_" + System.Guid.NewGuid().ToString()[..4];
+            TycoonAPIService.Instance.HireEmployee(
+                gm.CurrentPlayer.player_id, currentBusiness.business_id,
+                new EmployeeHireRequest(cleanerName, "cleaner"),
+                (emp) => Debug.Log($"[StoreUIManager] Cleaner hired: {emp.name}"),
+                (err) => Debug.LogWarning($"[StoreUIManager] Backend cleaner hire failed: {err}")
+            );
+
+            CloseHireMenu();
+            RefreshHireMenuLabels();
+        }
+
         private void SpawnEmployeeAI(string role)
         {
             if (currentStore == null)
@@ -257,6 +275,11 @@ namespace AIBusinessTycoon.UI
                 prefab      = restockerPrefab;
                 spawnOffset = new Vector3(-2f, 0.5f, 0f); // Near the supply side
             }
+            else if (role == "cleaner")
+            {
+                prefab      = cleanerPrefab;
+                spawnOffset = new Vector3(0f, 0.5f, 2f);
+            }
 
             if (prefab == null)
             {
@@ -267,10 +290,32 @@ namespace AIBusinessTycoon.UI
 
             // Spawn at entrance position + offset, parented to the store building
             Vector3 spawnPos = currentStore.GetEntrancePosition() + spawnOffset;
-            GameObject emp   = Instantiate(prefab, spawnPos, Quaternion.identity, currentStore.transform);
-            emp.name         = $"{role}_{System.Guid.NewGuid().ToString()[..4]}";
+            GameObject empObj = Instantiate(prefab, spawnPos, Quaternion.identity, currentStore.transform);
+            empObj.name = $"{role}_{System.Guid.NewGuid().ToString()[..4]}";
+
+            // Initialize CleanerAI if applicable
+            if (role == "cleaner")
+            {
+                var cleanerAI = empObj.GetComponent<CleanerAI>();
+                var gm = Managers.GameManager.Instance;
+                cleanerAI?.Initialize(gm.CurrentPlayer.player_id, currentBusiness.business_id);
+            }
+
+            // Fetch the newly hired Employee data from the currentBusiness list
+            // (Assuming it's the last one added to the list)
+            if (currentBusiness.employees != null && currentBusiness.employees.Count > 0)
+            {
+                Employee newlyHiredData = currentBusiness.employees[^1]; // Get last item
+                
+                var interactionManager = empObj.GetComponent<EmployeeInteractionManager>();
+                if (interactionManager != null)
+                {
+                    interactionManager.Initialize(newlyHiredData, currentBusiness.business_id);
+                }
+            }
 
             Debug.Log($"[StoreUIManager] Spawned {role} AI at {spawnPos}");
+
         }
 
         #endregion
@@ -302,6 +347,20 @@ namespace AIBusinessTycoon.UI
 
                 restockerStatusText.color = (restockerHired || money >= RestockerCost) ? Color.green : Color.red;
             }
+
+            if (cleanerStatusText != null)
+            {
+                if (cleanerHired)
+                    cleanerStatusText.text = "✅ Already Hired";
+                else
+                    cleanerStatusText.text = money >= CleanerCost ? "✔ Can Afford" : "✖ Not enough money";
+                cleanerStatusText.color = (cleanerHired || money >= CleanerCost) ? Color.green : Color.red;
+            }
+            if (hireCleanerButton != null) hireCleanerButton.interactable = !cleanerHired;
+
+            // Update store rating display:
+            if (storeRatingText != null && currentBusiness != null)
+                storeRatingText.text = currentBusiness.RatingText;
 
             // Disable buttons if already hired
             if (hireCashierButton  != null) hireCashierButton.interactable  = !cashierHired;
