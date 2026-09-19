@@ -28,8 +28,7 @@ namespace AIBusinessTycoon.Data
         public int    position_x;
         public int    position_y;
 
-        public BusinessCreateRequest(string playerId, string businessType,
-                                     string businessName, int posX, int posY)
+        public BusinessCreateRequest(string playerId, string businessType, string businessName, int posX, int posY)
         {
             player_id     = playerId;
             business_type = businessType;
@@ -39,11 +38,6 @@ namespace AIBusinessTycoon.Data
         }
     }
 
-    /// <summary>
-    /// Complete business model with full state.
-    /// Mirrors backend Business model.
-    /// Phase 3: Added trash_items and store_rating.
-    /// </summary>
     [Serializable]
     public class BusinessData
     {
@@ -55,15 +49,14 @@ namespace AIBusinessTycoon.Data
         public int                 position_y;
         public float               price_multiplier = 1.0f;
         public bool                is_open          = true;
+        
+        public InventoryDict       inventory;                
         public List<Employee>      employees        = new List<Employee>();
-        public List<TrashItem>     trash_items      = new List<TrashItem>(); // Phase 3: NEW
-        public float               store_rating     = 5.0f;                  // Phase 3: NEW (0.0–5.0)
+        public List<TrashItem>     trash_items      = new List<TrashItem>(); 
+        public float               store_rating     = 5.0f;                  
         public BusinessStats       stats;
         public string              created_at;
         public string              last_updated;
-
-        // inventory is a Dictionary — JsonUtility cannot deserialize it.
-        // Use GetRequestRaw + manual parsing if you need inventory data in Unity.
 
         public Position GridPosition => new Position { x = position_x, y = position_y };
         public BusinessType BusinessTypeEnum
@@ -75,17 +68,11 @@ namespace AIBusinessTycoon.Data
             }
         }
 
-        // Phase 3: convenience helpers
         public int   TrashCount  => trash_items?.Count ?? 0;
         public bool  IsClean     => store_rating >= 4.5f;
         public string RatingText => $"⭐ {store_rating:F1}/5.0";
 
         public BusinessData() { stats = new BusinessStats(); }
-
-        public override string ToString()
-        {
-            return $"{name} ({business_type}) | Revenue: ₹{stats.total_revenue} | Rating: {store_rating:F1} | Open: {is_open}";
-        }
     }
 
     [Serializable]

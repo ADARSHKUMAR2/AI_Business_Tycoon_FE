@@ -55,40 +55,45 @@ namespace AIBusinessTycoon.Managers
         private void DrawGrid()
         {
             if (gridManager == null) return;
-            
+
             int gridSize = renderDistance;
             float tileSize = gridManager.TileSize;
             Vector3 origin = gridManager.GridOrigin;
-            
-            // Calculate total lines needed (horizontal + vertical)
+
             int horizontalLines = gridSize * 2 + 1;
             int verticalLines = gridSize * 2 + 1;
             int totalPoints = (horizontalLines + verticalLines) * 2;
-            
+
             lineRenderer.positionCount = totalPoints;
-            
+
             int index = 0;
             
+            // ── FIXED: Shift lines by half a tile so they draw borders, not centers ──
+            float offset = tileSize / 2f;
+
             // Draw horizontal lines
             for (int z = -gridSize; z <= gridSize; z++)
             {
-                Vector3 start = origin + new Vector3(-gridSize * tileSize, 0.01f, z * tileSize);
-                Vector3 end = origin + new Vector3(gridSize * tileSize, 0.01f, z * tileSize);
-                
+                float zPos = (z * tileSize) - offset;
+                Vector3 start = origin + new Vector3((-gridSize * tileSize) - offset, 0.01f, zPos);
+                Vector3 end   = origin + new Vector3((gridSize * tileSize) - offset, 0.01f, zPos);
+
                 lineRenderer.SetPosition(index++, start);
                 lineRenderer.SetPosition(index++, end);
             }
-            
+
             // Draw vertical lines
             for (int x = -gridSize; x <= gridSize; x++)
             {
-                Vector3 start = origin + new Vector3(x * tileSize, 0.01f, -gridSize * tileSize);
-                Vector3 end = origin + new Vector3(x * tileSize, 0.01f, gridSize * tileSize);
-                
+                float xPos = (x * tileSize) - offset;
+                Vector3 start = origin + new Vector3(xPos, 0.01f, (-gridSize * tileSize) - offset);
+                Vector3 end   = origin + new Vector3(xPos, 0.01f, (gridSize * tileSize) - offset);
+
                 lineRenderer.SetPosition(index++, start);
                 lineRenderer.SetPosition(index++, end);
             }
         }
+
         
         /// <summary>
         /// Toggle grid visibility.

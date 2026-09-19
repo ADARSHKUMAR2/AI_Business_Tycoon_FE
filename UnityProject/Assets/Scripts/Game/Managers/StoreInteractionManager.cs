@@ -35,51 +35,68 @@ namespace AIBusinessTycoon.Managers
         {
             if (employeesSpawned || BusinessData == null || BusinessData.employees == null) return;
 
-            foreach (Employee emp in BusinessData.employees)
+            if (BusinessData.inventory != null)
             {
-                GameObject prefab = null;
-                Vector3 spawnOffset = Vector3.zero;
+                var shelves = GetComponentsInChildren<InteractableShelf>();
+                var activeItems = BusinessData.inventory.GetActiveItems();
 
-                if (emp.role == "cashier")
+                for (int i = 0; i < shelves.Length && i < activeItems.Count; i++)
                 {
-                    prefab = cashierPrefab;
-                    spawnOffset = new Vector3(2f, 0.5f, 0f);
-                }
-                else if (emp.role == "restocker")
-                {
-                    prefab = restockerPrefab;
-                    spawnOffset = new Vector3(-2f, 0.5f, 0f);
-                }
-                else if (emp.role == "cleaner")
-                {
-                    prefab      = cleanerPrefab;
-                    spawnOffset = new Vector3(0f, 0.5f, 2f); 
-                }
-
-                if (prefab != null)
-                {
-                    Vector3 spawnPos = GetEntrancePosition() + spawnOffset;
-                    GameObject ai = Instantiate(prefab, spawnPos, Quaternion.identity, transform);
-                    ai.name = $"{emp.role}_{emp.employee_id.Substring(0, 4)}";
-                    
-                    if (emp.role == "cleaner")
-                    {
-                        CleanerAI cleanerAI = ai.GetComponent<CleanerAI>();
-                        if (cleanerAI != null)
-                            cleanerAI.Initialize(BusinessData.player_id, BusinessData.business_id);
-                    }
-                    
-                    // NEW: Feed the loaded data to the Interaction Manager so clicking works!
-                    var interactionManager = ai.GetComponent<EmployeeInteractionManager>();
-                    if (interactionManager != null)
-                    {
-                        interactionManager.Initialize(emp, BusinessData.business_id);
-                    }
-                    
-                    Debug.Log($"[StoreInteractionManager] Respawned saved {emp.role}");
+                    shelves[i].InitializeFromBackend(
+                        activeItems[i].Key, 
+                        activeItems[i].Value, 
+                        BusinessData.player_id, 
+                        BusinessData.business_id
+                    );
                 }
             }
 
+            if (BusinessData.employees != null)
+            {
+                foreach (Employee emp in BusinessData.employees)
+                {
+                    GameObject prefab = null;
+                    Vector3 spawnOffset = Vector3.zero;
+
+                    if (emp.role == "cashier")
+                    {
+                        prefab = cashierPrefab;
+                        spawnOffset = new Vector3(2f, 0.5f, 0f);
+                    }
+                    else if (emp.role == "restocker")
+                    {
+                        prefab = restockerPrefab;
+                        spawnOffset = new Vector3(-2f, 0.5f, 0f);
+                    }
+                    else if (emp.role == "cleaner")
+                    {
+                        prefab      = cleanerPrefab;
+                        spawnOffset = new Vector3(0f, 0.5f, 2f); 
+                    }
+
+                    if (prefab != null)
+                    {
+                        Vector3 spawnPos = GetEntrancePosition() + spawnOffset;
+                        GameObject ai = Instantiate(prefab, spawnPos, Quaternion.identity, transform);
+                        ai.name = $"{emp.role}_{emp.employee_id.Substring(0, 4)}";
+                        
+                        if (emp.role == "cleaner")
+                        {
+                            CleanerAI cleanerAI = ai.GetComponent<CleanerAI>();
+                            if (cleanerAI != null)
+                                cleanerAI.Initialize(BusinessData.player_id, BusinessData.business_id);
+                        }
+                        
+                        var interactionManager = ai.GetComponent<EmployeeInteractionManager>();
+                        if (interactionManager != null)
+                        {
+                            interactionManager.Initialize(emp, BusinessData.business_id);
+                        }
+                        
+                        Debug.Log($"[StoreInteractionManager] Respawned saved {emp.role}");
+                    }
+                }
+            }
             employeesSpawned = true;
         }
 

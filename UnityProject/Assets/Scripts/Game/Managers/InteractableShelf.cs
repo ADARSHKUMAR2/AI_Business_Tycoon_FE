@@ -1,32 +1,36 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using TMPro;
+using AIBusinessTycoon.Data;
 
 namespace AIBusinessTycoon.Managers
 {
     public class InteractableShelf : MonoBehaviour
     {
+        [Header("Backend Data")]
+        public string itemKey;
+        public string playerId;
+        public string businessId;
+        public InventoryItem itemData;
+
         [Header("Shelf Settings")]
         public int maxCapacity = 10;
         public int currentStock = 0;
         
         [Header("Visuals")]
-        [SerializeField] private TextMeshProUGUI stockTextUI; // Optional hovering text
-        [SerializeField] private Transform itemContainer;     // Where visual boxes will spawn
+        [SerializeField] private TextMeshProUGUI stockTextUI; 
+        [SerializeField] private TextMeshProUGUI itemNameTextUI; 
+        [SerializeField] private Transform itemContainer;     
 
         private GameObject boxPrefab;
 
         private void Start()
         {
-            // Auto-setup a simple UI if none exists
-            if (stockTextUI == null)
-            {
-                CreateFloatingUI();
-            }
+            if (stockTextUI == null) CreateFloatingUI();
 
-            // Simple box prefab to visually show stock
             boxPrefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            boxPrefab.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
-            boxPrefab.GetComponent<Renderer>().material.color = Color.red;
+            boxPrefab.transform.localScale = new Vector3(0.35f, 0.35f, 0.35f);
+            boxPrefab.GetComponent<Renderer>().material.color = new Color(0.8f, 0.3f, 0.2f); // Terracotta box
             Destroy(boxPrefab.GetComponent<Collider>());
             boxPrefab.SetActive(false);
 
@@ -34,56 +38,53 @@ namespace AIBusinessTycoon.Managers
             {
                 itemContainer = new GameObject("ItemContainer").transform;
                 itemContainer.SetParent(transform);
-                itemContainer.localPosition = new Vector3(0, 1.2f, 0); // Sit on top of the shelf block
+                itemContainer.localPosition = new Vector3(0, 1.2f, 0); 
+            }
+
+            // Ensure the shelf has a collider so we can click it!
+            if (GetComponent<Collider>() == null)
+            {
+                var col = gameObject.AddComponent<BoxCollider>();
+                col.center = new Vector3(0, 0.5f, 0);
+                col.size = new Vector3(1.5f, 1.5f, 0.5f);
             }
 
             UpdateVisuals();
         }
 
-        private void CreateFloatingUI()
+        public void InitializeFromBackend(string key, InventoryItem data, string pId, string bId)
         {
-            GameObject canvasObj = new GameObject("ShelfCanvas");
-            canvasObj.transform.SetParent(transform);
-            
-            // Move it slightly above the shelf
-            canvasObj.transform.localPosition = new Vector3(0, 1.5f, 0);
-            
-            Canvas canvas = canvasObj.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;
-            
-            // CRITICAL FIX: Scale down the entire canvas to fit in the 3D world
-            canvasObj.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 100);
-            canvasObj.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
-            
-            GameObject textObj = new GameObject("StockText");
-            textObj.transform.SetParent(canvasObj.transform);
-            
-            stockTextUI = textObj.AddComponent<TextMeshProUGUI>();
-            // Use a normal font size now that the canvas is scaled down
-            stockTextUI.fontSize = 36; 
-            stockTextUI.alignment = TextAlignmentOptions.Center;
-            stockTextUI.color = Color.white;
-            stockTextUI.fontStyle = FontStyles.Bold;
-            
-            // Add a slight black outline to make it readable against any background
-            stockTextUI.outlineWidth = 0.2f;
-            stockTextUI.outlineColor = new Color(0, 0, 0, 0.8f);
-            
-            RectTransform textRect = textObj.GetComponent<RectTransform>();
-            textRect.sizeDelta = new Vector2(200, 100);
-            textRect.localPosition = Vector3.zero;
-            textRect.localRotation = Quaternion.identity;
-            textRect.localScale = Vector3.one;
+            itemKey = key;
+            itemData = data;
+            playerId = pId;
+            businessId = bId;
+
+            maxCapacity = data.max_stock;
+            currentStock = Mathf.Min(data.stock, maxCapacity);
+
+            if (itemNameTextUI != null) itemNameTextUI.text = data.name;
+
+            UpdateVisuals();
         }
 
-        public bool CanAcceptStock()
+        // ── Click to open Upgrade UI ──
+        private void OnMouseDown()
         {
-            return currentStock < maxCapacity;
+            if (CameraController.Instance == null || CameraController.Instance.CurrentMode != CameraController.CameraMode.MicroView) return;
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+
+            if (itemData != null)
+            {
+                UI.ShelfUpgradeUIManager.Instance?.OpenUpgradeUI(this);
+            }
         }
+
+        public bool CanAcceptStock() => currentStock < maxCapacity;
 
         public void AddStock(int amount)
         {
             currentStock = Mathf.Min(currentStock + amount, maxCapacity);
+            if (itemData != null) itemData.stock = currentStock;
             UpdateVisuals();
         }
 
@@ -92,13 +93,14 @@ namespace AIBusinessTycoon.Managers
             if (currentStock > 0)
             {
                 currentStock--;
+                if (itemData != null) itemData.stock = currentStock;
                 UpdateVisuals();
                 return true;
             }
             return false;
         }
 
-        private void UpdateVisuals()
+        public void UpdateVisuals()
         {
             if (stockTextUI != null)
             {
@@ -106,36 +108,62 @@ namespace AIBusinessTycoon.Managers
                 stockTextUI.color = currentStock == 0 ? Color.red : Color.green;
             }
 
-            // Visual boxes (very simple representation)
-            foreach (Transform child in itemContainer)
-            {
-                Destroy(child.gameObject);
-            }
+            if (itemContainer == null) return;
 
-            // Stack boxes
+            foreach (Transform child in itemContainer) Destroy(child.gameObject);
+
+            // Stack boxes: 3 per row to fit up to 30!
             for (int i = 0; i < currentStock; i++)
             {
                 GameObject box = Instantiate(boxPrefab, itemContainer);
                 box.SetActive(true);
-                // Stack them: 2 per row
-                float xOffset = (i % 2 == 0) ? -0.25f : 0.25f;
-                float yOffset = (i / 2) * 0.5f; // Adjusted for better stacking
+                
+                float xOffset = -0.4f + (i % 3) * 0.4f; 
+                float yOffset = (i / 3) * 0.4f; 
                 box.transform.localPosition = new Vector3(xOffset, yOffset, 0);
             }
         }
 
-        // Add a new public method to apply backend data:
-
-        /// <summary>
-        /// Phase 3: Called after business data is loaded to sync shelf capacity
-        /// from the backend's max_stock value.
-        /// </summary>
-        public void InitializeFromBackend(int backendMaxStock, int backendCurrentStock)
+        private void CreateFloatingUI()
         {
-            maxCapacity  = backendMaxStock;
-            currentStock = Mathf.Min(backendCurrentStock, maxCapacity);
-            UpdateVisuals();
-        }
+            GameObject canvasObj = new GameObject("ShelfCanvas");
+            canvasObj.transform.SetParent(transform);
+            canvasObj.transform.localPosition = new Vector3(0, 1.5f, 0);
+            
+            Canvas canvas = canvasObj.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            canvasObj.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 150);
+            canvasObj.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+            
+            // Name Text
+            GameObject nameObj = new GameObject("ItemNameText");
+            nameObj.transform.SetParent(canvasObj.transform);
+            itemNameTextUI = nameObj.AddComponent<TextMeshProUGUI>();
+            itemNameTextUI.fontSize = 28; 
+            itemNameTextUI.alignment = TextAlignmentOptions.Center;
+            itemNameTextUI.color = new Color(1f, 0.8f, 0.2f);
+            itemNameTextUI.outlineWidth = 0.2f;
+            itemNameTextUI.outlineColor = new Color(0, 0, 0, 0.8f);
+            RectTransform nameRect = nameObj.GetComponent<RectTransform>();
+            nameRect.sizeDelta = new Vector2(300, 50);
+            nameRect.localPosition = new Vector3(0, 40, 0);
+            nameRect.localRotation = Quaternion.identity;
+            nameRect.localScale = Vector3.one;
 
+            // Stock Text
+            GameObject textObj = new GameObject("StockText");
+            textObj.transform.SetParent(canvasObj.transform);
+            stockTextUI = textObj.AddComponent<TextMeshProUGUI>();
+            stockTextUI.fontSize = 36; 
+            stockTextUI.alignment = TextAlignmentOptions.Center;
+            stockTextUI.fontStyle = FontStyles.Bold;
+            stockTextUI.outlineWidth = 0.2f;
+            stockTextUI.outlineColor = new Color(0, 0, 0, 0.8f);
+            RectTransform textRect = textObj.GetComponent<RectTransform>();
+            textRect.sizeDelta = new Vector2(300, 100);
+            textRect.localPosition = new Vector3(0, -10, 0);
+            textRect.localRotation = Quaternion.identity;
+            textRect.localScale = Vector3.one;
+        }
     }
 }

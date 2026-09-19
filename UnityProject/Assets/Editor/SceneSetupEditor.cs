@@ -71,6 +71,24 @@ namespace AIBusinessTycoon.Editor
                 PatchEmployeeUpgradeUI();
             }
             GUI.backgroundColor = Color.white;
+
+            GUILayout.Space(8);
+            GUI.backgroundColor = new Color(0.80f, 0.40f, 0.10f); // Orange tint
+            if (GUILayout.Button("📦  Patch Phase 3 — Shelf Upgrade UI  (Safe)", GUILayout.Height(40)))
+            {
+                PatchShelfUpgradeUI();
+            }
+            GUI.backgroundColor = Color.white;
+
+            GUILayout.Space(8);
+            GUI.backgroundColor = new Color(0.60f, 0.20f, 0.80f); // Purple tint
+            if (GUILayout.Button("🏪  Patch Phase 3 — Upgrade Store Layouts", GUILayout.Height(40)))
+            {
+                PatchStoreLayouts();
+            }
+
+            
+
         }
 
         // ═════════════════════════════════════════════════════════════════════
@@ -313,6 +331,91 @@ namespace AIBusinessTycoon.Editor
             costTxt.alignment = TextAlignmentOptions.Center;
 
             return (valTxt, btn, costTxt);
+        }
+
+        /// <summary>
+        /// Phase 3 Patch: Builds the Shelf Upgrade Popup UI.
+        /// </summary>
+        private void PatchShelfUpgradeUI()
+        {
+            var uiManagersObj = GameObject.Find("[ UI MANAGERS ]");
+            if (uiManagersObj == null) return;
+
+            var upgradeMgr = uiManagersObj.GetComponent<AIBusinessTycoon.UI.ShelfUpgradeUIManager>();
+            if (upgradeMgr == null) upgradeMgr = uiManagersObj.AddComponent<AIBusinessTycoon.UI.ShelfUpgradeUIManager>();
+
+            var canvas = GameObject.Find("Canvas");
+            if (canvas == null) return;
+
+            var existingPanel = GameObject.Find("ShelfUpgradePanel");
+            if (existingPanel != null) DestroyImmediate(existingPanel);
+
+            // Dim Background
+            GameObject backdrop = CreatePanel("ShelfUpgradePanel", canvas.transform,
+                Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            backdrop.GetComponent<Image>().color = new Color(0, 0, 0, 0.65f);
+
+            // Main Card
+            GameObject card = CreatePanel("UpgradeCard", backdrop.transform,
+                new Vector2(0.2f, 0.35f), new Vector2(0.8f, 0.65f),
+                new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            card.GetComponent<Image>().color = darkPanelColor;
+
+            // Title
+            GameObject titleBar = CreatePanel("TitleBar", card.transform,
+                new Vector2(0, 0.75f), new Vector2(1, 1), new Vector2(0.5f, 1), Vector2.zero, Vector2.zero);
+            titleBar.GetComponent<Image>().color = new Color(1, 1, 1, 0.05f);
+
+            CreateText("TitleText", titleBar.transform, "📦  UPGRADE SHELF", 45, FontStyles.Bold, Color.white,
+                new Vector2(0.04f, 0), new Vector2(0.82f, 1), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero)
+                .GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.MidlineLeft;
+
+            // Close btn
+            GameObject closeBtn = CreatePanel("CloseButton", titleBar.transform,
+                new Vector2(0.84f, 0.1f), new Vector2(0.98f, 0.9f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            closeBtn.GetComponent<Image>().color = new Color(0.85f, 0.20f, 0.20f);
+            Button closeBtnComp = closeBtn.AddComponent<Button>();
+            CreateText("Text", closeBtn.transform, "✕", 40, FontStyles.Bold, Color.white,
+                Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero)
+                .GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
+
+            // Content
+            var nameTxt = CreateText("ItemName", card.transform, "Item Name", 45, FontStyles.Bold, accentColor,
+                new Vector2(0.05f, 0.45f), new Vector2(0.95f, 0.70f), new Vector2(0, 0.5f), Vector2.zero, Vector2.zero)
+                .GetComponent<TextMeshProUGUI>();
+            nameTxt.alignment = TextAlignmentOptions.MidlineLeft;
+
+            var capTxt = CreateText("CapacityText", card.transform, "Upgrade Capacity: 10 ➔ 20", 30, FontStyles.Normal, Color.white,
+                new Vector2(0.05f, 0.25f), new Vector2(0.5f, 0.45f), new Vector2(0, 0.5f), Vector2.zero, Vector2.zero)
+                .GetComponent<TextMeshProUGUI>();
+            capTxt.alignment = TextAlignmentOptions.MidlineLeft;
+
+            // Upgrade Btn
+            GameObject btnObj = CreatePanel("UpgradeBtn", card.transform,
+                new Vector2(0.6f, 0.15f), new Vector2(0.95f, 0.45f),
+                new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            btnObj.GetComponent<Image>().color = secondaryColor;
+            Button upgBtn = btnObj.AddComponent<Button>();
+
+            CreateText("UPGRADE", btnObj.transform, "UPGRADE", 25, FontStyles.Bold, Color.white,
+                new Vector2(0, 0.5f), new Vector2(1, 1), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero)
+                .GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
+
+            var costTxt = CreateText("Cost", btnObj.transform, "Rs. 2000", 25, FontStyles.Bold, accentColor,
+                new Vector2(0, 0), new Vector2(1, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero)
+                .GetComponent<TextMeshProUGUI>();
+            costTxt.alignment = TextAlignmentOptions.Center;
+
+            // Wire up
+            SetFieldValue(upgradeMgr, "popupPanel",     backdrop);
+            SetFieldValue(upgradeMgr, "itemNameText",   nameTxt);
+            SetFieldValue(upgradeMgr, "capacityText",   capTxt);
+            SetFieldValue(upgradeMgr, "costText",       costTxt);
+            SetFieldValue(upgradeMgr, "upgradeButton",  upgBtn);
+            SetFieldValue(upgradeMgr, "closeButton",    closeBtnComp);
+
+            backdrop.SetActive(false);
+            Debug.Log("[SceneSetupEditor] ✅ Shelf Upgrade UI built!");
         }
 
         #endregion
@@ -1170,6 +1273,190 @@ namespace AIBusinessTycoon.Editor
             mat.SetColor("_BaseColor", new Color(0.2f, 0.8f, 1f, 0.6f));
             zone.GetComponent<Renderer>().material = mat;
         }
+
+        // ═════════════════════════════════════════════════════════════════════
+        #region Store Layout Patcher
+
+        /// <summary>
+        /// Rewrites the existing prefabs to have the exact number of shelves 
+        /// needed for their inventory (Kirana = 8, Pizza/Cafe = 4).
+        /// </summary>
+        private void PatchStoreLayouts()
+        {
+            UpdateStorePrefab("Assets/Prefabs/Buildings/KiranaStore.prefab", 8);
+            UpdateStorePrefab("Assets/Prefabs/Buildings/PizzaOutlet.prefab", 4);
+            UpdateStorePrefab("Assets/Prefabs/Buildings/Cafe.prefab", 4);
+            
+            Debug.Log("[SceneSetupEditor] ✅ Store layouts upgraded with proper aisles!");
+            EditorUtility.DisplayDialog("Layouts Upgraded", "All store prefabs now have the correct number of shelves for their inventory!", "Awesome");
+        }
+
+        private void UpdateStorePrefab(string path, int shelfCount)
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab == null) return;
+            
+            // Instantiate the prefab temporarily to modify it safely
+            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+            
+            // Delete the old 3-shelf layout
+            var oldShelves = instance.GetComponentsInChildren<AIBusinessTycoon.Managers.InteractableShelf>();
+            foreach (var s in oldShelves) DestroyImmediate(s.gameObject);
+            
+            Material shelfMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Buildings/Prop_Shelf.mat");
+            
+            // Build the new shelves in proper aisles (4 shelves per row)
+            for (int i = 0; i < shelfCount; i++)
+            {
+                GameObject shelf = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                shelf.name       = $"Shelf_{i}";
+                shelf.transform.SetParent(instance.transform);
+                
+                int row = i / 4; 
+                int col = i % 4;
+                
+                // Calculates a clean grid layout inside the 10x10 store
+                float posX = -3.0f + (col * 2.0f);
+                float posZ =  2.5f - (row * 2.0f); 
+                
+                shelf.transform.localPosition = new Vector3(posX, 0.75f, posZ);
+                shelf.transform.localScale    = new Vector3(1.5f, 1.5f, 0.5f);
+                
+                if (shelfMat != null) shelf.GetComponent<Renderer>().sharedMaterial = shelfMat;
+                
+                shelf.AddComponent<AIBusinessTycoon.Managers.InteractableShelf>();
+            }
+            
+            // Save changes and clean up
+            PrefabUtility.SaveAsPrefabAsset(instance, path);
+            DestroyImmediate(instance);
+        }
+
+        #endregion
+
+
+        #endregion
+
+        // ═════════════════════════════════════════════════════════════════════
+        #region Store Layout Patcher
+
+        /// <summary>
+        /// Doubles the size of the grid, adjusts the camera, and rebuilds the 
+        /// store prefabs with proper aisles and exact shelf counts.
+        /// </summary>
+        private void PatchExpandStoresTo20x20()
+        {
+            // 1. Double the City Grid Size
+            var gridManager = FindObjectOfType<AIBusinessTycoon.Managers.GridManager>();
+            if (gridManager != null) {
+                SetFieldValue(gridManager, "tileSize", 20f);
+            }
+            
+            // 2. Move Spawner back to accommodate bigger tiles
+            GameObject spawnPointObj = GameObject.Find("CustomerSpawnPoint");
+            if (spawnPointObj != null) {
+                spawnPointObj.transform.position = new Vector3(0, 0.5f, -40f);
+            }
+
+            // 3. Pull the camera back so we can see the massive new stores
+            var cam = FindObjectOfType<AIBusinessTycoon.Managers.CameraController>();
+            if (cam != null) {
+                SetFieldValue(cam, "microViewOffset", new Vector3(0f, 15f, -12f)); // Higher up in store
+                SetFieldValue(cam, "currentZoom", 80f);                            // Further out in city
+            }
+
+            // 4. Update Prefabs with their correct backend item counts
+            ExpandPrefab("Assets/Prefabs/Buildings/KiranaStore.prefab", 8); // Kirana has 8 items
+            ExpandPrefab("Assets/Prefabs/Buildings/PizzaOutlet.prefab", 4); // Pizza has 4
+            ExpandPrefab("Assets/Prefabs/Buildings/Cafe.prefab", 4);        // Cafe has 4
+
+            Debug.Log("[SceneSetupEditor] ✅ Stores expanded to 20x20!");
+            EditorUtility.DisplayDialog("Layouts Upgraded", "All store prefabs are now 20x20 with proper aisles!", "Awesome");
+        }
+
+        private void ExpandPrefab(string path, int shelfCount)
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab == null) return;
+            
+            // Instantiate the prefab temporarily to modify it safely
+            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+
+            // Expand Floor
+            var floor = instance.transform.Find("Floor");
+            if (floor != null) floor.localScale = new Vector3(20, 0.2f, 20);
+
+            // ── NEW: Expand Custom Walls (if they exist) ──
+            var backWall = instance.transform.Find("BackWall");
+            if (backWall != null) {
+                backWall.localPosition = new Vector3(0, backWall.localPosition.y, 10f); // Push to back edge
+                backWall.localScale = new Vector3(20f, backWall.localScale.y, backWall.localScale.z); // Stretch width
+            }
+
+            var leftWall = instance.transform.Find("LeftWall");
+            if (leftWall != null) {
+                leftWall.localPosition = new Vector3(-10f, leftWall.localPosition.y, 0); // Push to left edge
+                leftWall.localScale = new Vector3(leftWall.localScale.x, leftWall.localScale.y, 20f); // Stretch depth
+            }
+
+            var rightWall = instance.transform.Find("RightWall");
+            if (rightWall != null) {
+                rightWall.localPosition = new Vector3(10f, rightWall.localPosition.y, 0); // Push to right edge
+                rightWall.localScale = new Vector3(rightWall.localScale.x, rightWall.localScale.y, 20f); // Stretch depth
+            }
+            // ──────────────────────────────────────────────
+
+            // Expand Click Collider
+            var col = instance.GetComponent<BoxCollider>();
+            if (col != null) col.size = new Vector3(20, 2f, 20);
+
+            // Move Checkout Counter further back
+            var counter = instance.transform.Find("CheckoutCounter");
+            if (counter != null) counter.localPosition = new Vector3(6f, 0.5f, -6f);
+
+            // Move the Entrance Point
+            var entrance = instance.transform.Find("EntrancePoint");
+            if (entrance == null) {
+                entrance = new GameObject("EntrancePoint").transform;
+                entrance.SetParent(instance.transform);
+                var sim = instance.GetComponent<AIBusinessTycoon.Managers.StoreInteractionManager>();
+                SetFieldValue(sim, "entrancePoint", entrance);
+            }
+            entrance.localPosition = new Vector3(0, 0.1f, -8f);
+
+            // Delete old shelves
+            var oldShelves = instance.GetComponentsInChildren<AIBusinessTycoon.Managers.InteractableShelf>();
+            foreach (var s in oldShelves) DestroyImmediate(s.gameObject);
+            
+            Material shelfMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/Buildings/Prop_Shelf.mat");
+            
+            // Build the new shelves in proper aisles (4 shelves per row)
+            for (int i = 0; i < shelfCount; i++)
+            {
+                GameObject shelf = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                shelf.name       = $"Shelf_{i}";
+                shelf.transform.SetParent(instance.transform);
+                
+                int row = i / 4; 
+                int colId = i % 4;
+                
+                // Calculates a clean, wide grid layout inside the 20x20 store
+                float posX = -6.0f + (colId * 4.0f);
+                float posZ =  4.0f - (row * 5.0f); 
+                
+                shelf.transform.localPosition = new Vector3(posX, 0.75f, posZ);
+                shelf.transform.localScale    = new Vector3(2f, 1.5f, 1f); // Slightly bigger shelves!
+                
+                if (shelfMat != null) shelf.GetComponent<Renderer>().sharedMaterial = shelfMat;
+                
+                shelf.AddComponent<AIBusinessTycoon.Managers.InteractableShelf>();
+            }
+
+            // Save changes and clean up
+            PrefabUtility.SaveAsPrefabAsset(instance, path);
+            DestroyImmediate(instance);
+        }
+
 
         #endregion
 
