@@ -1,16 +1,11 @@
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 
 namespace AIBusinessTycoon.Managers
 {
-    /// <summary>
-    /// Phase 2: AI Restocker employee.
-    /// State Machine: Idle -> WalkingToSupply -> WalkingToShelf -> Filling
-    /// Continuously finds the emptiest shelf, walks to the supply zone, 
-    /// loads up, then restocks the shelf. Loops forever.
-    /// </summary>
     [RequireComponent(typeof(NavMeshAgent))]
     public class RestockerAI : MonoBehaviour
     {
@@ -21,9 +16,9 @@ namespace AIBusinessTycoon.Managers
 
         [Header("Settings")]
         [SerializeField] private float arrivalThreshold = 0.8f;
-        [SerializeField] private float supplyLoadTime = 1.0f;   // Time spent at supply zone
-        [SerializeField] private float fillTime = 0.5f;          // Time to fill one unit on shelf
-        [SerializeField] private int   carryCapacity = 5;        // How many units carried per trip
+        [SerializeField] private float supplyLoadTime = 1.0f;   
+        [SerializeField] private float fillTime = 0.5f;          
+        [SerializeField] private int   carryCapacity = 5;        
 
         private int currentCarrying = 0;
         private InteractableShelf targetShelf;
@@ -33,6 +28,9 @@ namespace AIBusinessTycoon.Managers
         private TextMeshProUGUI floatingLabel;
         private Transform carryPoint;  
         private GameObject boxPrefab;  
+        
+        // ── Local Object Pool for Carried Boxes ──
+        private List<GameObject> visualBoxes = new List<GameObject>();
 
         private IEnumerator Start()
         {
@@ -42,41 +40,32 @@ namespace AIBusinessTycoon.Managers
             yield return new WaitUntil(() => agent.isOnNavMesh);
             yield return new WaitForSeconds(0.5f);
 
-            // Find the supply zone by tag
             GameObject supplyZoneObj = GameObject.FindGameObjectWithTag("SupplyZone");
             if (supplyZoneObj != null)
                 supplyZoneTransform = supplyZoneObj.transform;
             else
                 Debug.LogWarning("[RestockerAI] No GameObject with tag 'SupplyZone' found! Restocker cannot work.");
 
-            // Begin the main loop
             StartCoroutine(RestockerLoop());
         }
 
-        /// <summary>
-        /// The core autonomous loop that runs forever.
-        /// </summary>
         private IEnumerator RestockerLoop()
         {
             while (true)
             {
-                // === STEP 1: Find the emptiest shelf ===
                 targetShelf = FindShelfNeedingRestock();
 
                 if (targetShelf == null || supplyZoneTransform == null)
                 {
-                    // Nothing to do — rest for a moment then check again
                     ShowLabel("😴", Color.gray);
                     currentState = RestockerState.Idle;
                     yield return new WaitForSeconds(2f);
                     continue;
                 }
 
-                // === STEP 2: Walk to Supply Zone ===
                 currentState = RestockerState.WalkingToSupply;
                 ShowLabel("🚶", Color.white);
 
-                // Sample NavMesh near the supply zone
                 Vector3 supplyDest = supplyZoneTransform.position;
                 if (NavMesh.SamplePosition(supplyDest, out NavMeshHit supplyHit, 3f, NavMesh.AllAreas))
                     agent.SetDestination(supplyHit.position);
@@ -86,11 +75,9 @@ namespace AIBusinessTycoon.Managers
                 yield return new WaitUntil(() =>
                     !agent.pathPending && agent.remainingDistance <= arrivalThreshold);
 
-                // === STEP 3: Load up at supply zone ===
                 agent.ResetPath();
                 ShowLabel("📦", Color.cyan);
 
-                // Pick up items one by one visually
                 float pickUpDelay = supplyLoadTime / carryCapacity;
                 while (currentCarrying < carryCapacity)
                 {
@@ -102,52 +89,39 @@ namespace AIBusinessTycoon.Managers
                 yield return new WaitForSeconds(supplyLoadTime);
                 currentCarrying = carryCapacity;
 
-                // === STEP 4: Walk to the target Shelf ===
                 currentState = RestockerState.WalkingToShelf;
                 ShowLabel("🚶", Color.white);
 
-                // Sample a walkable position near the shelf
-                Vector3 shelfDest = targetShelf.transform.position + new Vector3(1.5f, 0, 0);
-                if (NavMesh.SamplePosition(shelfDest, out NavMeshHit shelfHit, 3f, NavMesh.AllAreas))
-                    agent.SetDestination(shelfHit.position);
+                Vector3 shelfDest = targetShelf.transform.position;
+                Vector3 offset = (transform.position - shelfDest).normalized * 1.5f; 
+                
+                if (NavMesh.SamplePosition(shelfDest + offset, out NavMeshHit hit, 3f, NavMesh.AllAreas))
+                    agent.SetDestination(hit.position);
                 else
-                    agent.SetDestination(targetShelf.transform.position);
+                    agent.SetDestination(shelfDest);
 
                 yield return new WaitUntil(() =>
                     !agent.pathPending && agent.remainingDistance <= arrivalThreshold);
 
-                // Face the shelf
                 agent.ResetPath();
-                Vector3 lookDir = (targetShelf.transform.position - transform.position);
-                lookDir.y = 0;
-                if (lookDir != Vector3.zero)
-                    transform.rotation = Quaternion.LookRotation(lookDir);
-
-                // === STEP 5: Fill the shelf ===
+                ShowLabel("🛠️", Color.yellow);
                 currentState = RestockerState.Filling;
-                ShowLabel("🔄", Color.green);
 
                 while (currentCarrying > 0 && targetShelf != null && targetShelf.CanAcceptStock())
                 {
                     yield return new WaitForSeconds(fillTime);
-                    targetShelf.AddStock(1);
                     currentCarrying--;
+                    targetShelf.AddStock(1);
                     UpdateVisuals();
                 }
 
-                // Brief pause before next loop
                 ShowLabel("✅", Color.green);
                 yield return new WaitForSeconds(0.5f);
             }
         }
 
-        /// <summary>
-        /// Finds the InteractableShelf in the scene with the lowest current stock.
-        /// Only returns a shelf that actually needs restocking (below max capacity).
-        /// </summary>
         private InteractableShelf FindShelfNeedingRestock()
         {
-            // Only look for shelves inside THIS store (parent)
             InteractableShelf[] allShelves = transform.parent.GetComponentsInChildren<InteractableShelf>();
             InteractableShelf emptiest = null;
             int lowestStock = int.MaxValue;
@@ -167,26 +141,23 @@ namespace AIBusinessTycoon.Managers
 
         private void SetupVisuals()
         {
-            // Color the capsule orange to distinguish from customers and cashiers
             var renderer = GetComponentInChildren<Renderer>();
             if (renderer != null)
-                renderer.material.color = new Color(1f, 0.5f, 0.1f); // Orange
+                renderer.material.color = new Color(1f, 0.5f, 0.1f); 
 
-            // --- Setup Carry Point and Box Prefab ---
             GameObject cp = new GameObject("CarryPoint");
             cp.transform.SetParent(transform);
-            cp.transform.localPosition = new Vector3(0, 2.2f, 0.5f); // Above head, slightly forward
+            cp.transform.localPosition = new Vector3(0, 2.2f, 0.5f); 
             carryPoint = cp.transform;
 
             boxPrefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            boxPrefab.name = "BoxTemplate_Hidden";
+            boxPrefab.transform.SetParent(transform);
             boxPrefab.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
             boxPrefab.GetComponent<Renderer>().material.color = Color.yellow;
             Destroy(boxPrefab.GetComponent<Collider>());
             boxPrefab.SetActive(false);
-            // -----------------------------------------------
 
-
-            // Floating label
             GameObject canvasObj = new GameObject("RestockerCanvas");
             canvasObj.transform.SetParent(transform);
             canvasObj.transform.localPosition = new Vector3(0, 2.2f, 0);
@@ -213,23 +184,23 @@ namespace AIBusinessTycoon.Managers
             rect.localScale = Vector3.one;
         }
 
-        // --- Visual Box Stacking ---
         private void UpdateVisuals()
         {
             if (carryPoint == null || boxPrefab == null) return;
 
-            // Clear current visuals
-            foreach (Transform child in carryPoint)
-            {
-                Destroy(child.gameObject);
-            }
-
-            // Stack new boxes
-            for (int i = 0; i < currentCarrying; i++)
+            // ── OPTIMIZATION: Object Pooling ──
+            while (visualBoxes.Count < currentCarrying)
             {
                 GameObject box = Instantiate(boxPrefab, carryPoint);
-                box.SetActive(true);
-                box.transform.localPosition = new Vector3(0, i * 0.45f, 0); // Stack upwards
+                int i = visualBoxes.Count;
+                box.transform.localPosition = new Vector3(0, i * 0.45f, 0); 
+                visualBoxes.Add(box);
+            }
+
+            // We never call Destroy()! We just turn them on or off.
+            for (int i = 0; i < visualBoxes.Count; i++)
+            {
+                visualBoxes[i].SetActive(i < currentCarrying);
             }
         }
 

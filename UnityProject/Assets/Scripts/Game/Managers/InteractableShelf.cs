@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
+using System.Collections.Generic;
 using AIBusinessTycoon.Data;
 
 namespace AIBusinessTycoon.Managers
@@ -23,14 +24,19 @@ namespace AIBusinessTycoon.Managers
         [SerializeField] private Transform itemContainer;     
 
         private GameObject boxPrefab;
+        
+        // ── Local Object Pool for Visual Boxes ──
+        private List<GameObject> visualBoxes = new List<GameObject>();
 
         private void Start()
         {
             if (stockTextUI == null) CreateFloatingUI();
 
             boxPrefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            boxPrefab.name = "BoxTemplate_Hidden";
+            boxPrefab.transform.SetParent(transform);
             boxPrefab.transform.localScale = new Vector3(0.35f, 0.35f, 0.35f);
-            boxPrefab.GetComponent<Renderer>().material.color = new Color(0.8f, 0.3f, 0.2f); // Terracotta box
+            boxPrefab.GetComponent<Renderer>().material.color = new Color(0.8f, 0.3f, 0.2f); 
             Destroy(boxPrefab.GetComponent<Collider>());
             boxPrefab.SetActive(false);
 
@@ -41,7 +47,6 @@ namespace AIBusinessTycoon.Managers
                 itemContainer.localPosition = new Vector3(0, 1.2f, 0); 
             }
 
-            // Ensure the shelf has a collider so we can click it!
             if (GetComponent<Collider>() == null)
             {
                 var col = gameObject.AddComponent<BoxCollider>();
@@ -67,7 +72,6 @@ namespace AIBusinessTycoon.Managers
             UpdateVisuals();
         }
 
-        // ── Click to open Upgrade UI ──
         private void OnMouseDown()
         {
             if (CameraController.Instance == null || CameraController.Instance.CurrentMode != CameraController.CameraMode.MicroView) return;
@@ -108,19 +112,26 @@ namespace AIBusinessTycoon.Managers
                 stockTextUI.color = currentStock == 0 ? Color.red : Color.green;
             }
 
-            if (itemContainer == null) return;
+            if (itemContainer == null || boxPrefab == null) return;
 
-            foreach (Transform child in itemContainer) Destroy(child.gameObject);
-
-            // Stack boxes: 3 per row to fit up to 30!
-            for (int i = 0; i < currentStock; i++)
+            // ── OPTIMIZATION: Object Pooling ──
+            // If the stock increases past our pool size, generate new boxes and add them to the pool
+            while (visualBoxes.Count < currentStock)
             {
                 GameObject box = Instantiate(boxPrefab, itemContainer);
-                box.SetActive(true);
+                int i = visualBoxes.Count;
                 
                 float xOffset = -0.4f + (i % 3) * 0.4f; 
                 float yOffset = (i / 3) * 0.4f; 
                 box.transform.localPosition = new Vector3(xOffset, yOffset, 0);
+                
+                visualBoxes.Add(box);
+            }
+
+            // We never call Destroy()! We just turn them on or off based on currentStock
+            for (int i = 0; i < visualBoxes.Count; i++)
+            {
+                visualBoxes[i].SetActive(i < currentStock);
             }
         }
 
@@ -135,7 +146,6 @@ namespace AIBusinessTycoon.Managers
             canvasObj.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 150);
             canvasObj.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
             
-            // Name Text
             GameObject nameObj = new GameObject("ItemNameText");
             nameObj.transform.SetParent(canvasObj.transform);
             itemNameTextUI = nameObj.AddComponent<TextMeshProUGUI>();
@@ -150,7 +160,6 @@ namespace AIBusinessTycoon.Managers
             nameRect.localRotation = Quaternion.identity;
             nameRect.localScale = Vector3.one;
 
-            // Stock Text
             GameObject textObj = new GameObject("StockText");
             textObj.transform.SetParent(canvasObj.transform);
             stockTextUI = textObj.AddComponent<TextMeshProUGUI>();
