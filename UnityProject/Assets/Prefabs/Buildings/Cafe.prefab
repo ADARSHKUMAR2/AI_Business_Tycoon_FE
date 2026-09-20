@@ -1034,6 +1034,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7427039899693321781}
   - component: {fileID: 6848897362763968288}
+  - component: {fileID: -2118720676521017078}
+  - component: {fileID: -1478658152961457250}
   m_Layer: 7
   m_Name: Cafe
   m_TagString: Untagged
@@ -1086,6 +1088,165 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 9.6, y: 3, z: 9.6}
   m_Center: {x: 0, y: 1.5, z: 0}
+--- !u!114 &-2118720676521017078
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8614323109017750013}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddc3a0c97397d4267ba7b7cb23e5c94a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AIBusinessTycoon.Managers::AIBusinessTycoon.Managers.StoreInteractionManager
+  BusinessData:
+    business_id: 
+    player_id: 
+    business_type: 
+    name: 
+    position_x: 0
+    position_y: 0
+    price_multiplier: 1
+    is_open: 1
+    inventory:
+      rice:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      dal:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      milk:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      bread:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      oil:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      sugar:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      salt:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      tea:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      margherita:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      pepperoni:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      garlic_bread:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      cola:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      espresso:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      cappuccino:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      croissant:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+      muffin:
+        name: 
+        cost: 0
+        price: 0
+        stock: 0
+        max_stock: 10
+        total_sold: 0
+    employees: []
+    trash_items: []
+    store_rating: 5
+    stats:
+      total_revenue: 0
+      total_expenses: 0
+      total_customers_served: 0
+      average_transaction: 0
+    created_at: 
+    last_updated: 
+  entrancePoint: {fileID: 0}
+  interactionPromptUI: {fileID: 0}
+--- !u!114 &-1478658152961457250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8614323109017750013}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 581b6005d89de4cb28e3c1434c7c0376, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: AIBusinessTycoon.Managers::AIBusinessTycoon.Managers.TransactionSyncManager
+  syncIntervalSeconds: 10
 --- !u!1 &9213966003099939664
 GameObject:
   m_ObjectHideFlags: 0

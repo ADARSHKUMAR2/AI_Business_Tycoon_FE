@@ -72,6 +72,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/LandPurchaseUIManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CashierAI.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/PlayerController.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/TransactionSyncManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/StoreUIManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CameraController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CheckoutCounter.cs" />

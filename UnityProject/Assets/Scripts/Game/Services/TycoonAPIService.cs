@@ -6,6 +6,7 @@ using UnityEngine.Networking;
 using AIBusinessTycoon.Config;
 using AIBusinessTycoon.Data;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace AIBusinessTycoon.Services
 {
@@ -20,7 +21,16 @@ namespace AIBusinessTycoon.Services
         
         [Header("Settings")]
         [SerializeField] private int requestTimeout = 10; // seconds
-        
+
+        /// <summary>
+        /// Safely exposes the active Backend URL to other scripts.
+        /// </summary>
+        public string GetBaseURL()
+        {
+            if (backendConfig == null) return "http://localhost:8000";
+            return backendConfig.GetActiveURL();
+        }
+
         private static TycoonAPIService _instance;
         public static TycoonAPIService Instance
         {
@@ -72,7 +82,7 @@ namespace AIBusinessTycoon.Services
                         string jsonResponse = request.downloadHandler.text;
                         Debug.Log($"[TycoonAPIService] Response: {jsonResponse}");
                         
-                        T data = JsonUtility.FromJson<T>(jsonResponse);
+                        T data = JsonConvert.DeserializeObject<T>(jsonResponse);
                         
                         if (data != null)
                         {
@@ -162,7 +172,7 @@ namespace AIBusinessTycoon.Services
                         string jsonResponse = request.downloadHandler.text;
                         Debug.Log($"[TycoonAPIService] Response: {jsonResponse}");
                         
-                        TResponse data = JsonUtility.FromJson<TResponse>(jsonResponse);
+                        TResponse data = JsonConvert.DeserializeObject<TResponse>(jsonResponse);
                         onSuccess?.Invoke(data);
                     }
                     catch (Exception e)
@@ -276,7 +286,7 @@ namespace AIBusinessTycoon.Services
                         string jsonResponse = request.downloadHandler.text;
                         Debug.Log($"[TycoonAPIService] Response: {jsonResponse}");
                         
-                        TResponse data = JsonUtility.FromJson<TResponse>(jsonResponse);
+                        TResponse data = JsonConvert.DeserializeObject<TResponse>(jsonResponse);
                         onSuccess?.Invoke(data);
                     }
                     catch (Exception e)
@@ -563,7 +573,7 @@ namespace AIBusinessTycoon.Services
                 {
                     // JsonUtility cannot parse raw arrays — wrap it first
                     string wrapped = "{\"items\":" + rawJson + "}";
-                    TrashListWrapper wrapper = JsonUtility.FromJson<TrashListWrapper>(wrapped);
+                    TrashListWrapper wrapper = JsonConvert.DeserializeObject<TrashListWrapper>(wrapped);
                     onSuccess?.Invoke(wrapper?.items ?? new List<TrashItem>());
                 }
                 catch (Exception e)
@@ -609,7 +619,7 @@ namespace AIBusinessTycoon.Services
                 {
                     try
                     {
-                        T data = JsonUtility.FromJson<T>(request.downloadHandler.text);
+                        T data = JsonConvert.DeserializeObject<T>(request.downloadHandler.text);
                         onSuccess?.Invoke(data);
                     }
                     catch (Exception e)
@@ -623,6 +633,35 @@ namespace AIBusinessTycoon.Services
                 }
             }
         }
+
+        /// <summary>
+        /// Sends a raw JSON string via POST and returns the raw string response.
+        /// </summary>
+        public IEnumerator PostRequestRaw(string url, string jsonBody, Action<string> onSuccess, Action<string> onError)
+        {
+            Debug.Log($"[TycoonAPIService] POST RAW to: {url} | Body: {jsonBody}");
+            
+            using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+            {
+                byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonBody);
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+                request.timeout = requestTimeout;
+                
+                yield return request.SendWebRequest();
+                
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    onSuccess?.Invoke(request.downloadHandler.text);
+                }
+                else
+                {
+                    onError?.Invoke(request.error);
+                }
+            }
+        }
+
 
     }
 }

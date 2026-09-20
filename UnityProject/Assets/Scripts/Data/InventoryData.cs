@@ -23,68 +23,7 @@ namespace AIBusinessTycoon.Data
 
         public override string ToString() => $"{name} | Stock: {stock}/{max_stock} | Price: ₹{price}";
     }
-
-    /// <summary>
-    /// ZERO-DEPENDENCY JSON TRICK:
-    /// Unity's JsonUtility cannot parse Dictionaries. Because we know all the item keys
-    /// from our Python backend settings, we explicitly declare them here as fields.
-    /// JsonUtility will automatically drop the data into the correct slots!
-    /// </summary>
-    [Serializable]
-    public class InventoryDict
-    {
-        // ── Kirana Store ──
-        public InventoryItem rice;
-        public InventoryItem dal;
-        public InventoryItem milk;
-        public InventoryItem bread;
-        public InventoryItem oil;
-        public InventoryItem sugar;
-        public InventoryItem salt;
-        public InventoryItem tea;
-        
-        // ── Pizza Outlet ──
-        public InventoryItem margherita;
-        public InventoryItem pepperoni;
-        public InventoryItem garlic_bread;
-        public InventoryItem cola;
-        
-        // ── Cafe ──
-        public InventoryItem espresso;
-        public InventoryItem cappuccino;
-        public InventoryItem croissant;
-        public InventoryItem muffin;
-
-        /// <summary>
-        /// Converts the JSON slots back into an iterable list for UI and gameplay logic.
-        /// Returns KeyValuePairs so you know the backend key (e.g., "rice") to use when upgrading!
-        /// </summary>
-        public List<KeyValuePair<string, InventoryItem>> GetActiveItems()
-        {
-            var list = new List<KeyValuePair<string, InventoryItem>>();
-            
-            if (rice != null) list.Add(new KeyValuePair<string, InventoryItem>("rice", rice));
-            if (dal != null) list.Add(new KeyValuePair<string, InventoryItem>("dal", dal));
-            if (milk != null) list.Add(new KeyValuePair<string, InventoryItem>("milk", milk));
-            if (bread != null) list.Add(new KeyValuePair<string, InventoryItem>("bread", bread));
-            if (oil != null) list.Add(new KeyValuePair<string, InventoryItem>("oil", oil));
-            if (sugar != null) list.Add(new KeyValuePair<string, InventoryItem>("sugar", sugar));
-            if (salt != null) list.Add(new KeyValuePair<string, InventoryItem>("salt", salt));
-            if (tea != null) list.Add(new KeyValuePair<string, InventoryItem>("tea", tea));
-            
-            if (margherita != null) list.Add(new KeyValuePair<string, InventoryItem>("margherita", margherita));
-            if (pepperoni != null) list.Add(new KeyValuePair<string, InventoryItem>("pepperoni", pepperoni));
-            if (garlic_bread != null) list.Add(new KeyValuePair<string, InventoryItem>("garlic_bread", garlic_bread));
-            if (cola != null) list.Add(new KeyValuePair<string, InventoryItem>("cola", cola));
-            
-            if (espresso != null) list.Add(new KeyValuePair<string, InventoryItem>("espresso", espresso));
-            if (cappuccino != null) list.Add(new KeyValuePair<string, InventoryItem>("cappuccino", cappuccino));
-            if (croissant != null) list.Add(new KeyValuePair<string, InventoryItem>("croissant", croissant));
-            if (muffin != null) list.Add(new KeyValuePair<string, InventoryItem>("muffin", muffin));
-            
-            return list;
-        }
-    }
+    
 
     [Serializable]
     public class InventoryUpdate

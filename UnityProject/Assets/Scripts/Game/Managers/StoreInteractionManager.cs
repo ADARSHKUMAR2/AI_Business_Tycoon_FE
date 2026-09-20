@@ -38,14 +38,16 @@ namespace AIBusinessTycoon.Managers
             if (BusinessData.inventory != null)
             {
                 var shelves = GetComponentsInChildren<InteractableShelf>();
-                var activeItems = BusinessData.inventory.GetActiveItems();
+                
+                // Convert the Dictionary to a List of KeyValuePairs so we can access them by index
+                var activeItems = new List<KeyValuePair<string, InventoryItem>>(BusinessData.inventory);
 
                 for (int i = 0; i < shelves.Length && i < activeItems.Count; i++)
                 {
                     shelves[i].InitializeFromBackend(
-                        activeItems[i].Key, 
-                        activeItems[i].Value, 
-                        BusinessData.player_id, 
+                        activeItems[i].Key,
+                        activeItems[i].Value,
+                        BusinessData.player_id,
                         BusinessData.business_id
                     );
                 }

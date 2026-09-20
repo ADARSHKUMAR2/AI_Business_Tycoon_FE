@@ -38,7 +38,7 @@ namespace AIBusinessTycoon.Data
         }
     }
 
-    [Serializable]
+        [Serializable]
     public class BusinessData
     {
         public string              business_id;
@@ -49,11 +49,11 @@ namespace AIBusinessTycoon.Data
         public int                 position_y;
         public float               price_multiplier = 1.0f;
         public bool                is_open          = true;
+        public Dictionary<string, InventoryItem> inventory = new Dictionary<string, InventoryItem>();
         
-        public InventoryDict       inventory;                
         public List<Employee>      employees        = new List<Employee>();
-        public List<TrashItem>     trash_items      = new List<TrashItem>(); 
-        public float               store_rating     = 5.0f;                  
+        public List<TrashItem>     trash_items      = new List<TrashItem>();
+        public float               store_rating     = 5.0f;
         public BusinessStats       stats;
         public string              created_at;
         public string              last_updated;
@@ -71,8 +71,6 @@ namespace AIBusinessTycoon.Data
         public int   TrashCount  => trash_items?.Count ?? 0;
         public bool  IsClean     => store_rating >= 4.5f;
         public string RatingText => $"⭐ {store_rating:F1}/5.0";
-
-        public BusinessData() { stats = new BusinessStats(); }
     }
 
     [Serializable]

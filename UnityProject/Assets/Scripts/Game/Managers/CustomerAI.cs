@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using AIBusinessTycoon.Data;
 using AIBusinessTycoon.Services;
 using TMPro; 
@@ -10,7 +12,7 @@ namespace AIBusinessTycoon.Managers
     [RequireComponent(typeof(NavMeshAgent))]
     public class CustomerAI : MonoBehaviour
     {
-        private enum CustomerState { Initializing, WalkingToStore, Shopping, WalkingToCheckout, WaitingInLine, Leaving }
+        private enum CustomerState { Initializing, WalkingToStore, Shopping, WalkingToCheckout, WaitingAtCounter, Leaving }
         
         private CustomerState currentState = CustomerState.Initializing;
         private NavMeshAgent agent;
@@ -27,25 +29,49 @@ namespace AIBusinessTycoon.Managers
         
         public bool HasReachedCheckout { get; private set; } = false;
 
-        // ── Object Pooling: Awake runs ONCE when the prefab is created ──
+        // Local Shopping Logic
+        private List<string> itemsToBuy = new List<string>();
+        private List<string> itemsWaiting = new List<string>();
+        private List<string> itemsPurchased = new List<string>();
+        private float totalSpent = 0f;
+        private float waitTimer = 15f; 
+        private Coroutine waitCoroutine;
+
         private void Awake()
         {
             agent = GetComponent<NavMeshAgent>();
             SetupVisuals();
         }
 
-        // ── Object Pooling: OnEnable runs EVERY TIME the spawner pulls them from the pool ──
         private void OnEnable()
         {
-            // Reset the "brain" and visuals from their previous life
             currentState = CustomerState.Initializing;
             hasItem = false;
             HasReachedCheckout = false;
+            targetStore = null;
+            targetShelf = null;
+            targetCheckout = null;
+            
+            itemsToBuy.Clear();
+            itemsWaiting.Clear();
+            itemsPurchased.Clear();
+            totalSpent = 0f;
+            waitTimer = 15f;
+            
+            if (waitCoroutine != null)
+            {
+                StopCoroutine(waitCoroutine);
+                waitCoroutine = null;
+            }
             
             if (carriedItemVisual != null) carriedItemVisual.SetActive(false);
             ShowEmoji("", Color.white);
             
-            if (agent != null && agent.isOnNavMesh) agent.ResetPath();
+            if (agent != null && agent.isOnNavMesh) 
+            {
+                agent.ResetPath();
+                agent.isStopped = false;
+            }
 
             StartCoroutine(BeginShoppingRoutine());
         }
@@ -59,12 +85,35 @@ namespace AIBusinessTycoon.Managers
 
         private void SetupVisuals()
         {
+            Transform existingCp = transform.Find("CarryPoint");
+            if (existingCp != null)
+            {
+                carryPoint = existingCp;
+                
+                Transform visualTransform = carryPoint.Find("CarriedItemBox");
+                if (visualTransform != null) {
+                    carriedItemVisual = visualTransform.gameObject;
+                } else {
+                    carriedItemVisual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    carriedItemVisual.name = "CarriedItemBox";
+                    carriedItemVisual.transform.SetParent(carryPoint);
+                    carriedItemVisual.transform.localPosition = Vector3.zero;
+                    carriedItemVisual.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
+                    carriedItemVisual.GetComponent<Renderer>().material.color = Color.red; 
+                    Destroy(carriedItemVisual.GetComponent<Collider>());
+                }
+
+                floatingEmoji = transform.GetComponentInChildren<TextMeshProUGUI>();
+                return;
+            }
+
             GameObject cp = new GameObject("CarryPoint");
             cp.transform.SetParent(transform);
             cp.transform.localPosition = new Vector3(0, 0.6f, 0.5f); 
             carryPoint = cp.transform;
 
             carriedItemVisual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            carriedItemVisual.name = "CarriedItemBox"; 
             carriedItemVisual.transform.SetParent(carryPoint);
             carriedItemVisual.transform.localPosition = Vector3.zero;
             carriedItemVisual.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
@@ -74,45 +123,60 @@ namespace AIBusinessTycoon.Managers
 
             GameObject canvasObj = new GameObject("EmojiCanvas");
             canvasObj.transform.SetParent(transform);
-            canvasObj.transform.localPosition = new Vector3(0, 1.8f, 0); 
+            canvasObj.transform.localPosition = new Vector3(0, 2.2f, 0); 
             
             Canvas canvas = canvasObj.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
-            canvasObj.GetComponent<RectTransform>().sizeDelta = new Vector2(100, 100);
-            canvasObj.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+            
+            RectTransform canvasRect = canvasObj.GetComponent<RectTransform>();
+            canvasRect.sizeDelta = new Vector2(2f, 2f); 
             
             GameObject textObj = new GameObject("EmojiText");
             textObj.transform.SetParent(canvasObj.transform);
+            
             floatingEmoji = textObj.AddComponent<TextMeshProUGUI>();
-            floatingEmoji.fontSize = 50;
             floatingEmoji.alignment = TextAlignmentOptions.Center;
+            floatingEmoji.fontSize = 5; 
+            floatingEmoji.text = "";
             
             RectTransform textRect = textObj.GetComponent<RectTransform>();
-            textRect.sizeDelta = new Vector2(100, 100);
             textRect.localPosition = Vector3.zero;
-            textRect.localRotation = Quaternion.identity;
-            textRect.localScale = Vector3.one;
+            textRect.sizeDelta = new Vector2(2f, 2f); 
+            textRect.localScale = Vector3.one; 
         }
 
         private void FindRandomStore()
         {
-            StoreInteractionManager[] allStores = FindObjectsOfType<StoreInteractionManager>();
-            
-            if (allStores.Length == 0)
+            var stores = FindObjectsOfType<StoreInteractionManager>();
+            if (stores.Length > 0)
             {
-                Leave();
-                return;
-            }
+                targetStore = stores[Random.Range(0, stores.Length)];
+                
+                if (targetStore.BusinessData != null && targetStore.BusinessData.inventory != null)
+                {
+                    var activeItems = targetStore.BusinessData.inventory.ToList();
+                    
+                    if (activeItems.Count > 0)
+                    {
+                        int itemsCount = Random.Range(1, 4); 
+                        for(int i = 0; i < itemsCount; i++) 
+                        {
+                            string randomKey = activeItems[Random.Range(0, activeItems.Count)].Key;
+                            itemsToBuy.Add(randomKey);
+                        }
+                    }
+                }
 
-            int randomIndex = Random.Range(0, allStores.Length);
-            targetStore = allStores[randomIndex];
+                // If store is completely empty or list failed to generate, leave immediately
+                if (itemsToBuy.Count == 0)
+                {
+                    Leave();
+                    return;
+                }
 
-            Vector3 entrancePos = targetStore.GetEntrancePosition();
-            if (NavMesh.SamplePosition(entrancePos, out NavMeshHit hit, 5.0f, NavMesh.AllAreas))
-            {
                 currentState = CustomerState.WalkingToStore;
-                agent.SetDestination(hit.position);
-                ShowEmoji("🚶", Color.white);
+                Vector3 storeEntrance = targetStore.transform.position + new Vector3(0, 0, -2);
+                agent.SetDestination(storeEntrance);
             }
             else
             {
@@ -122,106 +186,88 @@ namespace AIBusinessTycoon.Managers
 
         private void Update()
         {
-            if (currentState == CustomerState.WalkingToStore)
+            if (floatingEmoji != null)
             {
-                if (!agent.pathPending && agent.remainingDistance <= 1.0f)
-                {
-                    OnArrivedAtStore();
-                }
+                floatingEmoji.transform.rotation = Quaternion.LookRotation(floatingEmoji.transform.position - Camera.main.transform.position);
             }
-            else if (currentState == CustomerState.WalkingToCheckout)
+
+            // Standard NavMesh arrival check - removing `agent.hasPath` ensures it fires when they stop!
+            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.1f)
             {
-                if (!agent.pathPending && agent.remainingDistance <= 0.5f)
+                // To prevent spamming logic while standing still
+                if (agent.velocity.sqrMagnitude < 0.1f)
                 {
-                    HasReachedCheckout = true;
-                    currentState = CustomerState.WaitingInLine;
-                    
-                    if (targetCheckout != null)
+                    if (currentState == CustomerState.WalkingToStore)
                     {
-                        transform.rotation = Quaternion.LookRotation(targetCheckout.transform.position - transform.position);
-                        transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0); 
+                        FindShelf();
                     }
-                }
-            }
-            else if (currentState == CustomerState.Leaving)
-            {
-                // ── Object Pooling: Send back to queue instead of destroying ──
-                if (!agent.pathPending && agent.remainingDistance <= 1.0f)
-                {
-                    CustomerSpawner.Instance.ReturnCustomerToPool(gameObject);
+                    else if (currentState == CustomerState.Shopping && !hasItem)
+                    {
+                        hasItem = true; 
+                        StartCoroutine(GrabItem());
+                    }
+                    else if (currentState == CustomerState.WalkingToCheckout && !HasReachedCheckout)
+                    {
+                        HasReachedCheckout = true;
+                    }
+                    else if (currentState == CustomerState.Leaving)
+                    {
+                        CustomerSpawner.Instance.ReturnCustomerToPool(gameObject);
+                    }
                 }
             }
         }
 
-        private void OnArrivedAtStore()
+        private void FindShelf()
         {
-            currentState = CustomerState.Shopping;
-            
-            InteractableShelf[] shelves = targetStore.GetComponentsInChildren<InteractableShelf>();
+            if (targetStore == null) { Leave(); return; }
+
+            var shelves = targetStore.GetComponentsInChildren<InteractableShelf>();
             if (shelves.Length > 0)
             {
-                int randomShelfIndex = Random.Range(0, shelves.Length);
-                targetShelf = shelves[randomShelfIndex];
-                
-                StartCoroutine(ShopAtShelf());
+                targetShelf = shelves[Random.Range(0, shelves.Length)];
+                currentState = CustomerState.Shopping;
+                Vector3 destination = targetShelf.transform.position + new Vector3(0, 0, -1.0f);
+                agent.SetDestination(destination);
             }
             else
             {
-                Leave();
+                GoToCheckout();
             }
         }
 
-        private IEnumerator ShopAtShelf()
+        private IEnumerator GrabItem()
         {
             ShowEmoji("🛒", Color.white);
-            
-            Vector3 shelfPos = targetShelf.transform.position;
-            Vector3 offset = (transform.position - shelfPos).normalized * 1.5f; 
-            
-            if (NavMesh.SamplePosition(shelfPos + offset, out NavMeshHit hit, 3.0f, NavMesh.AllAreas))
-                agent.SetDestination(hit.position);
-            else
-                agent.SetDestination(shelfPos);
+            yield return new WaitForSeconds(1.0f);
 
-            yield return new WaitUntil(() => !agent.pathPending && agent.remainingDistance <= 1.0f);
-            yield return new WaitForSeconds(1.5f); 
+            if (carriedItemVisual != null) carriedItemVisual.SetActive(true);
             
-            if (targetShelf.TryTakeStock())
+            GoToCheckout();
+        }
+
+        private void GoToCheckout()
+        {
+            if (targetStore == null) { Leave(); return; }
+
+            targetCheckout = targetStore.GetComponentInChildren<CheckoutCounter>();
+            if (targetCheckout != null)
             {
-                hasItem = true;
-                carriedItemVisual.SetActive(true); 
-                ShowEmoji("😊", Color.green);
-                
-                yield return new WaitForSeconds(1f); 
-                
-                floatingEmoji.text = ""; 
-                currentState = CustomerState.WalkingToCheckout;
-                
-                targetCheckout = targetStore.GetComponentInChildren<CheckoutCounter>();
-                
-                if (targetCheckout != null)
+                Vector3? queuePos = targetCheckout.JoinQueue(this);
+
+                if (queuePos.HasValue)
                 {
-                    Vector3? queuePos = targetCheckout.JoinQueue(this);
-                    if (queuePos.HasValue)
-                    {
-                        agent.SetDestination(queuePos.Value);
-                    }
-                    else
-                    {
-                        ShowEmoji("😠", Color.red);
-                        Leave();
-                    }
+                    currentState = CustomerState.WalkingToCheckout;
+                    agent.SetDestination(queuePos.Value);
                 }
                 else
                 {
-                    Leave();
+                    ShowEmoji("😠", Color.red);
+                    Leave(); 
                 }
             }
             else
             {
-                hasItem = false;
-                ShowEmoji("😠", Color.red); 
-                yield return new WaitForSeconds(1.5f); 
                 Leave();
             }
         }
@@ -233,20 +279,127 @@ namespace AIBusinessTycoon.Managers
             agent.SetDestination(newPos);
         }
 
+        // ── Local Shopping Logic (Level 3) ──
+        
         public void OnPaymentComplete()
         {
-            carriedItemVisual.SetActive(false);
-            
-            float purchaseAmount = Random.Range(50f, 200f);
-            GameManager.Instance.DeductMoneyLocal(-purchaseAmount); 
-            UI.HUDManager.Instance?.ShowNotification($"+Rs.{purchaseAmount:N0} Sale!", 1f);
+            ProcessLocalPurchase();
+        }
 
-            if (UnityEngine.Random.value < 0.3f) 
+        private void ProcessLocalPurchase()
+        {
+            if (targetStore == null || targetStore.BusinessData == null) 
+            { 
+                CompleteTransactionAndLeave(); 
+                return; 
+            }
+
+            var inventory = targetStore.BusinessData.inventory;
+            var priceMultiplier = targetStore.BusinessData.price_multiplier;
+            List<string> stillWaiting = new List<string>();
+
+            var processList = itemsWaiting.Count > 0 ? new List<string>(itemsWaiting) : new List<string>(itemsToBuy);
+            itemsWaiting.Clear();
+
+            foreach (var itemKey in processList)
+            {
+                if (inventory.ContainsKey(itemKey) && inventory[itemKey].stock > 0)
+                {
+                    var item = inventory[itemKey];
+                    float price = item.price * priceMultiplier;
+                    totalSpent += price;
+                    itemsPurchased.Add(itemKey);
+                    item.stock -= 1; // Reserve the stock immediately
+                }
+                else
+                {
+                    stillWaiting.Add(itemKey);
+                }
+            }
+
+            itemsWaiting = stillWaiting;
+
+            if (itemsWaiting.Count > 0)
+            {
+                currentState = CustomerState.WaitingAtCounter;
+                if (waitCoroutine == null)
+                {
+                    waitCoroutine = StartCoroutine(WaitTimerRoutine());
+                }
+            }
+            else
+            {
+                if (waitCoroutine != null)
+                {
+                    StopCoroutine(waitCoroutine);
+                    waitCoroutine = null;
+                }
+                CompleteTransactionAndLeave();
+            }
+        }
+
+        private IEnumerator WaitTimerRoutine()
+        {
+            ShowEmoji("⏳", Color.yellow);
+            
+            while (waitTimer > 0)
+            {
+                yield return new WaitForSeconds(1f);
+                waitTimer -= 1f;
+                
+                if (targetStore?.BusinessData?.inventory != null)
+                {
+                    bool allFulfilled = true;
+                    foreach (var itemKey in itemsWaiting)
+                    {
+                        if (!targetStore.BusinessData.inventory.ContainsKey(itemKey) || 
+                            targetStore.BusinessData.inventory[itemKey].stock <= 0)
+                        {
+                            allFulfilled = false;
+                            break;
+                        }
+                    }
+                    
+                    if (allFulfilled)
+                    {
+                        waitCoroutine = null;
+                        ProcessLocalPurchase();
+                        yield break;
+                    }
+                }
+            }
+
+            waitCoroutine = null;
+            ShowEmoji("😠", Color.red);
+            CompleteTransactionAndLeave();
+        }
+
+        private void CompleteTransactionAndLeave()
+        {
+            if (carriedItemVisual != null) carriedItemVisual.SetActive(false);
+            
+            if (totalSpent > 0)
+            {
+                GameManager.Instance.DeductMoneyLocal(-totalSpent); 
+                UI.HUDManager.Instance?.ShowNotification($"+Rs.{totalSpent:N0} Sale!", 1f);
+                ShowEmoji("💲", Color.green);
+
+                var syncManager = targetStore.GetComponent<TransactionSyncManager>();
+                if (syncManager != null)
+                {
+                    syncManager.RecordSale(itemsPurchased, totalSpent);
+                }
+            }
+            else
+            {
+                ShowEmoji("❌", Color.red); 
+            }
+
+            if (Random.value < 0.3f && totalSpent > 0) 
             {
                 StartCoroutine(DelayedDropTrash());
             }
             
-            ShowEmoji("💲", Color.yellow);
             StartCoroutine(LeaveAfterDelay());
         }
 
@@ -296,18 +449,18 @@ namespace AIBusinessTycoon.Managers
         {
             currentState = CustomerState.Leaving;
             
-            Vector3 exitPos = new Vector3(0, 0, -40); 
+            Vector3 exitPos = CustomerSpawner.Instance.transform.position; 
+            
             if (NavMesh.SamplePosition(exitPos, out NavMeshHit hit, 5.0f, NavMesh.AllAreas))
             {
                 agent.SetDestination(hit.position);
             }
             else
             {
-                // Failsafe: if exit can't be reached, pool them immediately
                 CustomerSpawner.Instance.ReturnCustomerToPool(gameObject);
             }
         }
-
+        
         private void ShowEmoji(string emoji, Color color)
         {
             if (floatingEmoji != null)

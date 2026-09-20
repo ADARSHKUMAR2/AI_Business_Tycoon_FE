@@ -86,6 +86,13 @@ namespace AIBusinessTycoon.Editor
             {
                 PatchStoreLayouts();
             }
+            GUILayout.Space(8);
+            GUI.backgroundColor = new Color(0.90f, 0.30f, 0.30f); // Red tint
+            if (GUILayout.Button("🛒  Patch Phase 3 — Add Transaction Sync Manager", GUILayout.Height(40)))
+            {
+                PatchTransactionSyncManager();
+            }
+            GUI.backgroundColor = Color.white;
 
             
 
@@ -120,6 +127,34 @@ namespace AIBusinessTycoon.Editor
 
             Debug.Log("=== UI & Scene Setup Complete (Phase 3) ===");
         }
+
+        /// <summary>
+        /// Safely adds the TransactionSyncManager to existing Store Prefabs
+        /// </summary>
+        private void PatchTransactionSyncManager()
+        {
+            string[] prefabPaths = {
+                "Assets/Prefabs/Buildings/KiranaStore.prefab",
+                "Assets/Prefabs/Buildings/PizzaOutlet.prefab",
+                "Assets/Prefabs/Buildings/Cafe.prefab"
+            };
+
+            foreach (var path in prefabPaths)
+            {
+                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (prefab != null)
+                {
+                    if (prefab.GetComponent<AIBusinessTycoon.Managers.TransactionSyncManager>() == null)
+                    {
+                        prefab.AddComponent<AIBusinessTycoon.Managers.TransactionSyncManager>();
+                        EditorUtility.SetDirty(prefab);
+                    }
+                }
+            }
+            AssetDatabase.SaveAssets();
+            Debug.Log("[SceneSetupEditor] ✅ TransactionSyncManager attached to Store Prefabs!");
+        }
+
 
         private void PatchPhase2HireUI()
         {
@@ -976,7 +1011,7 @@ namespace AIBusinessTycoon.Editor
             CreateStorePrefab("Assets/Prefabs/Buildings/Cafe.prefab", "Assets/Materials/Buildings/Cafe.mat", "Assets/Materials/Buildings/Cafe_Theme.mat");
         }
 
-        private void CreateStorePrefab(string prefabPath, string wallMatPath, string themeMatPath)
+                private void CreateStorePrefab(string prefabPath, string wallMatPath, string themeMatPath)
         {
             if (AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath) != null) return;
 
@@ -1015,11 +1050,16 @@ namespace AIBusinessTycoon.Editor
                 shelf.AddComponent<AIBusinessTycoon.Managers.InteractableShelf>();
             }
 
+            // ADD CORE MANAGERS TO STORE PREFAB
             root.AddComponent<AIBusinessTycoon.Managers.StoreInteractionManager>();
+            
+            // NEW: Add the Transaction Sync Manager to batch sales!
+            root.AddComponent<AIBusinessTycoon.Managers.TransactionSyncManager>();
 
             PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             DestroyImmediate(root);
         }
+
 
         private void CreateCustomerPrefab()
         {
