@@ -20,8 +20,11 @@ namespace AIBusinessTycoon.Managers
         
         [Header("Visuals")]
         private Transform carryPoint;
-        private List<GameObject> carriedBoxes = new List<GameObject>(); // NEW: List to hold multiple boxes
         private TextMeshProUGUI floatingEmoji;
+        
+        // ── Local Object Pool for Boxes ──
+        private List<GameObject> boxPool = new List<GameObject>();
+        private int activeBoxCount = 0;
         
         private InteractableShelf targetShelf;
         private CheckoutCounter targetCheckout;
@@ -66,12 +69,12 @@ namespace AIBusinessTycoon.Managers
                 waitCoroutine = null;
             }
             
-            // Cleanup any boxes from the previous time this customer was used
-            foreach (var box in carriedBoxes)
+            // Reset pooled boxes (hide them all)
+            activeBoxCount = 0;
+            foreach (var box in boxPool)
             {
-                if (box != null) Destroy(box);
+                if (box != null) box.SetActive(false);
             }
-            carriedBoxes.Clear();
 
             ShowEmoji("", Color.white);
             
@@ -93,46 +96,71 @@ namespace AIBusinessTycoon.Managers
 
         private void SetupVisuals()
         {
+            // 1. Setup Carry Point
             Transform existingCp = transform.Find("CarryPoint");
             if (existingCp != null)
             {
                 carryPoint = existingCp;
-                
-                // Cleanup any old single-box prefabs from previous versions of the script
-                Transform oldBox = carryPoint.Find("CarriedItemBox");
-                if (oldBox != null) Destroy(oldBox.gameObject);
-
-                floatingEmoji = transform.GetComponentInChildren<TextMeshProUGUI>();
-                return;
+                // Clean up any legacy unpooled boxes if they exist
+                var tempChildren = new List<GameObject>();
+                foreach (Transform child in carryPoint) tempChildren.Add(child.gameObject);
+                foreach (var child in tempChildren) Destroy(child);
+            }
+            else
+            {
+                GameObject cp = new GameObject("CarryPoint");
+                cp.transform.SetParent(transform);
+                cp.transform.localPosition = new Vector3(0, 0.6f, 0.5f); 
+                carryPoint = cp.transform;
             }
 
-            GameObject cp = new GameObject("CarryPoint");
-            cp.transform.SetParent(transform);
-            cp.transform.localPosition = new Vector3(0, 0.6f, 0.5f); 
-            carryPoint = cp.transform;
+            // 2. Initialize Local Object Pool (5 boxes is a safe buffer since max items is usually 3)
+            boxPool.Clear();
+            for (int i = 0; i < 5; i++)
+            {
+                GameObject box = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                box.name = $"PooledBox_{i}";
+                box.transform.SetParent(carryPoint);
+                // Pre-calculate their stacked positions
+                box.transform.localPosition = new Vector3(0, i * 0.45f, 0);
+                box.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
+                box.GetComponent<Renderer>().material.color = Color.red;
+                Destroy(box.GetComponent<Collider>());
+                box.SetActive(false); // Hide by default
+                boxPool.Add(box);
+            }
 
-            GameObject canvasObj = new GameObject("EmojiCanvas");
-            canvasObj.transform.SetParent(transform);
-            canvasObj.transform.localPosition = new Vector3(0, 2.2f, 0); 
-            
-            Canvas canvas = canvasObj.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;
-            
-            RectTransform canvasRect = canvasObj.GetComponent<RectTransform>();
-            canvasRect.sizeDelta = new Vector2(2f, 2f); 
-            
-            GameObject textObj = new GameObject("EmojiText");
-            textObj.transform.SetParent(canvasObj.transform);
-            
-            floatingEmoji = textObj.AddComponent<TextMeshProUGUI>();
-            floatingEmoji.alignment = TextAlignmentOptions.Center;
-            floatingEmoji.fontSize = 5; 
-            floatingEmoji.text = "";
-            
-            RectTransform textRect = textObj.GetComponent<RectTransform>();
-            textRect.localPosition = Vector3.zero;
-            textRect.sizeDelta = new Vector2(2f, 2f); 
-            textRect.localScale = Vector3.one; 
+            // 3. Setup Emoji Canvas
+            Transform existingCanvas = transform.Find("EmojiCanvas");
+            if (existingCanvas != null)
+            {
+                floatingEmoji = existingCanvas.GetComponentInChildren<TextMeshProUGUI>();
+            }
+            else
+            {
+                GameObject canvasObj = new GameObject("EmojiCanvas");
+                canvasObj.transform.SetParent(transform);
+                canvasObj.transform.localPosition = new Vector3(0, 2.2f, 0); 
+                
+                Canvas canvas = canvasObj.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.WorldSpace;
+                
+                RectTransform canvasRect = canvasObj.GetComponent<RectTransform>();
+                canvasRect.sizeDelta = new Vector2(2f, 2f); 
+                
+                GameObject textObj = new GameObject("EmojiText");
+                textObj.transform.SetParent(canvasObj.transform);
+                
+                floatingEmoji = textObj.AddComponent<TextMeshProUGUI>();
+                floatingEmoji.alignment = TextAlignmentOptions.Center;
+                floatingEmoji.fontSize = 5; 
+                floatingEmoji.text = "";
+                
+                RectTransform textRect = textObj.GetComponent<RectTransform>();
+                textRect.localPosition = Vector3.zero;
+                textRect.sizeDelta = new Vector2(2f, 2f); 
+                textRect.localScale = Vector3.one; 
+            }
         }
 
         private void FindRandomStore()
@@ -252,17 +280,12 @@ namespace AIBusinessTycoon.Managers
                     itemsInCart.Add(currentItem);
                     UpdateShelfVisuals(currentItem);
                     
-                    // NEW: Spawn a new box and stack it based on how many we already carry
-                    GameObject newBox = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    newBox.name = $"CarriedItem_{carriedBoxes.Count}";
-                    newBox.transform.SetParent(carryPoint);
-                    // Stack them upwards with an offset of 0.45 per box
-                    newBox.transform.localPosition = new Vector3(0, carriedBoxes.Count * 0.45f, 0); 
-                    newBox.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
-                    newBox.GetComponent<Renderer>().material.color = Color.red;
-                    Destroy(newBox.GetComponent<Collider>());
-                    
-                    carriedBoxes.Add(newBox);
+                    // Show next pooled box instead of instantiating
+                    if (activeBoxCount < boxPool.Count)
+                    {
+                        boxPool[activeBoxCount].SetActive(true);
+                        activeBoxCount++;
+                    }
                 }
                 else
                 {
@@ -346,12 +369,12 @@ namespace AIBusinessTycoon.Managers
             }
             itemsInCart.Clear(); 
 
-            // Destroy visual boxes (placing them on checkout counter)
-            foreach (var box in carriedBoxes)
+            // Hide boxes to simulate placing them on the counter
+            activeBoxCount = 0;
+            foreach (var box in boxPool)
             {
-                if (box != null) Destroy(box);
+                if (box != null) box.SetActive(false);
             }
-            carriedBoxes.Clear();
 
             List<string> stillWaiting = new List<string>();
 
@@ -454,11 +477,12 @@ namespace AIBusinessTycoon.Managers
 
         private void CompleteTransactionAndLeave()
         {
-            foreach (var box in carriedBoxes)
+            // Ensure boxes are hidden
+            activeBoxCount = 0;
+            foreach (var box in boxPool)
             {
-                if (box != null) Destroy(box);
+                if (box != null) box.SetActive(false);
             }
-            carriedBoxes.Clear();
             
             if (totalSpent > 0)
             {
