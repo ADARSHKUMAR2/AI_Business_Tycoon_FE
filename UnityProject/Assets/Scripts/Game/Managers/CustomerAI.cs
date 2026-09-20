@@ -20,7 +20,7 @@ namespace AIBusinessTycoon.Managers
         
         [Header("Visuals")]
         private Transform carryPoint;
-        private GameObject carriedItemVisual;
+        private List<GameObject> carriedBoxes = new List<GameObject>(); // NEW: List to hold multiple boxes
         private TextMeshProUGUI floatingEmoji;
         
         private InteractableShelf targetShelf;
@@ -66,7 +66,13 @@ namespace AIBusinessTycoon.Managers
                 waitCoroutine = null;
             }
             
-            if (carriedItemVisual != null) carriedItemVisual.SetActive(false);
+            // Cleanup any boxes from the previous time this customer was used
+            foreach (var box in carriedBoxes)
+            {
+                if (box != null) Destroy(box);
+            }
+            carriedBoxes.Clear();
+
             ShowEmoji("", Color.white);
             
             if (agent != null && agent.isOnNavMesh) 
@@ -92,18 +98,9 @@ namespace AIBusinessTycoon.Managers
             {
                 carryPoint = existingCp;
                 
-                Transform visualTransform = carryPoint.Find("CarriedItemBox");
-                if (visualTransform != null) {
-                    carriedItemVisual = visualTransform.gameObject;
-                } else {
-                    carriedItemVisual = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    carriedItemVisual.name = "CarriedItemBox";
-                    carriedItemVisual.transform.SetParent(carryPoint);
-                    carriedItemVisual.transform.localPosition = Vector3.zero;
-                    carriedItemVisual.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
-                    carriedItemVisual.GetComponent<Renderer>().material.color = Color.red; 
-                    Destroy(carriedItemVisual.GetComponent<Collider>());
-                }
+                // Cleanup any old single-box prefabs from previous versions of the script
+                Transform oldBox = carryPoint.Find("CarriedItemBox");
+                if (oldBox != null) Destroy(oldBox.gameObject);
 
                 floatingEmoji = transform.GetComponentInChildren<TextMeshProUGUI>();
                 return;
@@ -113,15 +110,6 @@ namespace AIBusinessTycoon.Managers
             cp.transform.SetParent(transform);
             cp.transform.localPosition = new Vector3(0, 0.6f, 0.5f); 
             carryPoint = cp.transform;
-
-            carriedItemVisual = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            carriedItemVisual.name = "CarriedItemBox"; 
-            carriedItemVisual.transform.SetParent(carryPoint);
-            carriedItemVisual.transform.localPosition = Vector3.zero;
-            carriedItemVisual.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
-            carriedItemVisual.GetComponent<Renderer>().material.color = Color.red; 
-            Destroy(carriedItemVisual.GetComponent<Collider>());
-            carriedItemVisual.SetActive(false);
 
             GameObject canvasObj = new GameObject("EmojiCanvas");
             canvasObj.transform.SetParent(transform);
@@ -225,11 +213,9 @@ namespace AIBusinessTycoon.Managers
                 return; 
             }
 
-            // Look for the SPECIFIC shelf that matches the FIRST item on their list
             string currentItemToBuy = itemsToBuy[0];
             var shelves = targetStore.GetComponentsInChildren<InteractableShelf>();
             
-            // Find the shelf that holds this specific item
             targetShelf = shelves.FirstOrDefault(s => s.itemKey == currentItemToBuy);
 
             if (targetShelf != null)
@@ -240,12 +226,9 @@ namespace AIBusinessTycoon.Managers
             }
             else
             {
-                // If the store doesn't have a shelf for this item physically placed yet, 
-                // they will ask the cashier for it instead.
                 itemsWaiting.Add(currentItemToBuy);
                 itemsToBuy.RemoveAt(0);
                 
-                // Immediately search for the next shelf on their list
                 FindShelf(); 
             }
         }
@@ -257,7 +240,6 @@ namespace AIBusinessTycoon.Managers
                 string currentItem = itemsToBuy[0];
                 var inventory = targetStore.BusinessData.inventory;
 
-                // Check if the item is in stock physically
                 if (inventory.ContainsKey(currentItem) && inventory[currentItem].stock > 0)
                 {
                     ShowEmoji("🛒", Color.white);
@@ -265,36 +247,42 @@ namespace AIBusinessTycoon.Managers
 
                     var item = inventory[currentItem];
                     item.stock = Mathf.Max(0, item.stock - 1);
-                    inventory[currentItem] = item; // Update dictionary reference
+                    inventory[currentItem] = item; 
                     
                     itemsInCart.Add(currentItem);
                     UpdateShelfVisuals(currentItem);
                     
-                    if (carriedItemVisual != null) carriedItemVisual.SetActive(true);
+                    // NEW: Spawn a new box and stack it based on how many we already carry
+                    GameObject newBox = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    newBox.name = $"CarriedItem_{carriedBoxes.Count}";
+                    newBox.transform.SetParent(carryPoint);
+                    // Stack them upwards with an offset of 0.45 per box
+                    newBox.transform.localPosition = new Vector3(0, carriedBoxes.Count * 0.45f, 0); 
+                    newBox.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
+                    newBox.GetComponent<Renderer>().material.color = Color.red;
+                    Destroy(newBox.GetComponent<Collider>());
+                    
+                    carriedBoxes.Add(newBox);
                 }
                 else
                 {
-                    // Out of stock on the shelf - show a red X emoji
                     ShowEmoji("❌", Color.red);
                     yield return new WaitForSeconds(1.0f);
                     
-                    // They will ask the cashier for it instead
                     itemsWaiting.Add(currentItem);
                 }
 
-                // Remove the item from the remaining shopping list
                 itemsToBuy.RemoveAt(0);
             }
 
-            // Do they have more items on their list?
             if (itemsToBuy.Count > 0)
             {
-                hasItem = false; // Reset the interaction trigger
-                FindShelf();     // Walk to the next shelf!
+                hasItem = false; 
+                FindShelf();     
             }
             else
             {
-                GoToCheckout();  // Shopping complete, go pay
+                GoToCheckout();  
             }
         }
 
@@ -314,7 +302,6 @@ namespace AIBusinessTycoon.Managers
                 }
                 else
                 {
-                    // If queue is full, they leave angry and "steal" the items in their cart
                     ShowEmoji("😠", Color.red);
                     Leave(); 
                 }
@@ -348,7 +335,6 @@ namespace AIBusinessTycoon.Managers
             var inventory = targetStore.BusinessData.inventory;
             var priceMultiplier = targetStore.BusinessData.price_multiplier;
 
-            // 1. Pay for items already grabbed from shelves
             foreach (var itemKey in itemsInCart)
             {
                 if (inventory.ContainsKey(itemKey))
@@ -360,7 +346,13 @@ namespace AIBusinessTycoon.Managers
             }
             itemsInCart.Clear(); 
 
-            // 2. Process out-of-stock items they requested from cashier
+            // Destroy visual boxes (placing them on checkout counter)
+            foreach (var box in carriedBoxes)
+            {
+                if (box != null) Destroy(box);
+            }
+            carriedBoxes.Clear();
+
             List<string> stillWaiting = new List<string>();
 
             foreach (var itemKey in itemsWaiting)
@@ -419,7 +411,7 @@ namespace AIBusinessTycoon.Managers
                         shelf.currentStock = Mathf.Clamp(currentStock, 0, shelf.maxCapacity);
                         shelf.UpdateVisuals(); 
                     }
-                    break; // Fixed: only updates the EXACT shelf matched
+                    break; 
                 }
             }
         }
@@ -462,7 +454,11 @@ namespace AIBusinessTycoon.Managers
 
         private void CompleteTransactionAndLeave()
         {
-            if (carriedItemVisual != null) carriedItemVisual.SetActive(false);
+            foreach (var box in carriedBoxes)
+            {
+                if (box != null) Destroy(box);
+            }
+            carriedBoxes.Clear();
             
             if (totalSpent > 0)
             {
