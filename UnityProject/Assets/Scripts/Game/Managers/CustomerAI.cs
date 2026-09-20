@@ -31,6 +31,7 @@ namespace AIBusinessTycoon.Managers
 
         // Local Shopping Logic
         private List<string> itemsToBuy = new List<string>();
+        private List<string> itemsInCart = new List<string>(); 
         private List<string> itemsWaiting = new List<string>();
         private List<string> itemsPurchased = new List<string>();
         private float totalSpent = 0f;
@@ -53,6 +54,7 @@ namespace AIBusinessTycoon.Managers
             targetCheckout = null;
             
             itemsToBuy.Clear();
+            itemsInCart.Clear(); 
             itemsWaiting.Clear();
             itemsPurchased.Clear();
             totalSpent = 0f;
@@ -167,7 +169,6 @@ namespace AIBusinessTycoon.Managers
                     }
                 }
 
-                // If store is completely empty or list failed to generate, leave immediately
                 if (itemsToBuy.Count == 0)
                 {
                     Leave();
@@ -191,10 +192,8 @@ namespace AIBusinessTycoon.Managers
                 floatingEmoji.transform.rotation = Quaternion.LookRotation(floatingEmoji.transform.position - Camera.main.transform.position);
             }
 
-            // Standard NavMesh arrival check - removing `agent.hasPath` ensures it fires when they stop!
             if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.1f)
             {
-                // To prevent spamming logic while standing still
                 if (agent.velocity.sqrMagnitude < 0.1f)
                 {
                     if (currentState == CustomerState.WalkingToStore)
@@ -220,30 +219,83 @@ namespace AIBusinessTycoon.Managers
 
         private void FindShelf()
         {
-            if (targetStore == null) { Leave(); return; }
+            if (targetStore == null || itemsToBuy.Count == 0) 
+            { 
+                GoToCheckout(); 
+                return; 
+            }
 
+            // Look for the SPECIFIC shelf that matches the FIRST item on their list
+            string currentItemToBuy = itemsToBuy[0];
             var shelves = targetStore.GetComponentsInChildren<InteractableShelf>();
-            if (shelves.Length > 0)
+            
+            // Find the shelf that holds this specific item
+            targetShelf = shelves.FirstOrDefault(s => s.itemKey == currentItemToBuy);
+
+            if (targetShelf != null)
             {
-                targetShelf = shelves[Random.Range(0, shelves.Length)];
                 currentState = CustomerState.Shopping;
                 Vector3 destination = targetShelf.transform.position + new Vector3(0, 0, -1.0f);
                 agent.SetDestination(destination);
             }
             else
             {
-                GoToCheckout();
+                // If the store doesn't have a shelf for this item physically placed yet, 
+                // they will ask the cashier for it instead.
+                itemsWaiting.Add(currentItemToBuy);
+                itemsToBuy.RemoveAt(0);
+                
+                // Immediately search for the next shelf on their list
+                FindShelf(); 
             }
         }
 
         private IEnumerator GrabItem()
         {
-            ShowEmoji("🛒", Color.white);
-            yield return new WaitForSeconds(1.0f);
+            if (targetStore != null && targetStore.BusinessData != null && itemsToBuy.Count > 0)
+            {
+                string currentItem = itemsToBuy[0];
+                var inventory = targetStore.BusinessData.inventory;
 
-            if (carriedItemVisual != null) carriedItemVisual.SetActive(true);
-            
-            GoToCheckout();
+                // Check if the item is in stock physically
+                if (inventory.ContainsKey(currentItem) && inventory[currentItem].stock > 0)
+                {
+                    ShowEmoji("🛒", Color.white);
+                    yield return new WaitForSeconds(1.0f);
+
+                    var item = inventory[currentItem];
+                    item.stock = Mathf.Max(0, item.stock - 1);
+                    inventory[currentItem] = item; // Update dictionary reference
+                    
+                    itemsInCart.Add(currentItem);
+                    UpdateShelfVisuals(currentItem);
+                    
+                    if (carriedItemVisual != null) carriedItemVisual.SetActive(true);
+                }
+                else
+                {
+                    // Out of stock on the shelf - show a red X emoji
+                    ShowEmoji("❌", Color.red);
+                    yield return new WaitForSeconds(1.0f);
+                    
+                    // They will ask the cashier for it instead
+                    itemsWaiting.Add(currentItem);
+                }
+
+                // Remove the item from the remaining shopping list
+                itemsToBuy.RemoveAt(0);
+            }
+
+            // Do they have more items on their list?
+            if (itemsToBuy.Count > 0)
+            {
+                hasItem = false; // Reset the interaction trigger
+                FindShelf();     // Walk to the next shelf!
+            }
+            else
+            {
+                GoToCheckout();  // Shopping complete, go pay
+            }
         }
 
         private void GoToCheckout()
@@ -262,6 +314,7 @@ namespace AIBusinessTycoon.Managers
                 }
                 else
                 {
+                    // If queue is full, they leave angry and "steal" the items in their cart
                     ShowEmoji("😠", Color.red);
                     Leave(); 
                 }
@@ -278,8 +331,6 @@ namespace AIBusinessTycoon.Managers
             currentState = CustomerState.WalkingToCheckout;
             agent.SetDestination(newPos);
         }
-
-        // ── Local Shopping Logic (Level 3) ──
         
         public void OnPaymentComplete()
         {
@@ -296,12 +347,23 @@ namespace AIBusinessTycoon.Managers
 
             var inventory = targetStore.BusinessData.inventory;
             var priceMultiplier = targetStore.BusinessData.price_multiplier;
+
+            // 1. Pay for items already grabbed from shelves
+            foreach (var itemKey in itemsInCart)
+            {
+                if (inventory.ContainsKey(itemKey))
+                {
+                    float price = inventory[itemKey].price * priceMultiplier;
+                    totalSpent += price;
+                    itemsPurchased.Add(itemKey);
+                }
+            }
+            itemsInCart.Clear(); 
+
+            // 2. Process out-of-stock items they requested from cashier
             List<string> stillWaiting = new List<string>();
 
-            var processList = itemsWaiting.Count > 0 ? new List<string>(itemsWaiting) : new List<string>(itemsToBuy);
-            itemsWaiting.Clear();
-
-            foreach (var itemKey in processList)
+            foreach (var itemKey in itemsWaiting)
             {
                 if (inventory.ContainsKey(itemKey) && inventory[itemKey].stock > 0)
                 {
@@ -309,7 +371,11 @@ namespace AIBusinessTycoon.Managers
                     float price = item.price * priceMultiplier;
                     totalSpent += price;
                     itemsPurchased.Add(itemKey);
-                    item.stock -= 1; // Reserve the stock immediately
+                    
+                    item.stock = Mathf.Max(0, item.stock - 1);
+                    inventory[itemKey] = item;
+                    
+                    UpdateShelfVisuals(itemKey);
                 }
                 else
                 {
@@ -335,6 +401,26 @@ namespace AIBusinessTycoon.Managers
                     waitCoroutine = null;
                 }
                 CompleteTransactionAndLeave();
+            }
+        }
+        
+        private void UpdateShelfVisuals(string itemKey)
+        {
+            if (targetStore == null) return;
+            
+            var shelves = targetStore.GetComponentsInChildren<InteractableShelf>();
+            foreach (var shelf in shelves)
+            {
+                if (shelf.itemKey == itemKey)
+                {
+                    if (targetStore.BusinessData.inventory.ContainsKey(itemKey))
+                    {
+                        int currentStock = targetStore.BusinessData.inventory[itemKey].stock;
+                        shelf.currentStock = Mathf.Clamp(currentStock, 0, shelf.maxCapacity);
+                        shelf.UpdateVisuals(); 
+                    }
+                    break; // Fixed: only updates the EXACT shelf matched
+                }
             }
         }
 

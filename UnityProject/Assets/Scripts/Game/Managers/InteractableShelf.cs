@@ -87,7 +87,7 @@ namespace AIBusinessTycoon.Managers
 
         public void AddStock(int amount)
         {
-            currentStock = Mathf.Min(currentStock + amount, maxCapacity);
+            currentStock = Mathf.Clamp(currentStock + amount, 0, maxCapacity);
             if (itemData != null) itemData.stock = currentStock;
             UpdateVisuals();
         }
@@ -106,6 +106,10 @@ namespace AIBusinessTycoon.Managers
 
         public void UpdateVisuals()
         {
+            // Failsafe: Ensure current stock NEVER exceeds max capacity
+            if (currentStock > maxCapacity) currentStock = maxCapacity;
+            if (currentStock < 0) currentStock = 0;
+
             if (stockTextUI != null)
             {
                 stockTextUI.text = $"{currentStock}/{maxCapacity}";
@@ -114,21 +118,29 @@ namespace AIBusinessTycoon.Managers
 
             if (itemContainer == null || boxPrefab == null) return;
 
-            // ── OPTIMIZATION: Object Pooling ──
-            // If the stock increases past our pool size, generate new boxes and add them to the pool
+            // Failsafe: If we somehow have too many boxes, destroy the extras!
+            while (visualBoxes.Count > maxCapacity)
+            {
+                var extraBox = visualBoxes[visualBoxes.Count - 1];
+                visualBoxes.RemoveAt(visualBoxes.Count - 1);
+                Destroy(extraBox);
+            }
+
+            // Generate new boxes if we don't have enough to represent current stock
             while (visualBoxes.Count < currentStock)
             {
                 GameObject box = Instantiate(boxPrefab, itemContainer);
+                box.name = $"Box_{visualBoxes.Count}"; // Name them clearly!
+                
                 int i = visualBoxes.Count;
-                
-                float xOffset = -0.4f + (i % 3) * 0.4f; 
-                float yOffset = (i / 3) * 0.4f; 
+                float xOffset = -0.4f + (i % 3) * 0.4f;
+                float yOffset = (i / 3) * 0.4f;
                 box.transform.localPosition = new Vector3(xOffset, yOffset, 0);
-                
+
                 visualBoxes.Add(box);
             }
 
-            // We never call Destroy()! We just turn them on or off based on currentStock
+            // Set active strictly based on bounded stock
             for (int i = 0; i < visualBoxes.Count; i++)
             {
                 visualBoxes[i].SetActive(i < currentStock);
