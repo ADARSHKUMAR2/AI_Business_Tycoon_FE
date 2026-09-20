@@ -151,7 +151,7 @@ namespace AIBusinessTycoon.Services
         {
             Debug.Log($"[TycoonAPIService] POST request to: {url}");
             
-            string jsonData = JsonUtility.ToJson(requestData);
+            string jsonData = JsonConvert.SerializeObject(requestData);
             Debug.Log($"[TycoonAPIService] Request body: {jsonData}");
             
             byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
@@ -201,7 +201,9 @@ namespace AIBusinessTycoon.Services
         {
             Debug.Log($"[TycoonAPIService] POST request to: {url}");
             
-            string jsonData = JsonUtility.ToJson(requestData);
+            string jsonData = JsonConvert.SerializeObject(requestData);
+            Debug.Log($"[TycoonAPIService] Request body: {jsonData}");
+            
             byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
             
             using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
@@ -233,9 +235,12 @@ namespace AIBusinessTycoon.Services
         {
             Debug.Log($"[TycoonAPIService] PUT request to: {url}");
 
-            string jsonData = JsonUtility.ToJson(payload);
-            
-            using (UnityWebRequest request = UnityWebRequest.Put(url, jsonData))
+            string jsonData = JsonConvert.SerializeObject(payload);
+            Debug.Log($"[TycoonAPIService] Request body: {jsonData}");
+
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
+
+            using (UnityWebRequest request = UnityWebRequest.Put(url, bodyRaw))
             {
                 request.timeout = requestTimeout;
                 request.SetRequestHeader("Content-Type", "application/json");
@@ -267,9 +272,11 @@ namespace AIBusinessTycoon.Services
         {
             Debug.Log($"[TycoonAPIService] PUT request to: {url}");
             
-            string jsonData = JsonUtility.ToJson(requestData);
+            string jsonData = JsonConvert.SerializeObject(requestData);
+            Debug.Log($"[TycoonAPIService] Request body: {jsonData}");
+
             byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
-            
+
             using (UnityWebRequest request = new UnityWebRequest(url, "PUT"))
             {
                 request.uploadHandler = new UploadHandlerRaw(bodyRaw);
