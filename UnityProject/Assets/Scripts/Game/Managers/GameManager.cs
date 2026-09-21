@@ -43,6 +43,8 @@ namespace AIBusinessTycoon.Managers
         public bool IsInStore { get; private set; }
         private StoreInteractionManager currentStore;
         private readonly Dictionary<string, StoreInteractionManager> storesByBusinessId = new Dictionary<string, StoreInteractionManager>();
+        private readonly Dictionary<string, float> nextPollAt = new Dictionary<string, float>();
+
         private Coroutine worldDeliveryPollRoutine;
 
 
@@ -316,40 +318,44 @@ namespace AIBusinessTycoon.Managers
         {
             while (true)
             {
+                float now = Time.time;
+
                 foreach (var pair in storesByBusinessId)
                 {
                     var store = pair.Value;
                     if (store == null || store.BusinessData == null)
                         continue;
 
-                    if (TycoonAPIService.Instance == null)
-                        continue;
-
-                    string playerId = CurrentPlayerId;
-                    if (string.IsNullOrEmpty(playerId))
-                        continue;
-
-                    TycoonAPIService.Instance.GetDeliveryStatus(
-                        playerId,
-                        store.BusinessData.business_id,
-                        (DeliveryStatusResponse response) =>
-                        {
-                            if (response != null)
-                            {
-                                store.ApplyDeliveryStatus(response);
-                            }
-                        },
-                        (string error) =>
-                        {
-                            Debug.LogWarning($"[GameManager] Delivery status poll failed for {store.BusinessData.business_id}: {error}");
-                        }
-                    );
+                    if (!nextPollAt.TryGetValue(store.BusinessData.business_id, out float nextAt) || now >= nextAt)
+                    {
+                        nextPollAt[store.BusinessData.business_id] = now + 15f; // or 10f / 20f
+                        PollSingleStore(store);
+                    }
                 }
 
-                yield return new WaitForSeconds(10f);
+                yield return new WaitForSeconds(1f); // cheap scheduler tick
             }
         }
 
+        private void PollSingleStore(StoreInteractionManager store)
+        {
+            if (TycoonAPIService.Instance == null || string.IsNullOrEmpty(CurrentPlayerId))
+                return;
+
+            TycoonAPIService.Instance.GetDeliveryStatus(
+                CurrentPlayerId,
+                store.BusinessData.business_id,
+                response =>
+                {
+                    if (response != null)
+                        store.ApplyDeliveryStatus(response);
+                },
+                error =>
+                {
+                    Debug.LogWarning($"Delivery poll failed for {store.BusinessData.business_id}: {error}");
+                }
+            );
+        }
         public void RefreshPlayerData()
         {
             if (IsLoading) return;
