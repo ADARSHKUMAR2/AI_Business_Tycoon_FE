@@ -313,10 +313,15 @@ namespace AIBusinessTycoon.Managers
 
         public void SetBounds(float gridMinX, float gridMaxX, float gridMinZ, float gridMaxZ, float padding = 5f)
         {
-            minX = gridMinX - padding;
-            maxX = gridMaxX + padding;
-            minZ = gridMinZ - padding;
-            maxZ = gridMaxZ + padding;
+            float left = Mathf.Min(gridMinX, gridMaxX) - padding;
+            float right = Mathf.Max(gridMinX, gridMaxX) + padding;
+            float bottom = Mathf.Min(gridMinZ, gridMaxZ) - padding;
+            float top = Mathf.Max(gridMinZ, gridMaxZ) + padding;
+
+            minX = left;
+            maxX = right;
+            minZ = bottom;
+            maxZ = top;
         }
 
         private void SetZoom(float zoom)

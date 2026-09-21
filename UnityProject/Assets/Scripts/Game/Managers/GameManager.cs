@@ -200,10 +200,7 @@ namespace AIBusinessTycoon.Managers
             // Step 4: Camera bounds
             if (cameraController != null && gridManager != null)
             {
-                cameraController.SetBounds(
-                    -gridManager.GridWidth  / 2f, gridManager.GridWidth  / 2f,
-                    -gridManager.GridHeight / 2f, gridManager.GridHeight / 2f, 20f
-                );
+                gridManager.UpdateCameraBoundsToOwnedLand(10f);
             }
 
             // Step 5: Deactivate player avatar (only active in stores)

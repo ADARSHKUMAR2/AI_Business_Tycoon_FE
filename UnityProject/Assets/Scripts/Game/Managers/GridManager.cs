@@ -49,7 +49,65 @@ namespace AIBusinessTycoon.Managers
             if (Instance == null) Instance = this;
             else Destroy(gameObject);
         }
-        
+
+        public Bounds GetOwnedLandBounds()
+        {
+            if (landTiles == null || landTiles.Count == 0)
+            {
+                return new Bounds(Vector3.zero, Vector3.zero);
+            }
+
+            float minX = float.MaxValue;
+            float maxX = float.MinValue;
+            float minZ = float.MaxValue;
+            float maxZ = float.MinValue;
+
+            foreach (var tileEntry in landTiles)
+            {
+                Position pos = tileEntry.Value.position;
+                Vector3 worldPos = GridToWorldPosition(pos);
+
+                minX = Mathf.Min(minX, worldPos.x);
+                maxX = Mathf.Max(maxX, worldPos.x);
+                minZ = Mathf.Min(minZ, worldPos.z);
+                maxZ = Mathf.Max(maxZ, worldPos.z);
+            }
+
+            // Include the tile half-size so the camera can reach the actual outer edges
+            // of the outermost owned tiles, not just their centers.
+            float halfTile = tileSize * 0.5f;
+            float left = minX - halfTile;
+            float right = maxX + halfTile;
+            float bottom = minZ - halfTile;
+            float top = maxZ + halfTile;
+
+            return new Bounds(
+                new Vector3((left + right) * 0.5f, 0f, (bottom + top) * 0.5f),
+                new Vector3(right - left, 0f, top - bottom)
+            );
+        }
+
+        public void UpdateCameraBoundsToOwnedLand(float padding = 5f)
+        {
+            if (CameraController.Instance == null)
+                return;
+
+            if (landTiles == null || landTiles.Count == 0)
+            {
+                CameraController.Instance.SetBounds(-5f, 5f, -5f, 5f, padding);
+                return;
+            }
+
+            Bounds ownedBounds = GetOwnedLandBounds();
+            CameraController.Instance.SetBounds(
+                ownedBounds.min.x,
+                ownedBounds.max.x,
+                ownedBounds.min.z,
+                ownedBounds.max.z,
+                padding
+            );
+        }
+
         private void Start()
         {
             gridLayer = LayerMask.GetMask("Grid");
@@ -89,6 +147,9 @@ namespace AIBusinessTycoon.Managers
             
             // After drawing owned tiles, show adjacent purchasable tiles
             RefreshPurchasableTiles();
+            
+            // keep camera bounds synced to the real owned tile extents
+            UpdateCameraBoundsToOwnedLand(10f);
             
             Debug.Log($"[GridManager] Grid initialized with {landTiles.Count} tiles");
         }
@@ -346,6 +407,7 @@ namespace AIBusinessTycoon.Managers
         {
             AddLandTile(tile);
             RefreshPurchasableTiles(); // Recalculate neighbours
+            UpdateCameraBoundsToOwnedLand(10f);
         }
         
         #endregion
