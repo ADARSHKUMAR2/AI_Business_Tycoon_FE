@@ -57,6 +57,7 @@
     <Compile Include="Assets/Editor/BuildMenuAutoSetup.cs" />
     <Compile Include="Assets/Editor/RestaurantPrefabBuilderEditor.cs" />
     <Compile Include="Assets/Editor/SceneSetupEditor.cs" />
+    <Compile Include="Assets/Editor/RestaurantKitchenBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
