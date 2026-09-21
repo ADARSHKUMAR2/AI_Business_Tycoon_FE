@@ -1,8 +1,8 @@
 ﻿<Solution>
   <Project Path="AIBusinessTycoon.Managers.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="AIBusinessTycoon.Data.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="AIBusinessTycoon.Config.csproj" />
   <Project Path="AIBusinessTycoon.Services.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
 </Solution>

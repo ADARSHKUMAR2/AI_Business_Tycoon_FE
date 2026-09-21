@@ -30,6 +30,7 @@ namespace AIBusinessTycoon.Managers
         [SerializeField] private GameObject kiranaPrefab;
         [SerializeField] private GameObject pizzaPrefab;
         [SerializeField] private GameObject cafePrefab;
+        [SerializeField] private GameObject restaurantPrefab;
 
         [Header("Employee Prefabs")]
         [SerializeField] public GameObject cashierPrefab;
@@ -439,6 +440,7 @@ namespace AIBusinessTycoon.Managers
                 "kirana" => kiranaPrefab,
                 "pizza"  => pizzaPrefab,
                 "cafe"   => cafePrefab,
+                "restaurant" => restaurantPrefab,
                 _        => kiranaPrefab
             };
         }
