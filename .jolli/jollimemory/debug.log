@@ -1699,3 +1699,59 @@
 [2026-09-21T15:51:38.534Z] INFO  [QueueWorker] [trace=f9d5cef96b865e5248f66f446eaa487f] === Queue worker finished ===
 [2026-09-21T15:51:38.535Z] INFO  [SessionStartHook] [trace=f9d5cef96b865e5248f66f446eaa487f] Briefing cache not warmed — nothing to brief on this branch
 [2026-09-21T15:51:38.537Z] INFO  [SessionSync] [trace=f9d5cef96b865e5248f66f446eaa487f] session sync: not uploading — no API key configured
+[2026-09-21T17:16:31.400Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook started (source: message) ===
+[2026-09-21T17:16:31.407Z] INFO  [RepoProfile] manual-disable read → false (by=manuallyDisabled, pid=10806, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-21T17:16:31.418Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook finished ===
+[2026-09-21T17:16:31.534Z] INFO  [RepoProfile] [trace=dbf65202433825bdee55a64ccd1f3118] manual-disable read → false (by=manuallyDisabled, pid=10813, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-21T17:16:31.545Z] INFO  [PostCommitHook] [trace=dbf65202433825bdee55a64ccd1f3118] Detected operation: commit
+[2026-09-21T17:16:31.555Z] INFO  [PostCommitHook] [trace=dbf65202433825bdee55a64ccd1f3118] Enqueued: type=commit hash=3bc330b9
+[2026-09-21T17:16:31.555Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Launching background worker
+[2026-09-21T17:16:31.556Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Background worker spawned (PID: 10818)
+[2026-09-21T17:16:31.556Z] INFO  [EnsureGlobalDaemon] [trace=dbf65202433825bdee55a64ccd1f3118] spawned global daemon ensure helper (pid 10819)
+[2026-09-21T17:16:31.652Z] INFO  [RepoProfile] [trace=dbf65202433825bdee55a64ccd1f3118] manual-disable read → false (by=manuallyDisabled, pid=10818, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-21T17:16:31.698Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] === Queue worker started === node=24.13.0 kind=vscode-plugin source=vscode pkgVer=0.99.17 cliVer=0.99.17 dist=/Users/adarsh/.vscode/extensions/jolli.jollimemory-vscode-0.99.17/dist
+[2026-09-21T17:16:31.704Z] INFO  [StorageFactory] [trace=dbf65202433825bdee55a64ccd1f3118] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-21T17:16:31.798Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Processing queue entry: type=commit hash=3bc330b9
+[2026-09-21T17:16:31.810Z] INFO  [GitOps] [trace=dbf65202433825bdee55a64ccd1f3118] Commit 3bc330b9: pizza and burger table setup
+[2026-09-21T17:16:31.810Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Commit: 3bc330b9 - pizza and burger table setup (9ms)
+[2026-09-21T17:16:32.028Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] No active sessions found — will infer topics from diff if available
+[2026-09-21T17:16:32.115Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Git diff: 30 files changed, +887 -610 (85ms)
+[2026-09-21T17:16:32.155Z] WARN  [GitOps] [trace=dbf65202433825bdee55a64ccd1f3118] Diff exceeds 60000-char budget (84830 chars) — prepending --stat file list and truncating body
+[2026-09-21T17:16:32.157Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Prompt blocks: plans=0 notes=0 references=0 (+0 track-only archived, not prompted) (AI soft-excluded 0)
+[2026-09-21T17:16:32.158Z] INFO  [Summarizer] [trace=dbf65202433825bdee55a64ccd1f3118] Generating summary for commit 3bc330b9
+[2026-09-21T17:16:32.158Z] INFO  [Summarizer] [trace=dbf65202433825bdee55a64ccd1f3118] Context: transcript=0, files=30, lines=887+610
+[2026-09-21T17:16:32.158Z] WARN  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] First API attempt failed: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).. Retrying in 2000ms...
+[2026-09-21T17:16:33.554Z] INFO  [PrePushHook] [trace=e40fc091b3870e23d852b21aace78296] pre-push hook: remote=origin budget=3000ms
+[2026-09-21T17:16:33.558Z] INFO  [RepoProfile] [trace=e40fc091b3870e23d852b21aace78296] manual-disable read → false (by=manuallyDisabled, pid=10882, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-21T17:16:33.567Z] INFO  [PushPendingStore] [trace=e40fc091b3870e23d852b21aace78296] Enqueued 1 new push-pending entries (branch=main)
+[2026-09-21T17:16:33.567Z] INFO  [PrePushHook] [trace=e40fc091b3870e23d852b21aace78296] pre-push: recorded 1 commit(s) across 1 pushed ref(s)
+[2026-09-21T17:16:33.572Z] INFO  [PrePushHook] [trace=e40fc091b3870e23d852b21aace78296] Recorded 1 commit(s) for later sync — not signed in to Jolli
+[2026-09-21T17:16:33.584Z] INFO  [StorageFactory] [trace=e40fc091b3870e23d852b21aace78296] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-21T17:16:34.160Z] INFO  [Summarizer] [trace=dbf65202433825bdee55a64ccd1f3118] Generating summary for commit 3bc330b9
+[2026-09-21T17:16:34.160Z] INFO  [Summarizer] [trace=dbf65202433825bdee55a64ccd1f3118] Context: transcript=0, files=30, lines=887+610
+[2026-09-21T17:16:34.161Z] ERROR [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] API call failed after retry: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).
+[2026-09-21T17:16:34.161Z] WARN  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Saving summary with empty topics + llm-failed marker for commit 3bc330b9
+[2026-09-21T17:16:34.161Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] API summary generated (2.0s)
+[2026-09-21T17:16:34.162Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Plan registry scan: found 0 uncommitted slug(s) on main: []
+[2026-09-21T17:16:34.162Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Plan association: detected 0 slug(s) from transcripts: []
+[2026-09-21T17:16:34.162Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Note registry scan: found 0 uncommitted note(s) on main: []
+[2026-09-21T17:16:34.162Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Note association: detected 0 note(s): []
+[2026-09-21T17:16:34.162Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Reference association: detected 0 ref(s) for branch main
+[2026-09-21T17:16:34.163Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Summary built for 3bc330b9: recap=no, topics=0, plans=absent, notes=absent, references=absent
+[2026-09-21T17:16:34.223Z] INFO  [MetadataManager] [trace=dbf65202433825bdee55a64ccd1f3118] Manifest updated: main/pizza-and-burger-table-setup-3bc330b9.md (commit)
+[2026-09-21T17:16:34.223Z] INFO  [FolderStorage] [trace=dbf65202433825bdee55a64ccd1f3118] Markdown generated: main/pizza-and-burger-table-setup-3bc330b9.md
+[2026-09-21T17:16:34.224Z] INFO  [FolderStorage] [trace=dbf65202433825bdee55a64ccd1f3118] Wrote 3 files, deleted 0 (Add summary for 3bc330b9: pizza and burger table setup)
+[2026-09-21T17:16:34.224Z] INFO  [SummaryStore] [trace=dbf65202433825bdee55a64ccd1f3118] Summary stored successfully for commit 3bc330b9
+[2026-09-21T17:16:34.224Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Summary stored successfully for commit 3bc330b9 (61ms, 0 plans, 0 notes, 0 references)
+[2026-09-21T17:16:34.225Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] === Pipeline completed in 2.4s ===
+[2026-09-21T17:16:34.225Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] === Summary content (0 topics) ===
+[2026-09-21T17:16:34.226Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] Processed 1 queue entries
+[2026-09-21T17:16:34.227Z] INFO  [PushExecutor] [trace=dbf65202433825bdee55a64ccd1f3118] Post-queue push trigger: scheduling drain for 1 newly generated summar(ies)
+[2026-09-21T17:16:34.228Z] INFO  [PushExecutor] [trace=dbf65202433825bdee55a64ccd1f3118] processPushPending(post-queue): 28 pending entr(ies) (filtered to 1 hash(es))
+[2026-09-21T17:16:34.232Z] INFO  [PushExecutor] [trace=dbf65202433825bdee55a64ccd1f3118] processPushPending(post-queue): not signed in — keeping 28 entries for later
+[2026-09-21T17:16:34.261Z] INFO  [GitOps] [trace=dbf65202433825bdee55a64ccd1f3118] Commit 3bc330b9: pizza and burger table setup
+[2026-09-21T17:16:34.308Z] INFO  [StatsWriter] [trace=dbf65202433825bdee55a64ccd1f3118] pruned 3 projected events older than 2026-09-07
+[2026-09-21T17:16:34.310Z] INFO  [StorageFactory] [trace=dbf65202433825bdee55a64ccd1f3118] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-21T17:16:34.354Z] INFO  [QueueWorker] [trace=dbf65202433825bdee55a64ccd1f3118] === Queue worker finished ===
+[2026-09-21T17:16:34.355Z] INFO  [SessionStartHook] [trace=dbf65202433825bdee55a64ccd1f3118] Briefing cache not warmed — nothing to brief on this branch
+[2026-09-21T17:16:34.377Z] INFO  [SessionSync] [trace=dbf65202433825bdee55a64ccd1f3118] session sync: not uploading — no API key configured

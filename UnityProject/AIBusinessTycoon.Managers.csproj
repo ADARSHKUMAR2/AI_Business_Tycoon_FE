@@ -71,6 +71,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/EmployeeInteractionManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/StoreInteractionManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GrowthTimer.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/Dustbin.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/InteractableShelf.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/BuildingPlacementManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GridVisualizer.cs" />

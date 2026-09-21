@@ -17,9 +17,7 @@ namespace AIBusinessTycoon.Managers
         [Header("Interaction")]
         [SerializeField] private PlayerInventory playerInventory;
         
-        // Removed global::
         private IngredientPlot nearbyPlot; 
-
         private CharacterController characterController;
         private Camera mainCamera;
         private Vector2 inputDirection;
@@ -28,6 +26,7 @@ namespace AIBusinessTycoon.Managers
         private IngredientShelf nearbyShelf;
         private InteractableShelf nearbyCustomerShelf; 
         private CraftingTable nearbyTable;
+        private Dustbin nearbyDustbin;
 
         private void Awake()
         {
@@ -80,11 +79,7 @@ namespace AIBusinessTycoon.Managers
 
         private void MoveAvatar()
         {
-            if (inputDirection.magnitude < 0.05f)
-            {
-                inputDirection = Vector2.zero;
-                return;
-            }
+            if (inputDirection.magnitude < 0.05f) return;
 
             Vector3 camForward = mainCamera.transform.forward;
             Vector3 camRight = mainCamera.transform.right;
@@ -112,6 +107,13 @@ namespace AIBusinessTycoon.Managers
 
         private void HandleInteraction()
         {
+            // 1. Dustbin (Check this first so you can quickly throw things away)
+            if (nearbyDustbin != null)
+            {
+                if (nearbyDustbin.TryDiscardItem(playerInventory)) return;
+            }
+
+            // 2. Pick up from Kitchen Shelf
             if (nearbyShelf != null)
             {
                 if (playerInventory.HasItem()) return;
@@ -119,6 +121,7 @@ namespace AIBusinessTycoon.Managers
                 return;
             }
 
+            // 3. Pick up from Farm Plot
             if (nearbyPlot != null)
             {
                 if (playerInventory.HasItem()) return;
@@ -132,12 +135,14 @@ namespace AIBusinessTycoon.Managers
                 return;
             }
 
+            // 4. Interact with Crafting Table
             if (nearbyTable != null)
             {
                 nearbyTable.TryInteract(playerInventory);
                 return;
             }
 
+            // 5. Put finished food on Customer Shelf
             if (nearbyCustomerShelf != null)
             {
                 if (playerInventory.HasItem() && nearbyCustomerShelf.CanAcceptStock())
@@ -161,9 +166,11 @@ namespace AIBusinessTycoon.Managers
             InteractableShelf custShelf = other.GetComponentInParent<InteractableShelf>();
             if (custShelf != null) nearbyCustomerShelf = custShelf;
 
-            // Removed global::
             IngredientPlot plot = other.GetComponentInParent<IngredientPlot>();
             if (plot != null) nearbyPlot = plot;
+
+            Dustbin dustbin = other.GetComponentInParent<Dustbin>();
+            if (dustbin != null) nearbyDustbin = dustbin;
         }
 
         private void OnTriggerExit(Collider other)
@@ -177,9 +184,11 @@ namespace AIBusinessTycoon.Managers
             InteractableShelf custShelf = other.GetComponentInParent<InteractableShelf>();
             if (custShelf != null && nearbyCustomerShelf == custShelf) nearbyCustomerShelf = null;
 
-            // Removed global::
             IngredientPlot plot = other.GetComponentInParent<IngredientPlot>();
             if (plot != null && nearbyPlot == plot) nearbyPlot = null;
+
+            Dustbin dustbin = other.GetComponentInParent<Dustbin>();
+            if (dustbin != null && nearbyDustbin == dustbin) nearbyDustbin = null;
         }
 
         public void ActivateAtPosition(Vector3 position)
