@@ -38,7 +38,7 @@ namespace AIBusinessTycoon.Data
     }
 
     /// <summary>
-    /// Simple serializable Vector3 wrapper (Unity's Vector3 is not [Serializable] for JsonUtility).
+    /// Simple serializable Vector3 wrapper.
     /// </summary>
     [Serializable]
     public class Vector3Data
@@ -46,16 +46,5 @@ namespace AIBusinessTycoon.Data
         public float x, y, z;
         public Vector3Data(float x, float y, float z) { this.x = x; this.y = y; this.z = z; }
         public UnityEngine.Vector3 ToVector3() => new UnityEngine.Vector3(x, y, z);
-    }
-
-    /// <summary>
-    /// Response wrapper for a list of trash items.
-    /// Used when calling GET .../trash on game load.
-    /// Note: JsonUtility cannot deserialize raw arrays — wrap in this class.
-    /// </summary>
-    [Serializable]
-    public class TrashListWrapper
-    {
-        public List<TrashItem> items;
     }
 }

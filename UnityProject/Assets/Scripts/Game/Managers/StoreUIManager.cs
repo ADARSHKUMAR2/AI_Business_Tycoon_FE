@@ -183,21 +183,33 @@ namespace AIBusinessTycoon.UI
             }
 
             cashierHired = true;
-            gm.CurrentPlayer.money -= CashierCost;
-            UI.HUDManager.Instance?.UpdateMoney(gm.CurrentPlayer.money);
-            SpawnEmployeeAI("cashier");
+            gm.DeductMoneyLocal(CashierCost);
+            CloseHireMenu();
+            RefreshHireMenuLabels();
 
             string cashierName = "Cashier_" + System.Guid.NewGuid().ToString()[..4];
             TycoonAPIService.Instance.HireEmployee(
                 gm.CurrentPlayer.player_id,
                 currentBusiness.business_id,
                 new EmployeeHireRequest(cashierName, "cashier"),
-                (emp) => Debug.Log($"[StoreUIManager] Cashier hired and saved to backend: {emp.name}"),
-                (err) => Debug.LogWarning($"[StoreUIManager] Backend hire failed: {err}")
+                (emp) => 
+                {
+                    Debug.Log($"[StoreUIManager] Cashier hired and saved to backend: {emp.name}");
+                    // 1. Add to local state
+                    if (currentBusiness.employees == null) currentBusiness.employees = new System.Collections.Generic.List<Employee>();
+                    currentBusiness.employees.Add(emp);
+                    
+                    // 2. NOW spawn the AI, because the data exists!
+                    SpawnEmployeeAI("cashier");
+                },
+                (err) => 
+                {
+                    Debug.LogWarning($"[StoreUIManager] Backend hire failed: {err}");
+                    // Refund if failed
+                    cashierHired = false;
+                    gm.DeductMoneyLocal(-CashierCost);
+                }
             );
-
-            CloseHireMenu();
-            RefreshHireMenuLabels();
         }
 
         private void OnHireRestockerClicked()
@@ -213,19 +225,28 @@ namespace AIBusinessTycoon.UI
 
             restockerHired = true;
             gm.DeductMoneyLocal(RestockerCost);
-            SpawnEmployeeAI("restocker");
+            CloseHireMenu();
+            RefreshHireMenuLabels();
 
             string restockerName = "Restocker_" + System.Guid.NewGuid().ToString()[..4];
             TycoonAPIService.Instance.HireEmployee(
                 gm.CurrentPlayer.player_id,
                 currentBusiness.business_id,
                 new EmployeeHireRequest(restockerName, "restocker"),
-                (emp) => Debug.Log($"[StoreUIManager] Restocker hired and saved to backend: {emp.name}"),
-                (err) => Debug.LogWarning($"[StoreUIManager] Backend hire failed: {err}")
+                (emp) => 
+                {
+                    Debug.Log($"[StoreUIManager] Restocker hired and saved to backend: {emp.name}");
+                    if (currentBusiness.employees == null) currentBusiness.employees = new System.Collections.Generic.List<Employee>();
+                    currentBusiness.employees.Add(emp);
+                    SpawnEmployeeAI("restocker");
+                },
+                (err) => 
+                {
+                    Debug.LogWarning($"[StoreUIManager] Backend hire failed: {err}");
+                    restockerHired = false;
+                    gm.DeductMoneyLocal(-RestockerCost);
+                }
             );
-
-            CloseHireMenu();
-            RefreshHireMenuLabels();
         }
 
         private void OnHireCleanerClicked()
@@ -241,19 +262,30 @@ namespace AIBusinessTycoon.UI
 
             cleanerHired = true;
             gm.DeductMoneyLocal(CleanerCost);
-            SpawnEmployeeAI("cleaner");
-
-            string cleanerName = "Sweeper_" + System.Guid.NewGuid().ToString()[..4];
-            TycoonAPIService.Instance.HireEmployee(
-                gm.CurrentPlayer.player_id, currentBusiness.business_id,
-                new EmployeeHireRequest(cleanerName, "cleaner"),
-                (emp) => Debug.Log($"[StoreUIManager] Cleaner hired: {emp.name}"),
-                (err) => Debug.LogWarning($"[StoreUIManager] Backend cleaner hire failed: {err}")
-            );
-
             CloseHireMenu();
             RefreshHireMenuLabels();
+
+            string cleanerName = "Cleaner_" + System.Guid.NewGuid().ToString()[..4];
+            TycoonAPIService.Instance.HireEmployee(
+                gm.CurrentPlayer.player_id,
+                currentBusiness.business_id,
+                new EmployeeHireRequest(cleanerName, "cleaner"),
+                (emp) => 
+                {
+                    Debug.Log($"[StoreUIManager] Cleaner hired and saved to backend: {emp.name}");
+                    if (currentBusiness.employees == null) currentBusiness.employees = new System.Collections.Generic.List<Employee>();
+                    currentBusiness.employees.Add(emp);
+                    SpawnEmployeeAI("cleaner");
+                },
+                (err) => 
+                {
+                    Debug.LogWarning($"[StoreUIManager] Backend hire failed: {err}");
+                    cleanerHired = false;
+                    gm.DeductMoneyLocal(-CleanerCost);
+                }
+            );
         }
+
 
         private void SpawnEmployeeAI(string role)
         {

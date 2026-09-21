@@ -19,16 +19,4 @@ namespace AIBusinessTycoon.Data
             data = default(T);
         }
     }
-    
-    /// <summary>
-    /// Specialized response for PlayerTycoonData.
-    /// Unity's JsonUtility requires concrete types for deserialization.
-    /// </summary>
-    [Serializable]
-    public class PlayerDataResponse
-    {
-        public bool success;
-        public string message;
-        public PlayerTycoonData data;
-    }
 }

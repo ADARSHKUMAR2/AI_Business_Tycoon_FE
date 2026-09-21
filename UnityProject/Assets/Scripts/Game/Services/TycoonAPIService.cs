@@ -318,6 +318,7 @@ namespace AIBusinessTycoon.Services
         
         /// <summary>
         /// Fetches player data from the backend.
+        /// Now correctly expects the APIResponse<PlayerTycoonData> generic type.
         /// </summary>
         public void GetPlayerData(string playerId, Action<PlayerTycoonData> onSuccess, Action<string> onError)
         {
@@ -565,7 +566,7 @@ namespace AIBusinessTycoon.Services
         /// <summary>
         /// Phase 3: Get all active trash items for a business on game load.
         /// GET /api/game/business/{playerId}/{businessId}/trash
-        /// Note: Wraps raw JSON array into { "items": [...] } for JsonUtility.
+        /// Parses the raw JSON array natively using Newtonsoft.Json.
         /// </summary>
         public void GetTrash(
             string playerId, string businessId,
@@ -578,10 +579,9 @@ namespace AIBusinessTycoon.Services
             {
                 try
                 {
-                    // JsonUtility cannot parse raw arrays — wrap it first
-                    string wrapped = "{\"items\":" + rawJson + "}";
-                    TrashListWrapper wrapper = JsonConvert.DeserializeObject<TrashListWrapper>(wrapped);
-                    onSuccess?.Invoke(wrapper?.items ?? new List<TrashItem>());
+                    // Much cleaner: deserialize the array directly
+                    List<TrashItem> items = JsonConvert.DeserializeObject<List<TrashItem>>(rawJson);
+                    onSuccess?.Invoke(items ?? new List<TrashItem>());
                 }
                 catch (Exception e)
                 {
@@ -668,7 +668,5 @@ namespace AIBusinessTycoon.Services
                 }
             }
         }
-
-
     }
 }
