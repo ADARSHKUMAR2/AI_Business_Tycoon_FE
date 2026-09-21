@@ -23,6 +23,8 @@ namespace AIBusinessTycoon.Managers
         private int currentCarrying = 0;
         private InteractableShelf targetShelf;
         private Transform supplyZoneTransform;
+        private StoreInteractionManager currentStore;
+        private GameObject supplyZoneObject;
 
         // Visuals
         private TextMeshProUGUI floatingLabel;
@@ -40,12 +42,6 @@ namespace AIBusinessTycoon.Managers
             yield return new WaitUntil(() => agent.isOnNavMesh);
             yield return new WaitForSeconds(0.5f);
 
-            GameObject supplyZoneObj = GameObject.FindGameObjectWithTag("SupplyZone");
-            if (supplyZoneObj != null)
-                supplyZoneTransform = supplyZoneObj.transform;
-            else
-                Debug.LogWarning("[RestockerAI] No GameObject with tag 'SupplyZone' found! Restocker cannot work.");
-
             StartCoroutine(RestockerLoop());
         }
 
@@ -55,11 +51,19 @@ namespace AIBusinessTycoon.Managers
             {
                 targetShelf = FindShelfNeedingRestock();
 
-                if (targetShelf == null || supplyZoneTransform == null)
+                if (targetShelf == null || supplyZoneTransform == null || !IsSupplyZoneUsable())
                 {
                     ShowLabel("😴", Color.gray);
                     currentState = RestockerState.Idle;
                     yield return new WaitForSeconds(2f);
+                    continue;
+                }
+
+                if (!IsSupplyZoneUsable())
+                {
+                    ShowLabel("⏳", Color.gray);
+                    currentState = RestockerState.Idle;
+                    yield return new WaitForSeconds(1f);
                     continue;
                 }
 
@@ -93,8 +97,8 @@ namespace AIBusinessTycoon.Managers
                 ShowLabel("🚶", Color.white);
 
                 Vector3 shelfDest = targetShelf.transform.position;
-                Vector3 offset = (transform.position - shelfDest).normalized * 1.5f; 
-                
+                Vector3 offset = (transform.position - shelfDest).normalized * 1.5f;
+
                 if (NavMesh.SamplePosition(shelfDest + offset, out NavMeshHit hit, 3f, NavMesh.AllAreas))
                     agent.SetDestination(hit.position);
                 else
@@ -118,6 +122,50 @@ namespace AIBusinessTycoon.Managers
                 ShowLabel("✅", Color.green);
                 yield return new WaitForSeconds(0.5f);
             }
+        }
+
+        public void BindToStore(StoreInteractionManager store)
+        {
+            currentStore = store;
+
+            if (store == null)
+            {
+                supplyZoneObject = null;
+                supplyZoneTransform = null;
+                return;
+            }
+
+            // Use the store-owned zone, not a global scene object
+            if (store.SupplyZone != null)
+            {
+                supplyZoneObject = store.SupplyZone;
+                supplyZoneTransform = store.SupplyZone.transform;
+            }
+            else
+            {
+                supplyZoneObject = null;
+                supplyZoneTransform = null;
+            }
+        }
+
+        private bool IsSupplyZoneUsable()
+        {
+            if (currentStore == null)
+                return false;
+
+            if (supplyZoneObject == null || supplyZoneTransform == null)
+                return false;
+
+            if (!supplyZoneObject.activeInHierarchy)
+                return false;
+
+            if (currentStore.CurrentDeliveryStatus != null &&
+                !currentStore.CurrentDeliveryStatus.supply_available)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private InteractableShelf FindShelfNeedingRestock()

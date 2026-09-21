@@ -58,6 +58,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/ConnectionTestManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/EmployeeUpgradeUIManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/BuildMenuManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/DeliveryHUDController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/ShelfUpgradeUIManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/HUDManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/RestockerAI.cs" />

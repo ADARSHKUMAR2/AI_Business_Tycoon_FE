@@ -24,6 +24,8 @@ namespace AIBusinessTycoon.Managers
         [SerializeField] private BuildingPlacementManager buildingPlacementManager;
         [SerializeField] private PlayerController playerController;
 
+        [SerializeField] private DeliveryHUDController deliveryHud;
+
         [Header("Building Prefabs")]
         [SerializeField] private GameObject kiranaPrefab;
         [SerializeField] private GameObject pizzaPrefab;
@@ -40,6 +42,9 @@ namespace AIBusinessTycoon.Managers
         public bool IsGameReady { get; private set; }
         public bool IsInStore { get; private set; }
         private StoreInteractionManager currentStore;
+        private readonly Dictionary<string, StoreInteractionManager> storesByBusinessId = new Dictionary<string, StoreInteractionManager>();
+        private Coroutine worldDeliveryPollRoutine;
+
 
         // Services
         private TycoonAPIService apiService;
@@ -111,6 +116,25 @@ namespace AIBusinessTycoon.Managers
                     (tile) => { gridManager?.OnLandPurchaseSuccess(tile); RefreshPlayerData(); },
                     (err)  => Debug.LogError($"Land purchase failed: {err}")
                 );
+            }
+        }
+
+        public string CurrentPlayerId
+        {
+            get
+            {
+                if (CurrentPlayer == null) return string.Empty;
+                return CurrentPlayer.player_id;
+            }
+        }
+
+        public string ActiveBusinessId
+        {
+            get
+            {
+                if (currentStore == null) return string.Empty;
+                if (currentStore.BusinessData == null) return string.Empty;
+                return currentStore.BusinessData.business_id;
             }
         }
 
@@ -188,6 +212,11 @@ namespace AIBusinessTycoon.Managers
             IsLoading  = false;
             IsGameReady = true;
 
+            if (worldDeliveryPollRoutine != null)
+                StopCoroutine(worldDeliveryPollRoutine);
+
+            worldDeliveryPollRoutine = StartCoroutine(PollAllStoresDeliveryStatus());
+
             Debug.Log("[GameManager] === Game Initialized ===");
         }
 
@@ -202,62 +231,76 @@ namespace AIBusinessTycoon.Managers
         {
             if (IsInStore) return;
 
-            IsInStore    = true;
+            if (store == null)
+            {
+                Debug.LogWarning("[GameManager] Tried to enter null store.");
+                return;
+            }
+
+            IsInStore = true;
             currentStore = store;
+
+            if (deliveryHud != null)
+            {
+                deliveryHud.Unbind();
+                deliveryHud.BindToStore(store);
+            }
+             
+            // Bind restocker AIs to this store
+            var restockers = store.GetComponentsInChildren<RestockerAI>(true);
+            foreach (var restocker in restockers)
+            {
+                restocker.BindToStore(store);
+            }
 
             var storeCollider = currentStore.GetComponent<Collider>();
             if (storeCollider != null) storeCollider.enabled = false;
 
-            // Hide macro-only UI
             UI.BuildMenuManager.Instance?.HideMenu();
-
-            // Hide the Macro HUD so it doesn't overlap the Store UI
             UI.HUDManager.Instance?.ShowHUD(false);
 
-            // Teleport and activate avatar
             if (playerController != null)
                 playerController.ActivateAtPosition(store.GetEntrancePosition());
 
-            // Swoop camera to micro view
             if (cameraController != null && playerController != null)
                 cameraController.EnterMicroView(playerController.transform);
 
-            // Show store UI — using OpenStoreUI instead of ShowStoreUI
             UI.StoreUIManager.Instance?.OpenStoreUI(store);
 
             OnEnteredStore?.Invoke();
             Debug.Log($"[GameManager] Entered store: {store.BusinessData?.name}");
         }
 
-        /// <summary>
-        /// Returns to city macro view and deactivates avatar.
-        /// </summary>
         public void ExitStore()
         {
             if (!IsInStore) return;
 
-            // Re-enable the store's macro-click collider
+            if (deliveryHud != null)
+            {
+                deliveryHud.Unbind();
+            }
+
             if (currentStore != null)
             {
                 var storeCollider = currentStore.GetComponent<Collider>();
                 if (storeCollider != null) storeCollider.enabled = true;
+
+                var restockers = currentStore.GetComponentsInChildren<RestockerAI>(true);
+                foreach (var restocker in restockers)
+                {
+                    restocker.BindToStore(null);
+                }
             }
 
-
-            IsInStore    = false;
+            IsInStore = false;
             currentStore = null;
 
-            // Hide store UI — using CloseStoreUI instead of HideStoreUI
             UI.StoreUIManager.Instance?.CloseStoreUI();
-
-            // Show the Macro HUD again
             UI.HUDManager.Instance?.ShowHUD(true);
 
-            // Deactivate avatar
             if (playerController != null)
                 playerController.Deactivate();
 
-            // Return camera to macro view
             if (cameraController != null)
                 cameraController.ExitToMacroView();
 
@@ -268,6 +311,44 @@ namespace AIBusinessTycoon.Managers
         #endregion
 
         #region Player Management
+
+        private IEnumerator PollAllStoresDeliveryStatus()
+        {
+            while (true)
+            {
+                foreach (var pair in storesByBusinessId)
+                {
+                    var store = pair.Value;
+                    if (store == null || store.BusinessData == null)
+                        continue;
+
+                    if (TycoonAPIService.Instance == null)
+                        continue;
+
+                    string playerId = CurrentPlayerId;
+                    if (string.IsNullOrEmpty(playerId))
+                        continue;
+
+                    TycoonAPIService.Instance.GetDeliveryStatus(
+                        playerId,
+                        store.BusinessData.business_id,
+                        (DeliveryStatusResponse response) =>
+                        {
+                            if (response != null)
+                            {
+                                store.ApplyDeliveryStatus(response);
+                            }
+                        },
+                        (string error) =>
+                        {
+                            Debug.LogWarning($"[GameManager] Delivery status poll failed for {store.BusinessData.business_id}: {error}");
+                        }
+                    );
+                }
+
+                yield return new WaitForSeconds(10f);
+            }
+        }
 
         public void RefreshPlayerData()
         {
@@ -336,16 +417,15 @@ namespace AIBusinessTycoon.Managers
             GameObject buildingObj = Instantiate(prefab, worldPos, Quaternion.identity);
             buildingObj.name = $"{business.name} ({business.business_id})";
 
-            // Attach StoreInteractionManager so player can click to enter
             StoreInteractionManager sim = buildingObj.GetComponent<StoreInteractionManager>();
             if (sim == null) sim = buildingObj.AddComponent<StoreInteractionManager>();
             sim.BusinessData = business;
 
-            spawnedBuildings[business.business_id] = buildingObj;
+            storesByBusinessId[business.business_id] = sim;
 
+            spawnedBuildings[business.business_id] = buildingObj;
             sim.SpawnSavedEmployees(cashierPrefab, restockerPrefab, cleanerPrefab);
 
-            Debug.Log($"[GameManager] Spawned: {business.name} at ({business.position_x}, {business.position_y})");
             return buildingObj;
         }
 

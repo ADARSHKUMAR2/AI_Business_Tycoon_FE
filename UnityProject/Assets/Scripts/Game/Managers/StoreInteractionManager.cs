@@ -14,9 +14,35 @@ namespace AIBusinessTycoon.Managers
 
         [Header("Interaction Prompt")]
         [SerializeField] private GameObject interactionPromptUI;
+        [Header("Delivery")]
+        [SerializeField] private GameObject supplyZone;
+        public GameObject SupplyZone => supplyZone;
 
         private bool isHovered = false;
         private bool employeesSpawned = false; 
+
+        public DeliveryStatusResponse CurrentDeliveryStatus { get; private set; }
+
+        public void ApplyDeliveryStatus(DeliveryStatusResponse status)
+        {
+            CurrentDeliveryStatus = status;
+
+            if (supplyZone != null)
+            {
+                if (status == null)
+                {
+                    supplyZone.SetActive(false);
+                    return;
+                }
+
+                supplyZone.SetActive(status.supply_available);
+            }
+        }
+
+        public bool IsSupplyUsable()
+        {
+            return CurrentDeliveryStatus != null && CurrentDeliveryStatus.supply_available;
+        }
 
         private void Awake()
         {

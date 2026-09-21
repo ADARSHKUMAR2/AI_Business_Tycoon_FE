@@ -1367,3 +1367,57 @@
 [2026-09-21T07:36:09.196Z] INFO  [QueueWorker] [trace=f01e9e231b45e85c7bf3c77b5263e899] === Queue worker finished ===
 [2026-09-21T07:36:09.196Z] INFO  [SessionStartHook] [trace=f01e9e231b45e85c7bf3c77b5263e899] Briefing cache not warmed — nothing to brief on this branch
 [2026-09-21T07:36:09.198Z] INFO  [SessionSync] [trace=f01e9e231b45e85c7bf3c77b5263e899] session sync: not uploading — no API key configured
+[2026-09-21T07:40:46.866Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook started (source: message) ===
+[2026-09-21T07:40:46.878Z] INFO  [RepoProfile] manual-disable read → false (by=manuallyDisabled, pid=45355, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-21T07:40:46.887Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook finished ===
+[2026-09-21T07:40:46.986Z] INFO  [RepoProfile] [trace=7e6bf21145b5c230cf21526df336822c] manual-disable read → false (by=manuallyDisabled, pid=45368, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-21T07:40:46.994Z] INFO  [PostCommitHook] [trace=7e6bf21145b5c230cf21526df336822c] Detected operation: commit
+[2026-09-21T07:40:47.005Z] INFO  [PostCommitHook] [trace=7e6bf21145b5c230cf21526df336822c] Enqueued: type=commit hash=86acac19
+[2026-09-21T07:40:47.005Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Launching background worker
+[2026-09-21T07:40:47.005Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Background worker spawned (PID: 45373)
+[2026-09-21T07:40:47.006Z] INFO  [EnsureGlobalDaemon] [trace=7e6bf21145b5c230cf21526df336822c] spawned global daemon ensure helper (pid 45374)
+[2026-09-21T07:40:47.112Z] INFO  [RepoProfile] [trace=7e6bf21145b5c230cf21526df336822c] manual-disable read → false (by=manuallyDisabled, pid=45373, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-21T07:40:47.148Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] === Queue worker started === node=24.13.0 kind=vscode-plugin source=vscode pkgVer=0.99.17 cliVer=0.99.17 dist=/Users/adarsh/.vscode/extensions/jolli.jollimemory-vscode-0.99.17/dist
+[2026-09-21T07:40:47.156Z] INFO  [StorageFactory] [trace=7e6bf21145b5c230cf21526df336822c] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-21T07:40:47.265Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Processing queue entry: type=commit hash=86acac19
+[2026-09-21T07:40:47.273Z] INFO  [GitOps] [trace=7e6bf21145b5c230cf21526df336822c] Commit 86acac19: added customer exit point
+[2026-09-21T07:40:47.273Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Commit: 86acac19 - added customer exit point (7ms)
+[2026-09-21T07:40:47.351Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] No active sessions found — will infer topics from diff if available
+[2026-09-21T07:40:47.374Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Git diff: 8 files changed, +82 -12 (22ms)
+[2026-09-21T07:40:47.393Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Prompt blocks: plans=0 notes=0 references=0 (+0 track-only archived, not prompted) (AI soft-excluded 0)
+[2026-09-21T07:40:47.394Z] INFO  [Summarizer] [trace=7e6bf21145b5c230cf21526df336822c] Generating summary for commit 86acac19
+[2026-09-21T07:40:47.394Z] INFO  [Summarizer] [trace=7e6bf21145b5c230cf21526df336822c] Context: transcript=0, files=8, lines=82+12
+[2026-09-21T07:40:47.394Z] WARN  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] First API attempt failed: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).. Retrying in 2000ms...
+[2026-09-21T07:40:49.044Z] INFO  [PrePushHook] [trace=a13c78550a4bbd2a4aaae11ec4f23d5d] pre-push hook: remote=origin budget=3000ms
+[2026-09-21T07:40:49.045Z] INFO  [RepoProfile] [trace=a13c78550a4bbd2a4aaae11ec4f23d5d] manual-disable read → false (by=manuallyDisabled, pid=45441, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-21T07:40:49.054Z] INFO  [PushPendingStore] [trace=a13c78550a4bbd2a4aaae11ec4f23d5d] Enqueued 1 new push-pending entries (branch=main)
+[2026-09-21T07:40:49.054Z] INFO  [PrePushHook] [trace=a13c78550a4bbd2a4aaae11ec4f23d5d] pre-push: recorded 1 commit(s) across 1 pushed ref(s)
+[2026-09-21T07:40:49.059Z] INFO  [PrePushHook] [trace=a13c78550a4bbd2a4aaae11ec4f23d5d] Recorded 1 commit(s) for later sync — not signed in to Jolli
+[2026-09-21T07:40:49.070Z] INFO  [StorageFactory] [trace=a13c78550a4bbd2a4aaae11ec4f23d5d] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-21T07:40:49.395Z] INFO  [Summarizer] [trace=7e6bf21145b5c230cf21526df336822c] Generating summary for commit 86acac19
+[2026-09-21T07:40:49.395Z] INFO  [Summarizer] [trace=7e6bf21145b5c230cf21526df336822c] Context: transcript=0, files=8, lines=82+12
+[2026-09-21T07:40:49.396Z] ERROR [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] API call failed after retry: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).
+[2026-09-21T07:40:49.396Z] WARN  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Saving summary with empty topics + llm-failed marker for commit 86acac19
+[2026-09-21T07:40:49.396Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] API summary generated (2.0s)
+[2026-09-21T07:40:49.397Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Plan registry scan: found 0 uncommitted slug(s) on main: []
+[2026-09-21T07:40:49.397Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Plan association: detected 0 slug(s) from transcripts: []
+[2026-09-21T07:40:49.397Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Note registry scan: found 0 uncommitted note(s) on main: []
+[2026-09-21T07:40:49.398Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Note association: detected 0 note(s): []
+[2026-09-21T07:40:49.398Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Reference association: detected 0 ref(s) for branch main
+[2026-09-21T07:40:49.402Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Summary built for 86acac19: recap=no, topics=0, plans=absent, notes=absent, references=absent
+[2026-09-21T07:40:49.495Z] INFO  [MetadataManager] [trace=7e6bf21145b5c230cf21526df336822c] Manifest updated: main/added-customer-exit-point-86acac19.md (commit)
+[2026-09-21T07:40:49.495Z] INFO  [FolderStorage] [trace=7e6bf21145b5c230cf21526df336822c] Markdown generated: main/added-customer-exit-point-86acac19.md
+[2026-09-21T07:40:49.496Z] INFO  [FolderStorage] [trace=7e6bf21145b5c230cf21526df336822c] Wrote 3 files, deleted 0 (Add summary for 86acac19: added customer exit point)
+[2026-09-21T07:40:49.496Z] INFO  [SummaryStore] [trace=7e6bf21145b5c230cf21526df336822c] Summary stored successfully for commit 86acac19
+[2026-09-21T07:40:49.496Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Summary stored successfully for commit 86acac19 (94ms, 0 plans, 0 notes, 0 references)
+[2026-09-21T07:40:49.496Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] === Pipeline completed in 2.2s ===
+[2026-09-21T07:40:49.496Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] === Summary content (0 topics) ===
+[2026-09-21T07:40:49.498Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] Processed 1 queue entries
+[2026-09-21T07:40:49.498Z] INFO  [PushExecutor] [trace=7e6bf21145b5c230cf21526df336822c] Post-queue push trigger: scheduling drain for 1 newly generated summar(ies)
+[2026-09-21T07:40:49.500Z] INFO  [PushExecutor] [trace=7e6bf21145b5c230cf21526df336822c] processPushPending(post-queue): 22 pending entr(ies) (filtered to 1 hash(es))
+[2026-09-21T07:40:49.504Z] INFO  [PushExecutor] [trace=7e6bf21145b5c230cf21526df336822c] processPushPending(post-queue): not signed in — keeping 22 entries for later
+[2026-09-21T07:40:49.530Z] INFO  [GitOps] [trace=7e6bf21145b5c230cf21526df336822c] Commit 86acac19: added customer exit point
+[2026-09-21T07:40:49.576Z] INFO  [StorageFactory] [trace=7e6bf21145b5c230cf21526df336822c] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-21T07:40:49.613Z] INFO  [QueueWorker] [trace=7e6bf21145b5c230cf21526df336822c] === Queue worker finished ===
+[2026-09-21T07:40:49.614Z] INFO  [SessionStartHook] [trace=7e6bf21145b5c230cf21526df336822c] Briefing cache not warmed — nothing to brief on this branch
+[2026-09-21T07:40:49.615Z] INFO  [SessionSync] [trace=7e6bf21145b5c230cf21526df336822c] session sync: not uploading — no API key configured

@@ -7,6 +7,7 @@ using AIBusinessTycoon.Config;
 using AIBusinessTycoon.Data;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace AIBusinessTycoon.Services
 {
@@ -604,6 +605,70 @@ namespace AIBusinessTycoon.Services
 
             string url = $"{backendConfig.GetActiveURL()}/api/game/business/{playerId}/{businessId}/shelf/upgrade";
             StartCoroutine(PostRequest(url, request, onSuccess, onError));
+        }
+
+        #endregion
+
+        #region Delivery APIs
+
+        /// <summary>
+        /// Gets the current delivery/supply status for a business.
+        /// GET /api/game/delivery/{playerId}/{businessId}/status
+        /// </summary>
+        public void GetDeliveryStatus(
+            string playerId,
+            string businessId,
+            Action<DeliveryStatusResponse> onSuccess,
+            Action<string> onError)
+        {
+            if (backendConfig == null)
+            {
+                onError?.Invoke("BackendConfig is not assigned!");
+                return;
+            }
+
+            string url = $"{backendConfig.GetActiveURL()}/api/game/delivery/{playerId}/{businessId}/status";
+            StartCoroutine(GetRequest(url, onSuccess, onError));
+        }
+
+        /// <summary>
+        /// Pays the express fee and immediately triggers a supply delivery.
+        /// POST /api/game/delivery/{playerId}/{businessId}/express
+        /// </summary>
+        public void RequestExpressDelivery(
+            string playerId,
+            string businessId,
+            Action<BusinessData> onSuccess,
+            Action<string> onError)
+        {
+            if (backendConfig == null)
+            {
+                onError?.Invoke("BackendConfig is not assigned!");
+                return;
+            }
+
+            string url = $"{backendConfig.GetActiveURL()}/api/game/delivery/{playerId}/{businessId}/express";
+            StartCoroutine(PostRequest(url, new { }, onSuccess, onError));
+        }
+
+        /// <summary>
+        /// Optional admin/testing endpoint to force a manual restock.
+        /// POST /api/game/delivery/{playerId}/{businessId}/restock
+        /// </summary>
+        public void TriggerManualRestock(
+            string playerId,
+            string businessId,
+            Action<BusinessData> onSuccess,
+            Action<string> onError)
+        {
+            if (backendConfig == null)
+            {
+                onError?.Invoke("BackendConfig is not assigned!");
+                return;
+            }
+
+            string url = $"{backendConfig.GetActiveURL()}/api/game/delivery/{playerId}/{businessId}/restock";
+            StartCoroutine(PostRequest(url, new { }, onSuccess, onError));
         }
 
         #endregion
