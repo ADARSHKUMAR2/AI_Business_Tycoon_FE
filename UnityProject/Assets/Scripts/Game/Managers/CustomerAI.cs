@@ -172,19 +172,24 @@ namespace AIBusinessTycoon.Managers
                 
                 if (targetStore.BusinessData != null && targetStore.BusinessData.inventory != null)
                 {
-                    var activeItems = targetStore.BusinessData.inventory.ToList();
-                    
-                    if (activeItems.Count > 0)
+                    // ONLY grab items from the backend that are marked as "is_sellable = true"
+                    var menuItems = targetStore.BusinessData.inventory
+                        .Where(item => item.Value.is_sellable)
+                        .ToList();
+
+                    // If the store actually has sellable menu items available
+                    if (menuItems.Count > 0)
                     {
                         int itemsCount = Random.Range(1, 4); 
                         for(int i = 0; i < itemsCount; i++) 
                         {
-                            string randomKey = activeItems[Random.Range(0, activeItems.Count)].Key;
+                            string randomKey = menuItems[Random.Range(0, menuItems.Count)].Key;
                             itemsToBuy.Add(randomKey);
                         }
                     }
                 }
 
+                // If they couldn't find anything sellable, they leave
                 if (itemsToBuy.Count == 0)
                 {
                     Leave();
@@ -200,6 +205,7 @@ namespace AIBusinessTycoon.Managers
                 Leave();
             }
         }
+
 
         private void Update()
         {
