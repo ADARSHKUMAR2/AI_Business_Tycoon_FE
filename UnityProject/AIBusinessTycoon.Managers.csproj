@@ -60,6 +60,8 @@
     <Compile Include="Assets/Scripts/Game/Managers/BuildMenuManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/DeliveryHUDController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/ShelfUpgradeUIManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/IngredientPlot.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/RestaurantManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/HUDManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/RestockerAI.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GameManager.cs" />
@@ -68,6 +70,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/CraftingTable.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/EmployeeInteractionManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/StoreInteractionManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/GrowthTimer.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/InteractableShelf.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/BuildingPlacementManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GridVisualizer.cs" />
@@ -75,11 +78,15 @@
     <Compile Include="Assets/Scripts/Game/Managers/CashierAI.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/PlayerController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/TransactionSyncManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/IngredientPlotInteractable.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/PlayerIngredientInteractor.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/StoreUIManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/IngredientPlotVisual.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CameraController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CheckoutCounter.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/IngredientShelf.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/RecipeDefinition.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/RestaurantInventoryUI.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/APITestManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CleanerAI.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CustomerSpawner.cs" />

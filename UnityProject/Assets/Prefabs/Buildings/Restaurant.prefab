@@ -235,7 +235,7 @@ GameObject:
   - component: {fileID: 6392818449849800042}
   - component: {fileID: 1926311514642664852}
   m_Layer: 0
-  m_Name: PizzaOnionShelf
+  m_Name: PizzaPepperoniShelf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -270,7 +270,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4808f88f225b2449db9f75df0a48b563, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IngredientShelf
-  ingredientId: onion
+  ingredientId: pepperoni
+  maxStock: 3
+  respawnTime: 30
 --- !u!1 &585717744698923820
 GameObject:
   m_ObjectHideFlags: 0
@@ -381,7 +383,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -559,7 +561,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -1056,7 +1058,7 @@ GameObject:
   - component: {fileID: 5813869693592667227}
   - component: {fileID: 940354684299590287}
   m_Layer: 0
-  m_Name: BurgerTomatoShelf
+  m_Name: BurgerPattyShelf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1091,7 +1093,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4808f88f225b2449db9f75df0a48b563, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IngredientShelf
-  ingredientId: tomato
+  ingredientId: patty
+  maxStock: 3
+  respawnTime: 30
 --- !u!1 &2192534909691143539
 GameObject:
   m_ObjectHideFlags: 0
@@ -1415,6 +1419,118 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &2304607429063808723
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3733724634040608010}
+  - component: {fileID: 487730106143205495}
+  - component: {fileID: 4566101490795792905}
+  - component: {fileID: 4015029714962069648}
+  m_Layer: 0
+  m_Name: SupplyZone
+  m_TagString: SupplyZone
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3733724634040608010
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2304607429063808723}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 5, y: 0.5, z: -15}
+  m_LocalScale: {x: 4, y: 1, z: 4}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2431654039678908622}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &487730106143205495
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2304607429063808723}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!65 &4566101490795792905
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2304607429063808723}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &4015029714962069648
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2304607429063808723}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 1
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &2323543222705956086
 GameObject:
   m_ObjectHideFlags: 0
@@ -1566,7 +1682,7 @@ GameObject:
   - component: {fileID: 4855696534821295238}
   - component: {fileID: 5851805040908016075}
   m_Layer: 0
-  m_Name: PizzaFlourShelf
+  m_Name: PizzaDoughShelf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1601,7 +1717,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4808f88f225b2449db9f75df0a48b563, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IngredientShelf
-  ingredientId: flour
+  ingredientId: dough
+  maxStock: 3
+  respawnTime: 30
 --- !u!1 &2653748053573896396
 GameObject:
   m_ObjectHideFlags: 0
@@ -1802,7 +1920,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -2082,7 +2200,7 @@ Transform:
   m_GameObject: {fileID: 3089663753414160981}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.2, z: 0}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 1.8, y: 0.2, z: 1.8}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3504,6 +3622,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 3733724634040608010}
   - {fileID: 8739751576142302254}
   - {fileID: 122749178408880184}
   - {fileID: 8335577015508143849}
@@ -3524,6 +3643,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RestaurantManager
   ingredientPlots:
   - {fileID: 4656587287745415270}
+  - {fileID: 7262106897504983290}
+  - {fileID: 5471009964182379714}
+  - {fileID: 8509053570402824938}
+  - {fileID: 27030288545026505}
+  - {fileID: 5275279241524811016}
 --- !u!1 &4615050368353866378
 GameObject:
   m_ObjectHideFlags: 0
@@ -3729,7 +3853,7 @@ GameObject:
   - component: {fileID: 3211064101953414363}
   - component: {fileID: 1400520684474346450}
   m_Layer: 0
-  m_Name: BurgerOnionShelf
+  m_Name: BurgerCheeseShelf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3764,7 +3888,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4808f88f225b2449db9f75df0a48b563, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IngredientShelf
-  ingredientId: onion
+  ingredientId: cheese
+  maxStock: 3
+  respawnTime: 30
 --- !u!1 &4903010437388029723
 GameObject:
   m_ObjectHideFlags: 0
@@ -4151,7 +4277,7 @@ Transform:
   m_GameObject: {fileID: 5296028495845649351}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.2, z: 0}
+  m_LocalPosition: {x: 0, y: 0.51, z: 0}
   m_LocalScale: {x: 1.8, y: 0.2, z: 1.8}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4533,7 +4659,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4808f88f225b2449db9f75df0a48b563, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IngredientShelf
-  ingredientId: bread
+  ingredientId: buns
+  maxStock: 3
+  respawnTime: 30
 --- !u!1 &6267886956782678063
 GameObject:
   m_ObjectHideFlags: 0
@@ -5395,7 +5523,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -6604,7 +6732,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -7488,7 +7616,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -7751,7 +7879,7 @@ GameObject:
   - component: {fileID: 3383547158478834207}
   - component: {fileID: 5630324930035770466}
   m_Layer: 0
-  m_Name: PizzaTomatoShelf
+  m_Name: PizzaSauceShelf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7786,7 +7914,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4808f88f225b2449db9f75df0a48b563, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IngredientShelf
-  ingredientId: tomato
+  ingredientId: sauce
+  maxStock: 3
+  respawnTime: 30
 --- !u!1 &8647853821756300566
 GameObject:
   m_ObjectHideFlags: 0
@@ -8382,7 +8512,7 @@ GameObject:
   - component: {fileID: 2858356104434333749}
   - component: {fileID: 4724328318739448955}
   m_Layer: 0
-  m_Name: PizzaHerbsShelf
+  m_Name: PizzaOlivesShelf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8417,7 +8547,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4808f88f225b2449db9f75df0a48b563, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IngredientShelf
-  ingredientId: herbs
+  ingredientId: olives
+  maxStock: 3
+  respawnTime: 30
 --- !u!1 &9037599920729649155
 GameObject:
   m_ObjectHideFlags: 0

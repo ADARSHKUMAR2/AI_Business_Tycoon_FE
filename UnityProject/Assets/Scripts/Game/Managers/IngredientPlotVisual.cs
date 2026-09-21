@@ -1,4 +1,5 @@
 using UnityEngine;
+using AIBusinessTycoon.Managers; 
 
 [RequireComponent(typeof(IngredientPlot))]
 public class IngredientPlotVisual : MonoBehaviour

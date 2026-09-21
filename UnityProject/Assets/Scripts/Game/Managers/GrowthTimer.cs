@@ -1,6 +1,6 @@
 using UnityEngine;
 using TMPro;
-
+using AIBusinessTycoon.Managers; 
 public class GrowthTimer : MonoBehaviour
 {
     [SerializeField] private IngredientPlot plot;

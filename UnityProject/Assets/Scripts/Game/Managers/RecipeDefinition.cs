@@ -25,7 +25,8 @@ namespace AIBusinessTycoon.Managers
                     new RecipeDefinition
                     {
                         Type = RecipeType.Burger,
-                        Ingredients = new List<string> { "bread", "tomato", "onion" },
+                        // Kitchen items + Farm items (Must be completely lowercase!)
+                        Ingredients = new List<string> { "buns", "patty", "cheese", "tomato", "lettuce" },
                         OutputItemName = "burger"
                     }
                 },
@@ -34,7 +35,8 @@ namespace AIBusinessTycoon.Managers
                     new RecipeDefinition
                     {
                         Type = RecipeType.Pizza,
-                        Ingredients = new List<string> { "flour", "tomato", "onion", "herbs" },
+                        // Kitchen items + Farm items
+                        Ingredients = new List<string> { "dough", "sauce", "pepperoni", "flour", "herb", "onion" },
                         OutputItemName = "pizza"
                     }
                 }

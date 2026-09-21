@@ -16,6 +16,9 @@ namespace AIBusinessTycoon.Managers
 
         [Header("Interaction")]
         [SerializeField] private PlayerInventory playerInventory;
+        
+        // Removed global::
+        private IngredientPlot nearbyPlot; 
 
         private CharacterController characterController;
         private Camera mainCamera;
@@ -23,6 +26,7 @@ namespace AIBusinessTycoon.Managers
         private bool isActive = false;
 
         private IngredientShelf nearbyShelf;
+        private InteractableShelf nearbyCustomerShelf; 
         private CraftingTable nearbyTable;
 
         private void Awake()
@@ -110,54 +114,72 @@ namespace AIBusinessTycoon.Managers
         {
             if (nearbyShelf != null)
             {
-                if (playerInventory.HasItem())
-                {
-                    Debug.Log("You are already carrying an item.");
-                    return;
-                }
+                if (playerInventory.HasItem()) return;
+                if (nearbyShelf.TryTakeItem()) playerInventory.PickUpItem(nearbyShelf.IngredientId);
+                return;
+            }
 
-                playerInventory.PickUpItem(nearbyShelf.IngredientId);
-                Debug.Log("Picked up ingredient: " + nearbyShelf.IngredientId);
+            if (nearbyPlot != null)
+            {
+                if (playerInventory.HasItem()) return;
+                
+                if (nearbyPlot.TryTakeOne()) 
+                {
+                    string cropName = nearbyPlot.IngredientType.ToString().ToLower();
+                    playerInventory.PickUpItem(cropName);
+                    Debug.Log("Harvested: " + cropName);
+                }
                 return;
             }
 
             if (nearbyTable != null)
             {
-                nearbyTable.TryPlaceHeldItem(playerInventory);
+                nearbyTable.TryInteract(playerInventory);
+                return;
+            }
+
+            if (nearbyCustomerShelf != null)
+            {
+                if (playerInventory.HasItem() && nearbyCustomerShelf.CanAcceptStock())
+                {
+                    string itemGiven = playerInventory.DropHeldItem();
+                    nearbyCustomerShelf.AddStock(1);
+                    Debug.Log($"Stocked customer shelf with {itemGiven}!");
+                }
+                return;
             }
         }
 
         private void OnTriggerEnter(Collider other)
         {
             IngredientShelf shelf = other.GetComponentInParent<IngredientShelf>();
-            if (shelf != null)
-            {
-                nearbyShelf = shelf;
-                Debug.Log("Nearby shelf: " + shelf.IngredientId);
-                return;
-            }
+            if (shelf != null) nearbyShelf = shelf;
 
             CraftingTable table = other.GetComponentInParent<CraftingTable>();
-            if (table != null)
-            {
-                nearbyTable = table;
-                Debug.Log("Nearby table: " + table.name);
-            }
+            if (table != null) nearbyTable = table;
+
+            InteractableShelf custShelf = other.GetComponentInParent<InteractableShelf>();
+            if (custShelf != null) nearbyCustomerShelf = custShelf;
+
+            // Removed global::
+            IngredientPlot plot = other.GetComponentInParent<IngredientPlot>();
+            if (plot != null) nearbyPlot = plot;
         }
 
         private void OnTriggerExit(Collider other)
         {
             IngredientShelf shelf = other.GetComponentInParent<IngredientShelf>();
-            if (shelf != null && nearbyShelf == shelf)
-            {
-                nearbyShelf = null;
-            }
+            if (shelf != null && nearbyShelf == shelf) nearbyShelf = null;
 
             CraftingTable table = other.GetComponentInParent<CraftingTable>();
-            if (table != null && nearbyTable == table)
-            {
-                nearbyTable = null;
-            }
+            if (table != null && nearbyTable == table) nearbyTable = null;
+
+            InteractableShelf custShelf = other.GetComponentInParent<InteractableShelf>();
+            if (custShelf != null && nearbyCustomerShelf == custShelf) nearbyCustomerShelf = null;
+
+            // Removed global::
+            IngredientPlot plot = other.GetComponentInParent<IngredientPlot>();
+            if (plot != null && nearbyPlot == plot) nearbyPlot = null;
         }
 
         public void ActivateAtPosition(Vector3 position)

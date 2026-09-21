@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using AIBusinessTycoon.Managers; 
 
 public class RestaurantInventoryUI : MonoBehaviour
 {
