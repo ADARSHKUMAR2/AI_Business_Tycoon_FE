@@ -554,9 +554,10 @@ namespace AIBusinessTycoon.Managers
         private void Leave()
         {
             currentState = CustomerState.Leaving;
-            
-            Vector3 exitPos = CustomerSpawner.Instance.transform.position; 
-            
+
+            // Use the new method instead of the spawner's transform
+            Vector3 exitPos = CustomerSpawner.Instance.GetExitPosition();
+
             if (NavMesh.SamplePosition(exitPos, out NavMeshHit hit, 5.0f, NavMesh.AllAreas))
             {
                 agent.SetDestination(hit.position);

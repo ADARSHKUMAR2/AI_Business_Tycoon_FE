@@ -15,6 +15,7 @@ namespace AIBusinessTycoon.Managers
 
         [Header("Spawn Location")]
         [SerializeField] private Transform spawnPoint;
+        [SerializeField] private Transform exitPoint;
 
         // ── Object Pooling Variables ──
         private Queue<GameObject> customerPool = new Queue<GameObject>();
@@ -70,6 +71,11 @@ namespace AIBusinessTycoon.Managers
                     }
                 }
             }
+        }
+        public Vector3 GetExitPosition() 
+        {
+            if (exitPoint != null) return exitPoint.position;
+            return spawnPoint != null ? spawnPoint.position : transform.position;
         }
 
         private void SpawnCustomerFromPool()
