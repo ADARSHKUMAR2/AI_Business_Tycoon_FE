@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System.Collections.Generic;
 
 namespace AIBusinessTycoon.Managers
 {
@@ -14,7 +15,10 @@ namespace AIBusinessTycoon.Managers
 
         private GameObject boxPrefab;
         private TextMeshProUGUI inventoryTextUI;
-        private string heldItemId;
+        
+        // Changed from single string to a list to support multiple items
+        private List<string> heldItems = new List<string>();
+        private List<GameObject> visualBoxes = new List<GameObject>();
 
         private void Start()
         {
@@ -27,7 +31,9 @@ namespace AIBusinessTycoon.Managers
             }
 
             boxPrefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            boxPrefab.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            boxPrefab.name = "BoxTemplate";
+            boxPrefab.transform.SetParent(transform);
+            boxPrefab.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
             boxPrefab.GetComponent<Renderer>().material.color = Color.yellow;
             Destroy(boxPrefab.GetComponent<Collider>());
             boxPrefab.SetActive(false);
@@ -68,53 +74,108 @@ namespace AIBusinessTycoon.Managers
 
         public bool HasItem()
         {
-            return !string.IsNullOrEmpty(heldItemId);
+            return heldItems.Count > 0;
         }
 
-        public string HeldItemId => heldItemId;
+        public bool IsFull()
+        {
+            return currentCarrying >= maxCarryCapacity;
+        }
+
+        public int GetAvailableSpace()
+        {
+            return maxCarryCapacity - currentCarrying;
+        }
+
+        // Returns the first item type (for compatibility with existing code)
+        public string HeldItemId => heldItems.Count > 0 ? heldItems[0] : null;
 
         public void PickUpItem(string itemId)
         {
-            if (HasItem())
-                return;
-
             if (currentCarrying >= maxCarryCapacity)
+            {
+                Debug.Log($"[PlayerInventory] Cannot pick up {itemId} - inventory full ({currentCarrying}/{maxCarryCapacity})");
                 return;
+            }
 
-            heldItemId = itemId;
-            currentCarrying = 1;
+            heldItems.Add(itemId);
+            currentCarrying++;
             UpdateVisuals();
+            
+            Debug.Log($"[PlayerInventory] ✅ Picked up {itemId}. Now carrying: {currentCarrying}/{maxCarryCapacity}");
         }
 
         public string DropHeldItem()
         {
-            string item = heldItemId;
-            heldItemId = null;
+            if (heldItems.Count == 0)
+                return null;
+
+            string item = heldItems[0];
+            heldItems.RemoveAt(0);
+            currentCarrying--;
+            UpdateVisuals();
+            
+            Debug.Log($"[PlayerInventory] Dropped {item}. Now carrying: {currentCarrying}/{maxCarryCapacity}");
+            return item;
+        }
+
+        public void DropAllItems()
+        {
+            int count = heldItems.Count;
+            heldItems.Clear();
             currentCarrying = 0;
             UpdateVisuals();
-            return item;
+            Debug.Log($"[PlayerInventory] Dropped all {count} items.");
         }
 
         private void UpdateVisuals()
         {
+            // Update text UI
             if (inventoryTextUI != null)
             {
-                inventoryTextUI.text = HasItem()
-                    ? heldItemId
-                    : "";
+                if (currentCarrying > 0)
+                {
+                    // Show first item type and count
+                    inventoryTextUI.text = $"{heldItems[0]} x{currentCarrying}";
+                }
+                else
+                {
+                    inventoryTextUI.text = "";
+                }
             }
 
-            foreach (Transform child in carryPoint)
+            // Update stacked boxes visual (like RestockerAI)
+            // Create new boxes if needed
+            while (visualBoxes.Count < currentCarrying)
             {
-                Destroy(child.gameObject);
+                GameObject box = Instantiate(boxPrefab, carryPoint);
+                int i = visualBoxes.Count;
+                box.transform.localPosition = new Vector3(0, i * 0.45f, 0);
+                box.SetActive(true);
+                visualBoxes.Add(box);
             }
 
-            if (!HasItem())
-                return;
+            // Show/hide boxes based on current count
+            for (int i = 0; i < visualBoxes.Count; i++)
+            {
+                if (i < currentCarrying)
+                {
+                    visualBoxes[i].SetActive(true);
+                }
+                else
+                {
+                    visualBoxes[i].SetActive(false);
+                }
+            }
+        }
 
-            GameObject box = Instantiate(boxPrefab, carryPoint);
-            box.SetActive(true);
-            box.transform.localPosition = new Vector3(0, 0, 0);
+        private void LateUpdate()
+        {
+            // Keep UI facing camera
+            if (inventoryTextUI != null && Camera.main != null)
+            {
+                inventoryTextUI.transform.parent.rotation = Camera.main.transform.rotation;
+            }
         }
     }
 }

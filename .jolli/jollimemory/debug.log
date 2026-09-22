@@ -1864,3 +1864,58 @@
 [2026-09-21T17:46:37.924Z] INFO  [QueueWorker] [trace=4312b6bf98f869aa99df865cb7c89f56] === Queue worker finished ===
 [2026-09-21T17:46:37.925Z] INFO  [SessionStartHook] [trace=4312b6bf98f869aa99df865cb7c89f56] Briefing cache not warmed — nothing to brief on this branch
 [2026-09-21T17:46:37.926Z] INFO  [SessionSync] [trace=4312b6bf98f869aa99df865cb7c89f56] session sync: not uploading — no API key configured
+[2026-09-22T08:47:40.807Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook started (source: message) ===
+[2026-09-22T08:47:40.817Z] INFO  [RepoProfile] manual-disable read → false (by=manuallyDisabled, pid=71283, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-22T08:47:40.832Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook finished ===
+[2026-09-22T08:47:41.007Z] INFO  [RepoProfile] [trace=40b377feb509cd69c61eb93603b094b7] manual-disable read → false (by=manuallyDisabled, pid=71291, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-22T08:47:41.018Z] INFO  [PostCommitHook] [trace=40b377feb509cd69c61eb93603b094b7] Detected operation: commit
+[2026-09-22T08:47:41.036Z] INFO  [PostCommitHook] [trace=40b377feb509cd69c61eb93603b094b7] Enqueued: type=commit hash=a30bff40
+[2026-09-22T08:47:41.036Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Launching background worker
+[2026-09-22T08:47:41.037Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Background worker spawned (PID: 71296)
+[2026-09-22T08:47:41.037Z] INFO  [EnsureGlobalDaemon] [trace=40b377feb509cd69c61eb93603b094b7] spawned global daemon ensure helper (pid 71297)
+[2026-09-22T08:47:41.153Z] INFO  [RepoProfile] [trace=40b377feb509cd69c61eb93603b094b7] manual-disable read → false (by=manuallyDisabled, pid=71296, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-22T08:47:41.216Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] === Queue worker started === node=24.13.0 kind=vscode-plugin source=vscode pkgVer=0.99.17 cliVer=0.99.17 dist=/Users/adarsh/.vscode/extensions/jolli.jollimemory-vscode-0.99.17/dist
+[2026-09-22T08:47:41.231Z] INFO  [StorageFactory] [trace=40b377feb509cd69c61eb93603b094b7] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-22T08:47:41.413Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Processing queue entry: type=commit hash=a30bff40
+[2026-09-22T08:47:41.423Z] INFO  [GitOps] [trace=40b377feb509cd69c61eb93603b094b7] Commit a30bff40: removed unusued ui from restaurant prefab
+[2026-09-22T08:47:41.423Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Commit: a30bff40 - removed unusued ui from restaurant prefab (7ms)
+[2026-09-22T08:47:41.664Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] No active sessions found — will infer topics from diff if available
+[2026-09-22T08:47:41.745Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Git diff: 4 files changed, +84 -3 (79ms)
+[2026-09-22T08:47:41.771Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Prompt blocks: plans=0 notes=0 references=0 (+0 track-only archived, not prompted) (AI soft-excluded 0)
+[2026-09-22T08:47:41.771Z] INFO  [Summarizer] [trace=40b377feb509cd69c61eb93603b094b7] Generating summary for commit a30bff40
+[2026-09-22T08:47:41.771Z] INFO  [Summarizer] [trace=40b377feb509cd69c61eb93603b094b7] Context: transcript=0, files=4, lines=84+3
+[2026-09-22T08:47:41.771Z] WARN  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] First API attempt failed: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).. Retrying in 2000ms...
+[2026-09-22T08:47:43.395Z] INFO  [PrePushHook] [trace=1963375e4bdfca917be3fde07364f1c0] pre-push hook: remote=origin budget=3000ms
+[2026-09-22T08:47:43.398Z] INFO  [RepoProfile] [trace=1963375e4bdfca917be3fde07364f1c0] manual-disable read → false (by=manuallyDisabled, pid=71366, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-22T08:47:43.411Z] INFO  [PushPendingStore] [trace=1963375e4bdfca917be3fde07364f1c0] Enqueued 1 new push-pending entries (branch=main)
+[2026-09-22T08:47:43.412Z] INFO  [PrePushHook] [trace=1963375e4bdfca917be3fde07364f1c0] pre-push: recorded 1 commit(s) across 1 pushed ref(s)
+[2026-09-22T08:47:43.417Z] INFO  [PrePushHook] [trace=1963375e4bdfca917be3fde07364f1c0] Recorded 1 commit(s) for later sync — not signed in to Jolli
+[2026-09-22T08:47:43.434Z] INFO  [StorageFactory] [trace=1963375e4bdfca917be3fde07364f1c0] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-22T08:47:43.773Z] INFO  [Summarizer] [trace=40b377feb509cd69c61eb93603b094b7] Generating summary for commit a30bff40
+[2026-09-22T08:47:43.773Z] INFO  [Summarizer] [trace=40b377feb509cd69c61eb93603b094b7] Context: transcript=0, files=4, lines=84+3
+[2026-09-22T08:47:43.774Z] ERROR [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] API call failed after retry: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).
+[2026-09-22T08:47:43.778Z] WARN  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Saving summary with empty topics + llm-failed marker for commit a30bff40
+[2026-09-22T08:47:43.778Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] API summary generated (2.0s)
+[2026-09-22T08:47:43.779Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Plan registry scan: found 0 uncommitted slug(s) on main: []
+[2026-09-22T08:47:43.779Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Plan association: detected 0 slug(s) from transcripts: []
+[2026-09-22T08:47:43.779Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Note registry scan: found 0 uncommitted note(s) on main: []
+[2026-09-22T08:47:43.779Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Note association: detected 0 note(s): []
+[2026-09-22T08:47:43.779Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Reference association: detected 0 ref(s) for branch main
+[2026-09-22T08:47:43.780Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Summary built for a30bff40: recap=no, topics=0, plans=absent, notes=absent, references=absent
+[2026-09-22T08:47:43.873Z] INFO  [MetadataManager] [trace=40b377feb509cd69c61eb93603b094b7] Manifest updated: main/removed-unusued-ui-from-restaurant-prefab-a30bff40.md (commit)
+[2026-09-22T08:47:43.873Z] INFO  [FolderStorage] [trace=40b377feb509cd69c61eb93603b094b7] Markdown generated: main/removed-unusued-ui-from-restaurant-prefab-a30bff40.md
+[2026-09-22T08:47:43.874Z] INFO  [FolderStorage] [trace=40b377feb509cd69c61eb93603b094b7] Wrote 3 files, deleted 0 (Add summary for a30bff40: removed unusued ui from restaurant prefab)
+[2026-09-22T08:47:43.874Z] INFO  [SummaryStore] [trace=40b377feb509cd69c61eb93603b094b7] Summary stored successfully for commit a30bff40
+[2026-09-22T08:47:43.874Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Summary stored successfully for commit a30bff40 (94ms, 0 plans, 0 notes, 0 references)
+[2026-09-22T08:47:43.874Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] === Pipeline completed in 2.5s ===
+[2026-09-22T08:47:43.874Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] === Summary content (0 topics) ===
+[2026-09-22T08:47:43.876Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] Processed 1 queue entries
+[2026-09-22T08:47:43.878Z] INFO  [PushExecutor] [trace=40b377feb509cd69c61eb93603b094b7] Post-queue push trigger: scheduling drain for 1 newly generated summar(ies)
+[2026-09-22T08:47:43.880Z] INFO  [PushExecutor] [trace=40b377feb509cd69c61eb93603b094b7] processPushPending(post-queue): 31 pending entr(ies) (filtered to 1 hash(es))
+[2026-09-22T08:47:43.886Z] INFO  [PushExecutor] [trace=40b377feb509cd69c61eb93603b094b7] processPushPending(post-queue): not signed in — keeping 31 entries for later
+[2026-09-22T08:47:43.916Z] INFO  [GitOps] [trace=40b377feb509cd69c61eb93603b094b7] Commit a30bff40: removed unusued ui from restaurant prefab
+[2026-09-22T08:47:43.975Z] INFO  [StatsWriter] [trace=40b377feb509cd69c61eb93603b094b7] pruned 6 projected events older than 2026-09-08
+[2026-09-22T08:47:43.979Z] INFO  [StorageFactory] [trace=40b377feb509cd69c61eb93603b094b7] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-22T08:47:44.021Z] INFO  [QueueWorker] [trace=40b377feb509cd69c61eb93603b094b7] === Queue worker finished ===
+[2026-09-22T08:47:44.022Z] INFO  [SessionStartHook] [trace=40b377feb509cd69c61eb93603b094b7] Briefing cache not warmed — nothing to brief on this branch
+[2026-09-22T08:47:44.042Z] INFO  [SessionSync] [trace=40b377feb509cd69c61eb93603b094b7] session sync: not uploading — no API key configured

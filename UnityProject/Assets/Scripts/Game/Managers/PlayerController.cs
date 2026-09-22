@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 namespace AIBusinessTycoon.Managers
 {
@@ -16,17 +17,25 @@ namespace AIBusinessTycoon.Managers
 
         [Header("Interaction")]
         [SerializeField] private PlayerInventory playerInventory;
-        
-        private IngredientPlot nearbyPlot; 
+
+        [Header("Supply Zone Settings")]
+        [SerializeField] private float supplyPickupInterval = 0.5f; // Time between each pickup in supply zone
+
+        private IngredientPlot nearbyPlot;
         private CharacterController characterController;
         private Camera mainCamera;
         private Vector2 inputDirection;
         private bool isActive = false;
 
         private IngredientShelf nearbyShelf;
-        private InteractableShelf nearbyCustomerShelf; 
+        private InteractableShelf nearbyCustomerShelf;
         private CraftingTable nearbyTable;
         private Dustbin nearbyDustbin;
+        private StoreInteractionManager nearbyStore;
+        
+        // Supply zone tracking
+        private bool isInsideSupplyZone = false;
+        private Coroutine supplyPickupCoroutine = null;
 
         private void Awake()
         {
@@ -77,6 +86,8 @@ namespace AIBusinessTycoon.Managers
             inputDirection = direction;
         }
 
+        public PlayerInventory Inventory => playerInventory;
+
         private void MoveAvatar()
         {
             if (inputDirection.magnitude < 0.05f) return;
@@ -107,13 +118,14 @@ namespace AIBusinessTycoon.Managers
 
         private void HandleInteraction()
         {
-            // 1. Dustbin (Check this first so you can quickly throw things away)
+            // Skip supply zone here - it's handled automatically in OnTriggerEnter/Exit
+            
+            // Original interaction flow retained
             if (nearbyDustbin != null)
             {
                 if (nearbyDustbin.TryDiscardItem(playerInventory)) return;
             }
 
-            // 2. Pick up from Kitchen Shelf
             if (nearbyShelf != null)
             {
                 if (playerInventory.HasItem()) return;
@@ -121,12 +133,11 @@ namespace AIBusinessTycoon.Managers
                 return;
             }
 
-            // 3. Pick up from Farm Plot
             if (nearbyPlot != null)
             {
                 if (playerInventory.HasItem()) return;
-                
-                if (nearbyPlot.TryTakeOne()) 
+
+                if (nearbyPlot.TryTakeOne())
                 {
                     string cropName = nearbyPlot.IngredientType.ToString().ToLower();
                     playerInventory.PickUpItem(cropName);
@@ -135,14 +146,12 @@ namespace AIBusinessTycoon.Managers
                 return;
             }
 
-            // 4. Interact with Crafting Table
             if (nearbyTable != null)
             {
                 nearbyTable.TryInteract(playerInventory);
                 return;
             }
 
-            // 5. Put finished food on Customer Shelf
             if (nearbyCustomerShelf != null)
             {
                 if (playerInventory.HasItem() && nearbyCustomerShelf.CanAcceptStock())
@@ -157,6 +166,21 @@ namespace AIBusinessTycoon.Managers
 
         private void OnTriggerEnter(Collider other)
         {
+            StoreInteractionManager store = other.GetComponentInParent<StoreInteractionManager>();
+            if (store != null)
+            {
+                nearbyStore = store;
+                
+                // Check if we specifically entered the supply zone
+                if (store.SupplyZone != null && 
+                    (other.gameObject == store.SupplyZone || other.transform.IsChildOf(store.SupplyZone.transform)))
+                {
+                    isInsideSupplyZone = true;
+                    StartSupplyPickup();
+                    Debug.Log($"[PlayerController] Entered supply zone for store {store.BusinessData?.business_id}");
+                }
+            }
+
             IngredientShelf shelf = other.GetComponentInParent<IngredientShelf>();
             if (shelf != null) nearbyShelf = shelf;
 
@@ -175,6 +199,21 @@ namespace AIBusinessTycoon.Managers
 
         private void OnTriggerExit(Collider other)
         {
+            StoreInteractionManager store = other.GetComponentInParent<StoreInteractionManager>();
+            if (store != null && nearbyStore == store)
+            {
+                // Check if we exited the supply zone specifically
+                if (store.SupplyZone != null && 
+                    (other.gameObject == store.SupplyZone || other.transform.IsChildOf(store.SupplyZone.transform)))
+                {
+                    isInsideSupplyZone = false;
+                    StopSupplyPickup();
+                    Debug.Log($"[PlayerController] Exited supply zone for store {store.BusinessData?.business_id}");
+                }
+                
+                nearbyStore = null;
+            }
+
             IngredientShelf shelf = other.GetComponentInParent<IngredientShelf>();
             if (shelf != null && nearbyShelf == shelf) nearbyShelf = null;
 
@@ -189,6 +228,49 @@ namespace AIBusinessTycoon.Managers
 
             Dustbin dustbin = other.GetComponentInParent<Dustbin>();
             if (dustbin != null && nearbyDustbin == dustbin) nearbyDustbin = null;
+        }
+
+        private void StartSupplyPickup()
+        {
+            // Stop any existing pickup coroutine
+            if (supplyPickupCoroutine != null)
+            {
+                StopCoroutine(supplyPickupCoroutine);
+            }
+            
+            // Start automatic pickup
+            supplyPickupCoroutine = StartCoroutine(AutoPickupFromSupplyZone());
+        }
+
+        private void StopSupplyPickup()
+        {
+            if (supplyPickupCoroutine != null)
+            {
+                StopCoroutine(supplyPickupCoroutine);
+                supplyPickupCoroutine = null;
+            }
+        }
+
+        private IEnumerator AutoPickupFromSupplyZone()
+        {
+            Debug.Log("[PlayerController] Started auto-pickup from supply zone");
+            
+            while (isInsideSupplyZone && nearbyStore != null)
+            {
+                // Keep picking up until inventory is full
+                if (!playerInventory.IsFull())
+                {
+                    nearbyStore.TryPlayerSupply(this);
+                    yield return new WaitForSeconds(supplyPickupInterval);
+                }
+                else
+                {
+                    Debug.Log($"[PlayerController] Inventory full ({playerInventory.currentCarrying}/{playerInventory.maxCarryCapacity}). Stopping auto-pickup.");
+                    break;
+                }
+            }
+            
+            supplyPickupCoroutine = null;
         }
 
         public void ActivateAtPosition(Vector3 position)
@@ -207,6 +289,11 @@ namespace AIBusinessTycoon.Managers
         public void Deactivate()
         {
             isActive = false;
+            
+            // Stop any ongoing supply pickup
+            StopSupplyPickup();
+            isInsideSupplyZone = false;
+            
             if (avatarVisual != null) avatarVisual.SetActive(false);
             gameObject.SetActive(false);
         }

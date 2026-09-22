@@ -14,12 +14,13 @@ namespace AIBusinessTycoon.Managers
 
         [Header("Interaction Prompt")]
         [SerializeField] private GameObject interactionPromptUI;
+
         [Header("Delivery")]
         [SerializeField] private GameObject supplyZone;
         public GameObject SupplyZone => supplyZone;
 
         private bool isHovered = false;
-        private bool employeesSpawned = false; 
+        private bool employeesSpawned = false;
 
         public DeliveryStatusResponse CurrentDeliveryStatus { get; private set; }
 
@@ -44,6 +45,71 @@ namespace AIBusinessTycoon.Managers
             return CurrentDeliveryStatus != null && CurrentDeliveryStatus.supply_available;
         }
 
+        public void TryPlayerSupply(PlayerController player, bool skipPositionCheck = false)
+        {
+            if (player == null)
+            {
+                Debug.LogWarning($"{name}: Tried to use supply with a null player.");
+                return;
+            }
+
+            if (CurrentDeliveryStatus == null)
+            {
+                Debug.Log($"{name}: No delivery status available for this store.");
+                return;
+            }
+
+            if (!CurrentDeliveryStatus.supply_available)
+            {
+                Debug.Log($"{name}: Supply is not available for store {BusinessData?.business_id}");
+                return;
+            }
+
+            if (supplyZone == null)
+            {
+                Debug.LogWarning($"{name}: Supply zone is missing.");
+                return;
+            }
+
+            if (player.Inventory == null)
+            {
+                Debug.LogWarning($"{name}: Player inventory is missing on {player.name}.");
+                return;
+            }
+
+            // ✅ CHANGED: Check if inventory is FULL, not just if it has any item
+            if (player.Inventory.IsFull())
+            {
+                Debug.Log($"{name}: Player inventory is full ({player.Inventory.currentCarrying}/{player.Inventory.maxCarryCapacity}) and cannot pick up more supplies.");
+                return;
+            }
+
+            string itemKey = GetNextSupplyItem();
+            if (string.IsNullOrEmpty(itemKey))
+            {
+                Debug.Log($"{name}: No supply item is available for store {BusinessData?.business_id}");
+                return;
+            }
+
+            player.Inventory.PickUpItem(itemKey);
+            Debug.Log($"✅ [StoreInteractionManager] Player picked up '{itemKey}' from supply zone at {BusinessData?.business_id}");
+        }
+
+
+        private string GetNextSupplyItem()
+        {
+            if (BusinessData == null || BusinessData.inventory == null || BusinessData.inventory.Count == 0)
+                return string.Empty;
+
+            foreach (var item in BusinessData.inventory)
+            {
+                if (item.Value != null && item.Value.stock > 0)
+                    return item.Key;
+            }
+
+            return string.Empty;
+        }
+
         private void Awake()
         {
             if (entrancePoint == null)
@@ -64,8 +130,7 @@ namespace AIBusinessTycoon.Managers
             if (BusinessData.inventory != null)
             {
                 var shelves = GetComponentsInChildren<InteractableShelf>();
-                
-                // Convert the Dictionary to a List of KeyValuePairs so we can access them by index
+
                 var activeItems = new List<KeyValuePair<string, InventoryItem>>(BusinessData.inventory);
 
                 for (int i = 0; i < shelves.Length && i < activeItems.Count; i++)
@@ -98,8 +163,8 @@ namespace AIBusinessTycoon.Managers
                     }
                     else if (emp.role == "cleaner")
                     {
-                        prefab      = cleanerPrefab;
-                        spawnOffset = new Vector3(0f, 0.5f, 2f); 
+                        prefab = cleanerPrefab;
+                        spawnOffset = new Vector3(0f, 0.5f, 2f);
                     }
 
                     if (prefab != null)
@@ -107,24 +172,25 @@ namespace AIBusinessTycoon.Managers
                         Vector3 spawnPos = GetEntrancePosition() + spawnOffset;
                         GameObject ai = Instantiate(prefab, spawnPos, Quaternion.identity, transform);
                         ai.name = $"{emp.role}_{emp.employee_id.Substring(0, 4)}";
-                        
+
                         if (emp.role == "cleaner")
                         {
                             CleanerAI cleanerAI = ai.GetComponent<CleanerAI>();
                             if (cleanerAI != null)
                                 cleanerAI.Initialize(BusinessData.player_id, BusinessData.business_id);
                         }
-                        
+
                         var interactionManager = ai.GetComponent<EmployeeInteractionManager>();
                         if (interactionManager != null)
                         {
                             interactionManager.Initialize(emp, BusinessData.business_id);
                         }
-                        
+
                         Debug.Log($"[StoreInteractionManager] Respawned saved {emp.role}");
                     }
                 }
             }
+
             employeesSpawned = true;
         }
 
