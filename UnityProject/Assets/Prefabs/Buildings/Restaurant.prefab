@@ -1507,7 +1507,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 37f803206b180400eb6133542d791581, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1666,6 +1666,7 @@ MonoBehaviour:
     stock: 0
     max_stock: 10
     total_sold: 0
+    is_sellable: 1
   maxCapacity: 10
   currentStock: 0
   stockTextUI: {fileID: 0}
@@ -2454,6 +2455,7 @@ MonoBehaviour:
     stock: 0
     max_stock: 10
     total_sold: 0
+    is_sellable: 1
   maxCapacity: 10
   currentStock: 0
   stockTextUI: {fileID: 0}
@@ -3008,7 +3010,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8335577015508143849
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3471,6 +3473,7 @@ MonoBehaviour:
     stock: 0
     max_stock: 10
     total_sold: 0
+    is_sellable: 1
   maxCapacity: 10
   currentStock: 0
   stockTextUI: {fileID: 0}
@@ -4141,6 +4144,7 @@ MonoBehaviour:
     stock: 0
     max_stock: 10
     total_sold: 0
+    is_sellable: 1
   maxCapacity: 10
   currentStock: 0
   stockTextUI: {fileID: 0}
@@ -5344,6 +5348,7 @@ MonoBehaviour:
     stock: 0
     max_stock: 10
     total_sold: 0
+    is_sellable: 1
   maxCapacity: 10
   currentStock: 0
   stockTextUI: {fileID: 0}
@@ -7201,6 +7206,7 @@ MonoBehaviour:
     stock: 0
     max_stock: 10
     total_sold: 0
+    is_sellable: 1
   maxCapacity: 10
   currentStock: 0
   stockTextUI: {fileID: 0}
@@ -7341,6 +7347,7 @@ MonoBehaviour:
     stock: 0
     max_stock: 10
     total_sold: 0
+    is_sellable: 1
   maxCapacity: 10
   currentStock: 0
   stockTextUI: {fileID: 0}
@@ -8007,7 +8014,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 95c4f671820f449eb8ac0c237c5ee165, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8622,6 +8629,7 @@ MonoBehaviour:
     stock: 0
     max_stock: 10
     total_sold: 0
+    is_sellable: 1
   maxCapacity: 10
   currentStock: 0
   stockTextUI: {fileID: 0}
