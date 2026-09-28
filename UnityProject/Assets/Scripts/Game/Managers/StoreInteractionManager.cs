@@ -115,7 +115,7 @@ namespace AIBusinessTycoon.Managers
             trigger.size = new Vector3(2.5f, 3f, 2.5f);
             
             // Add a tag for identification
-            zone.tag = $"SupplyZone_{itemKey}";
+            // zone.tag = $"SupplyZone_{itemKey}";
             
             // Create floating label
             CreateSupplyZoneLabel(zone, itemDisplayName, itemKey);
