@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using AIBusinessTycoon.Data;
+using TMPro;
 
 namespace AIBusinessTycoon.Managers
 {
@@ -15,37 +16,173 @@ namespace AIBusinessTycoon.Managers
         [Header("Interaction Prompt")]
         [SerializeField] private GameObject interactionPromptUI;
 
-        [Header("Delivery")]
-        [SerializeField] private GameObject supplyZone;
-        public GameObject SupplyZone => supplyZone;
-
+        [Header("Delivery - Multi-Zone System")]
+        [SerializeField] private Transform supplyZoneParent; // Parent object that will hold all supply zones
+        
+        private Dictionary<string, GameObject> supplyZonesByItem = new Dictionary<string, GameObject>();
         private bool isHovered = false;
         private bool employeesSpawned = false;
 
         public DeliveryStatusResponse CurrentDeliveryStatus { get; private set; }
 
+        /// <summary>
+        /// Apply delivery status and show/hide supply zones accordingly
+        /// </summary>
         public void ApplyDeliveryStatus(DeliveryStatusResponse status)
         {
             CurrentDeliveryStatus = status;
 
-            if (supplyZone != null)
+            if (supplyZoneParent == null)
             {
-                if (status == null)
-                {
-                    supplyZone.SetActive(false);
-                    return;
-                }
+                CreateSupplyZoneParent();
+            }
 
-                supplyZone.SetActive(status.supply_available);
+            // Hide all existing zones first
+            foreach (var zone in supplyZonesByItem.Values)
+            {
+                if (zone != null)
+                    zone.SetActive(false);
+            }
+
+            if (status == null || !status.supply_available)
+            {
+                Debug.Log($"[StoreInteractionManager] Supply not available for {BusinessData?.business_id}");
+                return;
+            }
+
+            // Show zones only for items that have stock in delivery
+            if (BusinessData != null && BusinessData.inventory != null)
+            {
+                int activeZones = 0;
+                foreach (var item in BusinessData.inventory)
+                {
+                    if (item.Value != null && item.Value.stock > 0)
+                    {
+                        GameObject zone = GetOrCreateSupplyZone(item.Key, item.Value.name);
+                        zone.SetActive(true);
+                        activeZones++;
+                        Debug.Log($"[StoreInteractionManager] Activated supply zone for: {item.Key} (stock: {item.Value.stock})");
+                    }
+                }
+                Debug.Log($"[StoreInteractionManager] Total active supply zones: {activeZones}");
             }
         }
 
-        public bool IsSupplyUsable()
+        private void CreateSupplyZoneParent()
         {
-            return CurrentDeliveryStatus != null && CurrentDeliveryStatus.supply_available;
+            GameObject parent = new GameObject("SupplyZones");
+            parent.transform.SetParent(transform);
+            parent.transform.localPosition = new Vector3(0, 0, -5f); // Behind the store
+            supplyZoneParent = parent.transform;
         }
 
-        public void TryPlayerSupply(PlayerController player, bool skipPositionCheck = false)
+        /// <summary>
+        /// Get or create a supply zone for a specific item
+        /// </summary>
+        private GameObject GetOrCreateSupplyZone(string itemKey, string itemDisplayName)
+        {
+            if (supplyZonesByItem.ContainsKey(itemKey))
+                return supplyZonesByItem[itemKey];
+
+            // Create new supply zone GameObject
+            GameObject zone = new GameObject($"SupplyZone_{itemKey}");
+            zone.transform.SetParent(supplyZoneParent);
+            
+            // Position zones in a horizontal row
+            int index = supplyZonesByItem.Count;
+            zone.transform.localPosition = new Vector3(index * 3f - 3f, 0.1f, 0);
+            zone.transform.localRotation = Quaternion.identity;
+            
+            // Create visual platform
+            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            visual.name = "Platform";
+            visual.transform.SetParent(zone.transform);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localScale = new Vector3(2.5f, 0.2f, 2.5f);
+            
+            // Color-code by item type
+            Renderer renderer = visual.GetComponent<Renderer>();
+            renderer.material = new Material(Shader.Find("Standard"));
+            renderer.material.color = GetColorForItem(itemKey);
+            
+            // Remove collider from visual (we'll add trigger to parent)
+            Destroy(visual.GetComponent<Collider>());
+            
+            // Add trigger collider to the zone parent
+            BoxCollider trigger = zone.AddComponent<BoxCollider>();
+            trigger.isTrigger = true;
+            trigger.center = new Vector3(0, 1f, 0);
+            trigger.size = new Vector3(2.5f, 3f, 2.5f);
+            
+            // Add a tag for identification
+            zone.tag = $"SupplyZone_{itemKey}";
+            
+            // Create floating label
+            CreateSupplyZoneLabel(zone, itemDisplayName, itemKey);
+            
+            // Store reference
+            supplyZonesByItem[itemKey] = zone;
+            
+            Debug.Log($"[StoreInteractionManager] Created supply zone for: {itemKey} at position {zone.transform.position}");
+            return zone;
+        }
+
+        private void CreateSupplyZoneLabel(GameObject zone, string displayName, string itemKey)
+        {
+            GameObject canvasObj = new GameObject("Label");
+            canvasObj.transform.SetParent(zone.transform);
+            canvasObj.transform.localPosition = new Vector3(0, 2f, 0);
+            
+            Canvas canvas = canvasObj.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            
+            RectTransform canvasRect = canvasObj.GetComponent<RectTransform>();
+            canvasRect.sizeDelta = new Vector2(300, 150);
+            canvasObj.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+            
+            // Item name text
+            GameObject textObj = new GameObject("ItemName");
+            textObj.transform.SetParent(canvasObj.transform);
+            
+            TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
+            text.text = $"📦 {displayName}";
+            text.fontSize = 48;
+            text.alignment = TextAlignmentOptions.Center;
+            text.fontStyle = FontStyles.Bold;
+            text.color = Color.white;
+            text.outlineWidth = 0.3f;
+            text.outlineColor = new Color(0, 0, 0, 0.9f);
+            
+            RectTransform textRect = textObj.GetComponent<RectTransform>();
+            textRect.sizeDelta = new Vector2(300, 150);
+            textRect.localPosition = Vector3.zero;
+            textRect.localRotation = Quaternion.identity;
+            textRect.localScale = Vector3.one;
+        }
+
+        private Color GetColorForItem(string itemKey)
+        {
+            // Assign colors based on item type
+            string lower = itemKey.ToLower();
+            
+            if (lower.Contains("tomato")) return new Color(0.9f, 0.2f, 0.2f); // Red
+            if (lower.Contains("rice")) return new Color(0.95f, 0.95f, 0.85f); // Beige
+            if (lower.Contains("fe") || lower.Contains("iron")) return new Color(0.6f, 0.6f, 0.6f); // Gray
+            if (lower.Contains("wheat")) return new Color(0.9f, 0.7f, 0.3f); // Golden
+            if (lower.Contains("milk")) return new Color(0.95f, 0.95f, 1f); // White-blue
+            if (lower.Contains("bread")) return new Color(0.8f, 0.6f, 0.4f); // Brown
+            if (lower.Contains("egg")) return new Color(1f, 0.95f, 0.8f); // Cream
+            
+            // Default: cycle through colors based on hash
+            int hash = itemKey.GetHashCode();
+            float hue = (hash % 360) / 360f;
+            return Color.HSVToRGB(hue, 0.7f, 0.9f);
+        }
+
+        /// <summary>
+        /// Try to supply the player with a specific item from its zone
+        /// </summary>
+        public void TryPlayerSupply(PlayerController player, string itemKey)
         {
             if (player == null)
             {
@@ -53,21 +190,9 @@ namespace AIBusinessTycoon.Managers
                 return;
             }
 
-            if (CurrentDeliveryStatus == null)
-            {
-                Debug.Log($"{name}: No delivery status available for this store.");
-                return;
-            }
-
-            if (!CurrentDeliveryStatus.supply_available)
+            if (CurrentDeliveryStatus == null || !CurrentDeliveryStatus.supply_available)
             {
                 Debug.Log($"{name}: Supply is not available for store {BusinessData?.business_id}");
-                return;
-            }
-
-            if (supplyZone == null)
-            {
-                Debug.LogWarning($"{name}: Supply zone is missing.");
                 return;
             }
 
@@ -77,37 +202,40 @@ namespace AIBusinessTycoon.Managers
                 return;
             }
 
-            // ✅ CHANGED: Check if inventory is FULL, not just if it has any item
             if (player.Inventory.IsFull())
             {
-                Debug.Log($"{name}: Player inventory is full ({player.Inventory.currentCarrying}/{player.Inventory.maxCarryCapacity}) and cannot pick up more supplies.");
+                Debug.Log($"{name}: Player inventory is full ({player.Inventory.currentCarrying}/{player.Inventory.maxCarryCapacity})");
                 return;
             }
 
-            string itemKey = GetNextSupplyItem();
-            if (string.IsNullOrEmpty(itemKey))
+            // Check if this specific item has stock in delivery
+            if (BusinessData == null || 
+                !BusinessData.inventory.ContainsKey(itemKey) ||
+                BusinessData.inventory[itemKey] == null ||
+                BusinessData.inventory[itemKey].stock <= 0)
             {
-                Debug.Log($"{name}: No supply item is available for store {BusinessData?.business_id}");
+                Debug.Log($"{name}: No stock available for {itemKey} in delivery");
                 return;
             }
 
+            // Give item to player
             player.Inventory.PickUpItem(itemKey);
-            Debug.Log($"✅ [StoreInteractionManager] Player picked up '{itemKey}' from supply zone at {BusinessData?.business_id}");
+            Debug.Log($"✅ [StoreInteractionManager] Player picked up '{itemKey}' from supply zone");
         }
 
-
-        private string GetNextSupplyItem()
+        public bool IsSupplyUsable()
         {
-            if (BusinessData == null || BusinessData.inventory == null || BusinessData.inventory.Count == 0)
-                return string.Empty;
+            return CurrentDeliveryStatus != null && CurrentDeliveryStatus.supply_available;
+        }
 
-            foreach (var item in BusinessData.inventory)
-            {
-                if (item.Value != null && item.Value.stock > 0)
-                    return item.Key;
-            }
-
-            return string.Empty;
+        /// <summary>
+        /// Get the supply zone GameObject for a specific item (for RestockerAI)
+        /// </summary>
+        public GameObject GetSupplyZoneForItem(string itemKey)
+        {
+            if (supplyZonesByItem.ContainsKey(itemKey))
+                return supplyZonesByItem[itemKey];
+            return null;
         }
 
         private void Awake()
@@ -130,7 +258,6 @@ namespace AIBusinessTycoon.Managers
             if (BusinessData.inventory != null)
             {
                 var shelves = GetComponentsInChildren<InteractableShelf>();
-
                 var activeItems = new List<KeyValuePair<string, InventoryItem>>(BusinessData.inventory);
 
                 for (int i = 0; i < shelves.Length && i < activeItems.Count; i++)
@@ -178,6 +305,12 @@ namespace AIBusinessTycoon.Managers
                             CleanerAI cleanerAI = ai.GetComponent<CleanerAI>();
                             if (cleanerAI != null)
                                 cleanerAI.Initialize(BusinessData.player_id, BusinessData.business_id);
+                        }
+                        else if (emp.role == "restocker")
+                        {
+                            RestockerAI restockerAI = ai.GetComponent<RestockerAI>();
+                            if (restockerAI != null)
+                                restockerAI.BindToStore(this);
                         }
 
                         var interactionManager = ai.GetComponent<EmployeeInteractionManager>();

@@ -22,16 +22,14 @@ namespace AIBusinessTycoon.Managers
 
         private int currentCarrying = 0;
         private InteractableShelf targetShelf;
-        private Transform supplyZoneTransform;
         private StoreInteractionManager currentStore;
-        private GameObject supplyZoneObject;
 
         // Visuals
         private TextMeshProUGUI floatingLabel;
         private Transform carryPoint;  
         private GameObject boxPrefab;  
         
-        // ── Local Object Pool for Carried Boxes ──
+        // Local Object Pool for Carried Boxes
         private List<GameObject> visualBoxes = new List<GameObject>();
 
         private IEnumerator Start()
@@ -51,7 +49,7 @@ namespace AIBusinessTycoon.Managers
             {
                 targetShelf = FindShelfNeedingRestock();
 
-                if (targetShelf == null || supplyZoneTransform == null || !IsSupplyZoneUsable())
+                if (targetShelf == null)
                 {
                     ShowLabel("😴", Color.gray);
                     currentState = RestockerState.Idle;
@@ -59,7 +57,8 @@ namespace AIBusinessTycoon.Managers
                     continue;
                 }
 
-                if (!IsSupplyZoneUsable())
+                // Check if we can supply this specific item
+                if (!IsSupplyAvailableForItem(targetShelf.itemKey))
                 {
                     ShowLabel("⏳", Color.gray);
                     currentState = RestockerState.Idle;
@@ -70,7 +69,17 @@ namespace AIBusinessTycoon.Managers
                 currentState = RestockerState.WalkingToSupply;
                 ShowLabel("🚶", Color.white);
 
-                Vector3 supplyDest = supplyZoneTransform.position;
+                // Get the supply zone for this specific item
+                GameObject supplyZone = currentStore.GetSupplyZoneForItem(targetShelf.itemKey);
+                if (supplyZone == null || !supplyZone.activeInHierarchy)
+                {
+                    Debug.Log($"[RestockerAI] No active supply zone for {targetShelf.itemKey}");
+                    ShowLabel("❌", Color.red);
+                    yield return new WaitForSeconds(2f);
+                    continue;
+                }
+
+                Vector3 supplyDest = supplyZone.transform.position;
                 if (NavMesh.SamplePosition(supplyDest, out NavMeshHit supplyHit, 3f, NavMesh.AllAreas))
                     agent.SetDestination(supplyHit.position);
                 else
@@ -82,6 +91,7 @@ namespace AIBusinessTycoon.Managers
                 agent.ResetPath();
                 ShowLabel("📦", Color.cyan);
 
+                // Pick up items from the zone
                 float pickUpDelay = supplyLoadTime / carryCapacity;
                 while (currentCarrying < carryCapacity)
                 {
@@ -127,61 +137,67 @@ namespace AIBusinessTycoon.Managers
         public void BindToStore(StoreInteractionManager store)
         {
             currentStore = store;
-
-            if (store == null)
-            {
-                supplyZoneObject = null;
-                supplyZoneTransform = null;
-                return;
-            }
-
-            // Use the store-owned zone, not a global scene object
-            if (store.SupplyZone != null)
-            {
-                supplyZoneObject = store.SupplyZone;
-                supplyZoneTransform = store.SupplyZone.transform;
-            }
-            else
-            {
-                supplyZoneObject = null;
-                supplyZoneTransform = null;
-            }
+            Debug.Log($"[RestockerAI] Bound to store: {store?.BusinessData?.business_id}");
         }
 
-        private bool IsSupplyZoneUsable()
+        /// <summary>
+        /// Check if supply is available for a specific item
+        /// </summary>
+        private bool IsSupplyAvailableForItem(string itemKey)
         {
             if (currentStore == null)
                 return false;
 
-            if (supplyZoneObject == null || supplyZoneTransform == null)
+            if (!currentStore.IsSupplyUsable())
                 return false;
 
-            if (!supplyZoneObject.activeInHierarchy)
+            // Check if the specific item's supply zone exists and is active
+            GameObject supplyZone = currentStore.GetSupplyZoneForItem(itemKey);
+            if (supplyZone == null || !supplyZone.activeInHierarchy)
                 return false;
 
-            if (currentStore.CurrentDeliveryStatus != null &&
-                !currentStore.CurrentDeliveryStatus.supply_available)
+            // Check if the item has stock in the delivery
+            if (currentStore.BusinessData != null && 
+                currentStore.BusinessData.inventory != null &&
+                currentStore.BusinessData.inventory.ContainsKey(itemKey))
             {
-                return false;
+                var itemData = currentStore.BusinessData.inventory[itemKey];
+                return itemData != null && itemData.stock > 0;
             }
 
-            return true;
+            return false;
         }
 
+        /// <summary>
+        /// Find the shelf with the lowest stock that needs restocking
+        /// </summary>
         private InteractableShelf FindShelfNeedingRestock()
         {
+            if (transform.parent == null)
+                return null;
+
             InteractableShelf[] allShelves = transform.parent.GetComponentsInChildren<InteractableShelf>();
             InteractableShelf emptiest = null;
             int lowestStock = int.MaxValue;
 
             foreach (var shelf in allShelves)
             {
-                if (shelf.CanAcceptStock() && shelf.currentStock < lowestStock)
+                // Only consider shelves that can accept stock and have supply available
+                if (shelf.CanAcceptStock() && 
+                    !string.IsNullOrEmpty(shelf.itemKey) &&
+                    IsSupplyAvailableForItem(shelf.itemKey) &&
+                    shelf.currentStock < lowestStock)
                 {
                     lowestStock = shelf.currentStock;
                     emptiest = shelf;
                 }
             }
+
+            if (emptiest != null)
+            {
+                Debug.Log($"[RestockerAI] Target shelf: {emptiest.itemKey} (stock: {emptiest.currentStock}/{emptiest.maxCapacity})");
+            }
+
             return emptiest;
         }
 
@@ -236,7 +252,7 @@ namespace AIBusinessTycoon.Managers
         {
             if (carryPoint == null || boxPrefab == null) return;
 
-            // ── OPTIMIZATION: Object Pooling ──
+            // Object Pooling - reuse existing boxes
             while (visualBoxes.Count < currentCarrying)
             {
                 GameObject box = Instantiate(boxPrefab, carryPoint);
@@ -245,7 +261,7 @@ namespace AIBusinessTycoon.Managers
                 visualBoxes.Add(box);
             }
 
-            // We never call Destroy()! We just turn them on or off.
+            // Turn boxes on/off instead of destroying
             for (int i = 0; i < visualBoxes.Count; i++)
             {
                 visualBoxes[i].SetActive(i < currentCarrying);

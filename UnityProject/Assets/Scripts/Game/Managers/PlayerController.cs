@@ -19,7 +19,7 @@ namespace AIBusinessTycoon.Managers
         [SerializeField] private PlayerInventory playerInventory;
 
         [Header("Supply Zone Settings")]
-        [SerializeField] private float supplyPickupInterval = 0.5f; // Time between each pickup in supply zone
+        [SerializeField] private float supplyPickupInterval = 0.5f;
 
         private IngredientPlot nearbyPlot;
         private CharacterController characterController;
@@ -33,8 +33,9 @@ namespace AIBusinessTycoon.Managers
         private Dustbin nearbyDustbin;
         private StoreInteractionManager nearbyStore;
         
-        // Supply zone tracking
+        // Multi-zone supply tracking
         private bool isInsideSupplyZone = false;
+        private string currentSupplyItemKey = null; // Which item's zone we're in
         private Coroutine supplyPickupCoroutine = null;
 
         private void Awake()
@@ -118,9 +119,8 @@ namespace AIBusinessTycoon.Managers
 
         private void HandleInteraction()
         {
-            // Skip supply zone here - it's handled automatically in OnTriggerEnter/Exit
+            // Supply zones are handled automatically - no E key needed
             
-            // Original interaction flow retained
             if (nearbyDustbin != null)
             {
                 if (nearbyDustbin.TryDiscardItem(playerInventory)) return;
@@ -166,19 +166,28 @@ namespace AIBusinessTycoon.Managers
 
         private void OnTriggerEnter(Collider other)
         {
-            StoreInteractionManager store = other.GetComponentInParent<StoreInteractionManager>();
-            if (store != null)
+            // Check if we entered a specific supply zone
+            if (other.gameObject.tag != null && other.gameObject.tag.StartsWith("SupplyZone_"))
             {
-                nearbyStore = store;
+                string itemKey = other.gameObject.tag.Replace("SupplyZone_", "");
+                currentSupplyItemKey = itemKey;
                 
-                // Check if we specifically entered the supply zone
-                if (store.SupplyZone != null && 
-                    (other.gameObject == store.SupplyZone || other.transform.IsChildOf(store.SupplyZone.transform)))
+                StoreInteractionManager store = other.GetComponentInParent<StoreInteractionManager>();
+                if (store != null)
                 {
+                    nearbyStore = store;
                     isInsideSupplyZone = true;
                     StartSupplyPickup();
-                    Debug.Log($"[PlayerController] Entered supply zone for store {store.BusinessData?.business_id}");
+                    Debug.Log($"[PlayerController] 📦 Entered supply zone for: {itemKey}");
                 }
+                return;
+            }
+
+            // Regular interaction triggers
+            StoreInteractionManager storeManager = other.GetComponentInParent<StoreInteractionManager>();
+            if (storeManager != null)
+            {
+                nearbyStore = storeManager;
             }
 
             IngredientShelf shelf = other.GetComponentInParent<IngredientShelf>();
@@ -199,18 +208,23 @@ namespace AIBusinessTycoon.Managers
 
         private void OnTriggerExit(Collider other)
         {
+            // Check if we exited a supply zone
+            if (other.gameObject.tag != null && other.gameObject.tag.StartsWith("SupplyZone_"))
+            {
+                string itemKey = other.gameObject.tag.Replace("SupplyZone_", "");
+                if (currentSupplyItemKey == itemKey)
+                {
+                    isInsideSupplyZone = false;
+                    currentSupplyItemKey = null;
+                    StopSupplyPickup();
+                    Debug.Log($"[PlayerController] ⬅️ Exited supply zone for: {itemKey}");
+                }
+                return;
+            }
+
             StoreInteractionManager store = other.GetComponentInParent<StoreInteractionManager>();
             if (store != null && nearbyStore == store)
             {
-                // Check if we exited the supply zone specifically
-                if (store.SupplyZone != null && 
-                    (other.gameObject == store.SupplyZone || other.transform.IsChildOf(store.SupplyZone.transform)))
-                {
-                    isInsideSupplyZone = false;
-                    StopSupplyPickup();
-                    Debug.Log($"[PlayerController] Exited supply zone for store {store.BusinessData?.business_id}");
-                }
-                
                 nearbyStore = null;
             }
 
@@ -232,13 +246,11 @@ namespace AIBusinessTycoon.Managers
 
         private void StartSupplyPickup()
         {
-            // Stop any existing pickup coroutine
             if (supplyPickupCoroutine != null)
             {
                 StopCoroutine(supplyPickupCoroutine);
             }
             
-            // Start automatic pickup
             supplyPickupCoroutine = StartCoroutine(AutoPickupFromSupplyZone());
         }
 
@@ -253,23 +265,24 @@ namespace AIBusinessTycoon.Managers
 
         private IEnumerator AutoPickupFromSupplyZone()
         {
-            Debug.Log("[PlayerController] Started auto-pickup from supply zone");
+            Debug.Log($"[PlayerController] 🔄 Started auto-pickup for: {currentSupplyItemKey}");
             
-            while (isInsideSupplyZone && nearbyStore != null)
+            while (isInsideSupplyZone && nearbyStore != null && !string.IsNullOrEmpty(currentSupplyItemKey))
             {
-                // Keep picking up until inventory is full
                 if (!playerInventory.IsFull())
                 {
-                    nearbyStore.TryPlayerSupply(this);
+                    // Request specific item from this zone
+                    nearbyStore.TryPlayerSupply(this, currentSupplyItemKey);
                     yield return new WaitForSeconds(supplyPickupInterval);
                 }
                 else
                 {
-                    Debug.Log($"[PlayerController] Inventory full ({playerInventory.currentCarrying}/{playerInventory.maxCarryCapacity}). Stopping auto-pickup.");
+                    Debug.Log($"[PlayerController] 🛑 Inventory full ({playerInventory.currentCarrying}/{playerInventory.maxCarryCapacity}). Stopping auto-pickup.");
                     break;
                 }
             }
             
+            Debug.Log($"[PlayerController] Auto-pickup coroutine ended for: {currentSupplyItemKey}");
             supplyPickupCoroutine = null;
         }
 
@@ -290,9 +303,9 @@ namespace AIBusinessTycoon.Managers
         {
             isActive = false;
             
-            // Stop any ongoing supply pickup
             StopSupplyPickup();
             isInsideSupplyZone = false;
+            currentSupplyItemKey = null;
             
             if (avatarVisual != null) avatarVisual.SetActive(false);
             gameObject.SetActive(false);
