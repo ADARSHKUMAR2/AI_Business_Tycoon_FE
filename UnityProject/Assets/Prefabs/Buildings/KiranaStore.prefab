@@ -1451,6 +1451,37 @@ MonoBehaviour:
   stockTextUI: {fileID: 0}
   itemNameTextUI: {fileID: 0}
   itemContainer: {fileID: 0}
+--- !u!1 &6814043749704584943
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1471247430698909080}
+  m_Layer: 0
+  m_Name: SupplyParent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1471247430698909080
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6814043749704584943}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1.46706, y: 1, z: -12.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1757663975229843460}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7454132862590343530
 GameObject:
   m_ObjectHideFlags: 0
@@ -1483,6 +1514,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1471247430698909080}
   - {fileID: 8035397667644172556}
   - {fileID: 7709394530306653320}
   - {fileID: 3068440803217059893}
@@ -1552,7 +1584,8 @@ MonoBehaviour:
     last_updated: 
   entrancePoint: {fileID: 0}
   interactionPromptUI: {fileID: 0}
-  supplyZoneParent: {fileID: 0}
+  supplyZoneParent: {fileID: 1471247430698909080}
+  supplyZonePrefab: {fileID: 8164036412827368502, guid: 42583a423c861425e94721922d7a1192, type: 3}
 --- !u!114 &3729945010290677676
 MonoBehaviour:
   m_ObjectHideFlags: 0

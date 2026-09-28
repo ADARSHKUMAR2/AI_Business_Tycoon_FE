@@ -112,6 +112,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &1244299735003934635
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5184782513740956598}
+  m_Layer: 0
+  m_Name: SupplyParent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5184782513740956598
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1244299735003934635}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1.46706, y: 1, z: -7.19}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4863359795839406376}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1823062960852058200
 GameObject:
   m_ObjectHideFlags: 0
@@ -919,6 +950,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 5184782513740956598}
   - {fileID: 1560614993007939167}
   - {fileID: 8629627247216305524}
   - {fileID: 5163493875323520256}
@@ -984,7 +1016,8 @@ MonoBehaviour:
     last_updated: 
   entrancePoint: {fileID: 0}
   interactionPromptUI: {fileID: 0}
-  supplyZoneParent: {fileID: 0}
+  supplyZoneParent: {fileID: 5184782513740956598}
+  supplyZonePrefab: {fileID: 8164036412827368502, guid: 42583a423c861425e94721922d7a1192, type: 3}
 --- !u!114 &1590352261857281246
 MonoBehaviour:
   m_ObjectHideFlags: 0

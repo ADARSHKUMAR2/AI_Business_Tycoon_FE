@@ -17,9 +17,13 @@ namespace AIBusinessTycoon.Managers
         [SerializeField] private GameObject interactionPromptUI;
 
         [Header("Delivery - Multi-Zone System")]
-        [SerializeField] private Transform supplyZoneParent; // Parent object that will hold all supply zones
+        [SerializeField] private Transform supplyZoneParent;
+
+        [SerializeField] private GameObject supplyZonePrefab; 
+         
+        // Parent object that will hold all supply zones
         
-        private Dictionary<string, GameObject> supplyZonesByItem = new Dictionary<string, GameObject>();
+        private Dictionary<string, SupplyZone> supplyZonesByItem = new Dictionary<string, SupplyZone>();
         private bool isHovered = false;
         private bool employeesSpawned = false;
 
@@ -41,7 +45,7 @@ namespace AIBusinessTycoon.Managers
             foreach (var zone in supplyZonesByItem.Values)
             {
                 if (zone != null)
-                    zone.SetActive(false);
+                    zone.gameObject.SetActive(false);
             }
 
             if (status == null || !status.supply_available)
@@ -58,8 +62,8 @@ namespace AIBusinessTycoon.Managers
                 {
                     if (item.Value != null && item.Value.stock > 0)
                     {
-                        GameObject zone = GetOrCreateSupplyZone(item.Key, item.Value.name);
-                        zone.SetActive(true);
+                        SupplyZone zone = GetOrCreateSupplyZone(item.Key, item.Value.name);
+                        zone.gameObject.SetActive(true);
                         activeZones++;
                         Debug.Log($"[StoreInteractionManager] Activated supply zone for: {item.Key} (stock: {item.Value.stock})");
                     }
@@ -77,87 +81,41 @@ namespace AIBusinessTycoon.Managers
         }
 
         /// <summary>
-        /// Get or create a supply zone for a specific item
+        /// Get or create a supply zone for a specific item using the SupplyZone prefab.
         /// </summary>
-        private GameObject GetOrCreateSupplyZone(string itemKey, string itemDisplayName)
+        private SupplyZone GetOrCreateSupplyZone(string itemKey, string itemDisplayName)
         {
             if (supplyZonesByItem.ContainsKey(itemKey))
                 return supplyZonesByItem[itemKey];
 
-            // Create new supply zone GameObject
-            GameObject zone = new GameObject($"SupplyZone_{itemKey}");
-            zone.transform.SetParent(supplyZoneParent);
-            
+            if (supplyZonePrefab == null)
+            {
+                Debug.LogError("[StoreInteractionManager] supplyZonePrefab is not assigned! Please assign it in the Inspector.");
+                return null;
+            }
+
             // Position zones in a horizontal row
             int index = supplyZonesByItem.Count;
-            zone.transform.localPosition = new Vector3(index * 3f - 3f, 0.1f, 0);
-            zone.transform.localRotation = Quaternion.identity;
-            
-            // Create visual platform
-            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            visual.name = "Platform";
-            visual.transform.SetParent(zone.transform);
-            visual.transform.localPosition = Vector3.zero;
-            visual.transform.localScale = new Vector3(2.5f, 0.2f, 2.5f);
-            
-            // Color-code by item type
-            Renderer renderer = visual.GetComponent<Renderer>();
-            renderer.material = new Material(Shader.Find("Standard"));
-            renderer.material.color = GetColorForItem(itemKey);
-            
-            // Remove collider from visual (we'll add trigger to parent)
-            Destroy(visual.GetComponent<Collider>());
-            
-            // Add trigger collider to the zone parent
-            BoxCollider trigger = zone.AddComponent<BoxCollider>();
-            trigger.isTrigger = true;
-            trigger.center = new Vector3(0, 1f, 0);
-            trigger.size = new Vector3(2.5f, 3f, 2.5f);
-            
-            // Add a tag for identification
-            // zone.tag = $"SupplyZone_{itemKey}";
-            
-            // Create floating label
-            CreateSupplyZoneLabel(zone, itemDisplayName, itemKey);
-            
-            // Store reference
-            supplyZonesByItem[itemKey] = zone;
-            
-            Debug.Log($"[StoreInteractionManager] Created supply zone for: {itemKey} at position {zone.transform.position}");
-            return zone;
-        }
+            Vector3 localPos = new Vector3(index * 3f, 0.1f, 0);
 
-        private void CreateSupplyZoneLabel(GameObject zone, string displayName, string itemKey)
-        {
-            GameObject canvasObj = new GameObject("Label");
-            canvasObj.transform.SetParent(zone.transform);
-            canvasObj.transform.localPosition = new Vector3(0, 2f, 0);
-            
-            Canvas canvas = canvasObj.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;
-            
-            RectTransform canvasRect = canvasObj.GetComponent<RectTransform>();
-            canvasRect.sizeDelta = new Vector2(300, 150);
-            canvasObj.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
-            
-            // Item name text
-            GameObject textObj = new GameObject("ItemName");
-            textObj.transform.SetParent(canvasObj.transform);
-            
-            TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
-            text.text = $"📦 {displayName}";
-            text.fontSize = 48;
-            text.alignment = TextAlignmentOptions.Center;
-            text.fontStyle = FontStyles.Bold;
-            text.color = Color.white;
-            text.outlineWidth = 0.3f;
-            text.outlineColor = new Color(0, 0, 0, 0.9f);
-            
-            RectTransform textRect = textObj.GetComponent<RectTransform>();
-            textRect.sizeDelta = new Vector2(300, 150);
-            textRect.localPosition = Vector3.zero;
-            textRect.localRotation = Quaternion.identity;
-            textRect.localScale = Vector3.one;
+            // Instantiate from prefab and configure
+            GameObject zoneGO = Instantiate(supplyZonePrefab, supplyZoneParent);
+            zoneGO.transform.localPosition = localPos;
+            zoneGO.transform.localRotation = Quaternion.identity;
+
+            SupplyZone zone = zoneGO.GetComponent<SupplyZone>();
+            if (zone == null)
+            {
+                Debug.LogError($"[StoreInteractionManager] SupplyZone prefab is missing the SupplyZone component!");
+                return null;
+            }
+
+            zone.Initialize(itemKey, itemDisplayName, GetColorForItem(itemKey));
+
+            supplyZonesByItem[itemKey] = zone;
+
+            Debug.Log($"[StoreInteractionManager] Created supply zone for: {itemKey} at local position {localPos}");
+            return zone;
         }
 
         private Color GetColorForItem(string itemKey)
@@ -229,12 +187,12 @@ namespace AIBusinessTycoon.Managers
         }
 
         /// <summary>
-        /// Get the supply zone GameObject for a specific item (for RestockerAI)
+        /// Get the supply zone GameObject for a specific item (used by RestockerAI).
         /// </summary>
         public GameObject GetSupplyZoneForItem(string itemKey)
         {
-            if (supplyZonesByItem.ContainsKey(itemKey))
-                return supplyZonesByItem[itemKey];
+            if (supplyZonesByItem.TryGetValue(itemKey, out SupplyZone zone))
+                return zone != null ? zone.gameObject : null;
             return null;
         }
 

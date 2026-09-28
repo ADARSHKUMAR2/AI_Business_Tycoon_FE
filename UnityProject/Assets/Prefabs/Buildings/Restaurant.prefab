@@ -1609,6 +1609,37 @@ MonoBehaviour:
   ingredientId: dough
   maxStock: 3
   respawnTime: 30
+--- !u!1 &2566854893047937316
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7491718371345046149}
+  m_Layer: 0
+  m_Name: SupplyParent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7491718371345046149
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2566854893047937316}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -1.46706, y: 1, z: -7.19}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2431654039678908622}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2653748053573896396
 GameObject:
   m_ObjectHideFlags: 0
@@ -3445,6 +3476,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 7491718371345046149}
   - {fileID: 743946789362696109}
   - {fileID: 8739751576142302254}
   - {fileID: 122749178408880184}
@@ -3525,7 +3557,8 @@ MonoBehaviour:
     last_updated: 
   entrancePoint: {fileID: 0}
   interactionPromptUI: {fileID: 0}
-  supplyZoneParent: {fileID: 0}
+  supplyZoneParent: {fileID: 7491718371345046149}
+  supplyZonePrefab: {fileID: 8164036412827368502, guid: 42583a423c861425e94721922d7a1192, type: 3}
 --- !u!114 &4419403111237800274
 MonoBehaviour:
   m_ObjectHideFlags: 0
