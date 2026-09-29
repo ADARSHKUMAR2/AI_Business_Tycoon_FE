@@ -12,7 +12,8 @@ namespace AIBusinessTycoon.Data
         public int    stock;
         public int    max_stock  = 10; 
         public int    total_sold;
-        public bool is_sellable = true; 
+        public bool is_sellable = true;
+        public bool has_supply_zone = true;
 
         public float CalculateProfit()        => price - cost;
         public float CalculateProfitMargin()  => cost == 0 ? 0f : ((price - cost) / cost) * 100f;

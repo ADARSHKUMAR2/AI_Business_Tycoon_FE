@@ -427,6 +427,11 @@ namespace AIBusinessTycoon.Managers
 
             storesByBusinessId[business.business_id] = sim;
 
+            // Give new stores a short grace period before the first delivery poll
+            // so the backend state is fully settled after creation.
+            if (!nextPollAt.ContainsKey(business.business_id))
+                nextPollAt[business.business_id] = Time.time + 5f;
+
             spawnedBuildings[business.business_id] = buildingObj;
             sim.SpawnSavedEmployees(cashierPrefab, restockerPrefab, cleanerPrefab);
 

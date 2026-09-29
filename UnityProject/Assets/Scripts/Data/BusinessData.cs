@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace AIBusinessTycoon.Data
 {
     [Serializable]
-    public enum BusinessType { kirana, pizza, cafe }
+    public enum BusinessType { kirana, pizza, cafe, restaurant }
 
     [Serializable]
     public class BusinessStats

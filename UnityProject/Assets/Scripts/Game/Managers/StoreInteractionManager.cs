@@ -60,7 +60,7 @@ namespace AIBusinessTycoon.Managers
                 int activeZones = 0;
                 foreach (var item in BusinessData.inventory)
                 {
-                    if (item.Value != null && item.Value.stock > 0)
+                    if (item.Value != null && item.Value.stock > 0 && item.Value.has_supply_zone)
                     {
                         SupplyZone zone = GetOrCreateSupplyZone(item.Key, item.Value.name);
                         zone.gameObject.SetActive(true);
