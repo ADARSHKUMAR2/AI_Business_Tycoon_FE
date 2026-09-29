@@ -166,19 +166,20 @@ namespace AIBusinessTycoon.Managers
 
         private void OnTriggerEnter(Collider other)
         {
-            // Check if we entered a specific supply zone
-            if (other.gameObject.tag != null && other.gameObject.tag.StartsWith("SupplyZone_"))
+            // Supply zones are generated dynamically, so use their configured
+            // component data instead of Unity tags (which must be predefined).
+            SupplyZone supplyZone = other.GetComponentInParent<SupplyZone>();
+            if (supplyZone != null && !string.IsNullOrEmpty(supplyZone.ItemKey))
             {
-                string itemKey = other.gameObject.tag.Replace("SupplyZone_", "");
-                currentSupplyItemKey = itemKey;
+                currentSupplyItemKey = supplyZone.ItemKey;
                 
-                StoreInteractionManager store = other.GetComponentInParent<StoreInteractionManager>();
+                StoreInteractionManager store = supplyZone.GetComponentInParent<StoreInteractionManager>();
                 if (store != null)
                 {
                     nearbyStore = store;
                     isInsideSupplyZone = true;
                     StartSupplyPickup();
-                    Debug.Log($"[PlayerController] 📦 Entered supply zone for: {itemKey}");
+                    Debug.Log($"[PlayerController] 📦 Entered supply zone for: {currentSupplyItemKey}");
                 }
                 return;
             }
@@ -208,17 +209,14 @@ namespace AIBusinessTycoon.Managers
 
         private void OnTriggerExit(Collider other)
         {
-            // Check if we exited a supply zone
-            if (other.gameObject.tag != null && other.gameObject.tag.StartsWith("SupplyZone_"))
+            // Match the configured component data used when entering the zone.
+            SupplyZone supplyZone = other.GetComponentInParent<SupplyZone>();
+            if (supplyZone != null && currentSupplyItemKey == supplyZone.ItemKey)
             {
-                string itemKey = other.gameObject.tag.Replace("SupplyZone_", "");
-                if (currentSupplyItemKey == itemKey)
-                {
-                    isInsideSupplyZone = false;
-                    currentSupplyItemKey = null;
-                    StopSupplyPickup();
-                    Debug.Log($"[PlayerController] ⬅️ Exited supply zone for: {itemKey}");
-                }
+                Debug.Log($"[PlayerController] ⬅️ Exited supply zone for: {currentSupplyItemKey}");
+                isInsideSupplyZone = false;
+                currentSupplyItemKey = null;
+                StopSupplyPickup();
                 return;
             }
 
