@@ -2301,3 +2301,57 @@
 [2026-09-29T10:19:16.602Z] INFO  [QueueWorker] [trace=eedbbf9e1623d815e45b7058ed976001] === Queue worker finished ===
 [2026-09-29T10:19:16.603Z] INFO  [SessionStartHook] [trace=eedbbf9e1623d815e45b7058ed976001] Briefing cache not warmed — nothing to brief on this branch
 [2026-09-29T10:19:16.621Z] INFO  [SessionSync] [trace=eedbbf9e1623d815e45b7058ed976001] session sync: not uploading — no API key configured
+[2026-09-29T11:12:41.030Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook started (source: message) ===
+[2026-09-29T11:12:41.035Z] INFO  [RepoProfile] manual-disable read → false (by=manuallyDisabled, pid=20372, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-29T11:12:41.046Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook finished ===
+[2026-09-29T11:12:41.150Z] INFO  [RepoProfile] [trace=f5efe9f0f34a75dee20e4972748e3f98] manual-disable read → false (by=manuallyDisabled, pid=20379, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-29T11:12:41.157Z] INFO  [PostCommitHook] [trace=f5efe9f0f34a75dee20e4972748e3f98] Detected operation: commit
+[2026-09-29T11:12:41.167Z] INFO  [PostCommitHook] [trace=f5efe9f0f34a75dee20e4972748e3f98] Enqueued: type=commit hash=8dad0a04
+[2026-09-29T11:12:41.167Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Launching background worker
+[2026-09-29T11:12:41.168Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Background worker spawned (PID: 20384)
+[2026-09-29T11:12:41.168Z] INFO  [EnsureGlobalDaemon] [trace=f5efe9f0f34a75dee20e4972748e3f98] spawned global daemon ensure helper (pid 20385)
+[2026-09-29T11:12:41.275Z] INFO  [RepoProfile] [trace=f5efe9f0f34a75dee20e4972748e3f98] manual-disable read → false (by=manuallyDisabled, pid=20384, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-29T11:12:41.322Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] === Queue worker started === node=24.13.0 kind=vscode-plugin source=vscode pkgVer=0.99.17 cliVer=0.99.17 dist=/Users/adarsh/.vscode/extensions/jolli.jollimemory-vscode-0.99.17/dist
+[2026-09-29T11:12:41.332Z] INFO  [StorageFactory] [trace=f5efe9f0f34a75dee20e4972748e3f98] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-29T11:12:41.424Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Processing queue entry: type=commit hash=8dad0a04
+[2026-09-29T11:12:41.433Z] INFO  [GitOps] [trace=f5efe9f0f34a75dee20e4972748e3f98] Commit 8dad0a04: weather changes
+[2026-09-29T11:12:41.433Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Commit: 8dad0a04 - weather changes (8ms)
+[2026-09-29T11:12:41.499Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] No active sessions found — will infer topics from diff if available
+[2026-09-29T11:12:41.521Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Git diff: 8 files changed, +183 -27 (22ms)
+[2026-09-29T11:12:41.539Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Prompt blocks: plans=0 notes=0 references=0 (+0 track-only archived, not prompted) (AI soft-excluded 0)
+[2026-09-29T11:12:41.539Z] INFO  [Summarizer] [trace=f5efe9f0f34a75dee20e4972748e3f98] Generating summary for commit 8dad0a04
+[2026-09-29T11:12:41.539Z] INFO  [Summarizer] [trace=f5efe9f0f34a75dee20e4972748e3f98] Context: transcript=0, files=8, lines=183+27
+[2026-09-29T11:12:41.539Z] WARN  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] First API attempt failed: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).. Retrying in 2000ms...
+[2026-09-29T11:12:43.541Z] INFO  [Summarizer] [trace=f5efe9f0f34a75dee20e4972748e3f98] Generating summary for commit 8dad0a04
+[2026-09-29T11:12:43.541Z] INFO  [Summarizer] [trace=f5efe9f0f34a75dee20e4972748e3f98] Context: transcript=0, files=8, lines=183+27
+[2026-09-29T11:12:43.541Z] ERROR [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] API call failed after retry: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).
+[2026-09-29T11:12:43.542Z] WARN  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Saving summary with empty topics + llm-failed marker for commit 8dad0a04
+[2026-09-29T11:12:43.542Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] API summary generated (2.0s)
+[2026-09-29T11:12:43.542Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Plan registry scan: found 0 uncommitted slug(s) on main: []
+[2026-09-29T11:12:43.542Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Plan association: detected 0 slug(s) from transcripts: []
+[2026-09-29T11:12:43.542Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Note registry scan: found 0 uncommitted note(s) on main: []
+[2026-09-29T11:12:43.542Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Note association: detected 0 note(s): []
+[2026-09-29T11:12:43.542Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Reference association: detected 0 ref(s) for branch main
+[2026-09-29T11:12:43.544Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Summary built for 8dad0a04: recap=no, topics=0, plans=absent, notes=absent, references=absent
+[2026-09-29T11:12:43.639Z] INFO  [MetadataManager] [trace=f5efe9f0f34a75dee20e4972748e3f98] Manifest updated: main/weather-changes-8dad0a04.md (commit)
+[2026-09-29T11:12:43.639Z] INFO  [FolderStorage] [trace=f5efe9f0f34a75dee20e4972748e3f98] Markdown generated: main/weather-changes-8dad0a04.md
+[2026-09-29T11:12:43.644Z] INFO  [FolderStorage] [trace=f5efe9f0f34a75dee20e4972748e3f98] Wrote 3 files, deleted 0 (Add summary for 8dad0a04: weather changes)
+[2026-09-29T11:12:43.645Z] INFO  [SummaryStore] [trace=f5efe9f0f34a75dee20e4972748e3f98] Summary stored successfully for commit 8dad0a04
+[2026-09-29T11:12:43.645Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Summary stored successfully for commit 8dad0a04 (101ms, 0 plans, 0 notes, 0 references)
+[2026-09-29T11:12:43.645Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] === Pipeline completed in 2.2s ===
+[2026-09-29T11:12:43.645Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] === Summary content (0 topics) ===
+[2026-09-29T11:12:43.648Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] Processed 1 queue entries
+[2026-09-29T11:12:43.649Z] INFO  [PushExecutor] [trace=f5efe9f0f34a75dee20e4972748e3f98] Post-queue push trigger: scheduling drain for 1 newly generated summar(ies)
+[2026-09-29T11:12:43.650Z] INFO  [PushExecutor] [trace=f5efe9f0f34a75dee20e4972748e3f98] processPushPending(post-queue): 7 pending entr(ies) (filtered to 1 hash(es))
+[2026-09-29T11:12:43.659Z] INFO  [PushExecutor] [trace=f5efe9f0f34a75dee20e4972748e3f98] processPushPending(post-queue): not signed in — keeping 7 entries for later
+[2026-09-29T11:12:43.706Z] INFO  [GitOps] [trace=f5efe9f0f34a75dee20e4972748e3f98] Commit 8dad0a04: weather changes
+[2026-09-29T11:12:43.772Z] INFO  [StorageFactory] [trace=f5efe9f0f34a75dee20e4972748e3f98] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-29T11:12:43.780Z] INFO  [PrePushHook] [trace=9c100f7c4369a4089ffa1bdd63302f1a] pre-push hook: remote=origin budget=3000ms
+[2026-09-29T11:12:43.784Z] INFO  [RepoProfile] [trace=9c100f7c4369a4089ffa1bdd63302f1a] manual-disable read → false (by=manuallyDisabled, pid=20529, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-09-29T11:12:43.853Z] INFO  [PushPendingStore] [trace=9c100f7c4369a4089ffa1bdd63302f1a] Enqueued 1 new push-pending entries (branch=main)
+[2026-09-29T11:12:43.854Z] INFO  [PrePushHook] [trace=9c100f7c4369a4089ffa1bdd63302f1a] pre-push: recorded 1 commit(s) across 1 pushed ref(s)
+[2026-09-29T11:12:43.875Z] INFO  [PrePushHook] [trace=9c100f7c4369a4089ffa1bdd63302f1a] Recorded 1 commit(s) for later sync — not signed in to Jolli
+[2026-09-29T11:12:43.904Z] INFO  [StorageFactory] [trace=9c100f7c4369a4089ffa1bdd63302f1a] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-09-29T11:12:43.915Z] INFO  [QueueWorker] [trace=f5efe9f0f34a75dee20e4972748e3f98] === Queue worker finished ===
+[2026-09-29T11:12:43.916Z] INFO  [SessionStartHook] [trace=f5efe9f0f34a75dee20e4972748e3f98] Briefing cache not warmed — nothing to brief on this branch
+[2026-09-29T11:12:43.918Z] INFO  [SessionSync] [trace=f5efe9f0f34a75dee20e4972748e3f98] session sync: not uploading — no API key configured

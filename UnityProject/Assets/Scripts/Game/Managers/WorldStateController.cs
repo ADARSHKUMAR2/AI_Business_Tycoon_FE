@@ -1,13 +1,16 @@
 using System;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 using AIBusinessTycoon.Data;
 using AIBusinessTycoon.Services;
 
 namespace AIBusinessTycoon.Managers
 {
-    /// <summary>Cycles day/night and weather, applying visible world effects.</summary>
+    /// <summary>
+    /// Cycles day/night and weather, drives scene lighting and rain, and
+    /// updates a scene-placed TMP label. Assign all Inspector references
+    /// before entering Play Mode - no UI or particles are created at runtime.
+    /// </summary>
     public class WorldStateController : MonoBehaviour
     {
         public enum TimeOfDay { Day, Night }
@@ -23,14 +26,18 @@ namespace AIBusinessTycoon.Managers
         [SerializeField, Min(0.01f)] private float nightSpawnMultiplier = 0.7f;
         [SerializeField, Range(0f, 1f)] private float rainChance = 0.35f;
 
-        [Header("Visual Effects")]
+        [Header("Scene References - Assign in Inspector")]
+        [Tooltip("Scene Directional Light.")]
         [SerializeField] private Light directionalLight;
+        [Tooltip("Scene Rain Particle System (kept stopped; started by controller).")]
         [SerializeField] private ParticleSystem rainParticles;
+        [Tooltip("Scene TMP_Text label for the world-state HUD.")]
         [SerializeField] private TMP_Text worldStatusText;
+
+        [Header("Lighting")]
         [SerializeField, Min(0f)] private float dayLightIntensity = 1.5f;
         [SerializeField, Min(0f)] private float nightLightIntensity = 0.12f;
         [SerializeField, Min(0f)] private float lightingTransitionSpeed = 2f;
-        [SerializeField, Min(0f)] private float rainEmissionRate = 180f;
 
         [Header("Backend Authority")]
         [SerializeField] private bool useBackendWorldState;
@@ -38,9 +45,6 @@ namespace AIBusinessTycoon.Managers
 
         private float timeInCurrentPhase;
         private float timeSinceWeatherChange;
-        private Canvas statusCanvas;
-        private Image statusBackground;
-        private bool createdStatusCanvas;
         private float timeUntilBackendRefresh;
         private float backendRainSpawnMultiplier;
         private float backendNightSpawnMultiplier;
@@ -65,9 +69,13 @@ namespace AIBusinessTycoon.Managers
 
         private void Awake()
         {
-            if (directionalLight == null) directionalLight = FindDirectionalLight();
-            if (rainParticles == null) rainParticles = CreateRainParticles();
-            if (worldStatusText == null) CreateStatusLabel();
+            if (directionalLight == null)
+                directionalLight = FindDirectionalLight();
+            if (rainParticles == null)
+                Debug.LogWarning("[WorldStateController] Rain Particles not assigned in Inspector.");
+            if (worldStatusText == null)
+                Debug.LogWarning("[WorldStateController] World Status Text not assigned in Inspector.");
+
             ApplyRainState();
             UpdateStatusLabel();
 
@@ -87,10 +95,9 @@ namespace AIBusinessTycoon.Managers
             {
                 UpdateLocalWorldState();
             }
-
             UpdateLighting();
-            UpdateRainPosition();
         }
+
 
         private void UpdateLocalWorldState()
         {
@@ -191,122 +198,21 @@ namespace AIBusinessTycoon.Managers
                 rainParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         }
 
-        private Light FindDirectionalLight()
-        {
-            Light[] lights = FindObjectsByType<Light>();
-            foreach (Light sceneLight in lights)
-            {
-                if (sceneLight.type == LightType.Directional)
-                    return sceneLight;
-            }
-
-            return lights.Length > 0 ? lights[0] : null;
-        }
-
-        private ParticleSystem CreateRainParticles()
-        {
-            GameObject rainObject = new GameObject("World Rain Particles");
-            rainObject.transform.SetParent(transform, false);
-
-            ParticleSystem particles = rainObject.AddComponent<ParticleSystem>();
-            ParticleSystem.MainModule main = particles.main;
-            main.playOnAwake = false;
-            main.loop = true;
-            main.startLifetime = 1.4f;
-            main.startSpeed = 16f;
-            main.startSize = 0.055f;
-            main.startColor = new Color(0.72f, 0.83f, 1f, 0.65f);
-            main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.maxParticles = 2500;
-            main.gravityModifier = 0.15f;
-
-            ParticleSystem.EmissionModule emission = particles.emission;
-            emission.rateOverTime = rainEmissionRate;
-            ParticleSystem.ShapeModule shape = particles.shape;
-            shape.shapeType = ParticleSystemShapeType.Box;
-            shape.scale = new Vector3(18f, 0.2f, 18f);
-
-            ParticleSystemRenderer renderer = rainObject.GetComponent<ParticleSystemRenderer>();
-            renderer.renderMode = ParticleSystemRenderMode.Stretch;
-            renderer.velocityScale = 0.08f;
-
-            Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
-            if (shader == null) shader = Shader.Find("Particles/Standard Unlit");
-            if (shader != null) renderer.material = new Material(shader);
-
-            return particles;
-        }
-
-        private void UpdateRainPosition()
-        {
-            if (rainParticles == null || Camera.main == null) return;
-
-            Vector3 cameraPosition = Camera.main.transform.position;
-            rainParticles.transform.position = new Vector3(cameraPosition.x, cameraPosition.y + 9f, cameraPosition.z);
-        }
-
-        private void CreateStatusLabel()
-        {
-            statusCanvas = FindAnyObjectByType<Canvas>();
-            if (statusCanvas == null)
-            {
-                GameObject canvasObject = new GameObject("World State HUD", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-                statusCanvas = canvasObject.GetComponent<Canvas>();
-                statusCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-                CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
-                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-                scaler.referenceResolution = new Vector2(1920f, 1080f);
-                createdStatusCanvas = true;
-            }
-
-            GameObject backgroundObject = new GameObject("World State Background", typeof(RectTransform), typeof(Image));
-            backgroundObject.transform.SetParent(statusCanvas.transform, false);
-            RectTransform backgroundRect = backgroundObject.GetComponent<RectTransform>();
-            backgroundRect.anchorMin = Vector2.one;
-            backgroundRect.anchorMax = Vector2.one;
-            backgroundRect.pivot = Vector2.one;
-            backgroundRect.anchoredPosition = new Vector2(-20f, -20f);
-            backgroundRect.sizeDelta = new Vector2(250f, 52f);
-            statusBackground = backgroundObject.GetComponent<Image>();
-            statusBackground.color = new Color(0.04f, 0.07f, 0.12f, 0.82f);
-
-            GameObject labelObject = new GameObject("World State Label", typeof(RectTransform), typeof(TextMeshProUGUI));
-            labelObject.transform.SetParent(backgroundObject.transform, false);
-            RectTransform labelRect = labelObject.GetComponent<RectTransform>();
-            labelRect.anchorMin = Vector2.zero;
-            labelRect.anchorMax = Vector2.one;
-            labelRect.offsetMin = new Vector2(12f, 4f);
-            labelRect.offsetMax = new Vector2(-12f, -4f);
-
-            worldStatusText = labelObject.GetComponent<TextMeshProUGUI>();
-            worldStatusText.alignment = TextAlignmentOptions.Center;
-            worldStatusText.fontSize = 20f;
-            worldStatusText.fontStyle = FontStyles.Bold;
-            worldStatusText.color = Color.white;
-            if (TMP_Settings.defaultFontAsset != null)
-                worldStatusText.font = TMP_Settings.defaultFontAsset;
-        }
-
         private void UpdateStatusLabel()
         {
             if (worldStatusText == null) return;
-
             string weather = CurrentWeather == Weather.Rain ? "RAIN" : "CLEAR";
             worldStatusText.text = $"{CurrentTimeOfDay.ToString().ToUpperInvariant()} | {weather}";
-
-            if (statusBackground != null)
-            {
-                statusBackground.color = CurrentWeather == Weather.Rain
-                    ? new Color(0.06f, 0.12f, 0.22f, 0.88f)
-                    : new Color(0.04f, 0.07f, 0.12f, 0.82f);
-            }
         }
 
-        private void OnDestroy()
+        private Light FindDirectionalLight()
         {
-            if (createdStatusCanvas && statusCanvas != null)
-                Destroy(statusCanvas.gameObject);
+            Light[] lights = FindObjectsByType<Light>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach (Light l in lights)
+                if (l.type == LightType.Directional) return l;
+            return lights.Length > 0 ? lights[0] : null;
         }
     }
 }
+
 
