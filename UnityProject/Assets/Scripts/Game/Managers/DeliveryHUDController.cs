@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using AIBusinessTycoon.Data;
@@ -16,6 +17,10 @@ namespace AIBusinessTycoon.Managers
         private StoreInteractionManager currentStore;
         private string playerId;
         private string businessId;
+        private bool expressDeliveryRequestInProgress;
+
+        private static readonly HashSet<string> InFlightExpressDeliveryKeys = new HashSet<string>();
+        private const string PendingExpressDeliveryKeyPrefix = "pending_express_delivery_";
 
         private float activeWindowTimer = 0f;
         private float nextDeliveryTimer = 0f;
@@ -131,7 +136,10 @@ namespace AIBusinessTycoon.Managers
 
             if (expressButton != null)
             {
-                expressButton.interactable = !response.supply_available;
+                bool hasPendingRequest = HasPendingExpressDeliveryRequest();
+                expressButton.interactable =
+                    (!response.supply_available || hasPendingRequest) &&
+                    !expressDeliveryRequestInProgress;
             }
         }
 
@@ -143,19 +151,84 @@ namespace AIBusinessTycoon.Managers
                 return;
             }
 
+            if (expressDeliveryRequestInProgress)
+                return;
+
+            string requestPlayerId = playerId;
+            string requestBusinessId = businessId;
+            string preferenceKey = GetPendingExpressDeliveryPreferenceKey(
+                requestPlayerId,
+                requestBusinessId);
+            string idempotencyKey = PlayerPrefs.GetString(preferenceKey, string.Empty);
+
+            if (string.IsNullOrEmpty(idempotencyKey))
+            {
+                idempotencyKey = Guid.NewGuid().ToString("N");
+                PlayerPrefs.SetString(preferenceKey, idempotencyKey);
+                PlayerPrefs.Save();
+            }
+
+            if (!InFlightExpressDeliveryKeys.Add(idempotencyKey))
+                return;
+
+            expressDeliveryRequestInProgress = true;
+            if (expressButton != null)
+                expressButton.interactable = false;
+
+            string requestKey = idempotencyKey;
             TycoonAPIService.Instance.RequestExpressDelivery(
-                playerId,
-                businessId,
+                requestPlayerId,
+                requestBusinessId,
+                requestKey,
                 (BusinessData business) =>
                 {
+                    InFlightExpressDeliveryKeys.Remove(requestKey);
+                    expressDeliveryRequestInProgress = false;
+
+                    if (PlayerPrefs.GetString(preferenceKey, string.Empty) == requestKey)
+                    {
+                        PlayerPrefs.DeleteKey(preferenceKey);
+                        PlayerPrefs.Save();
+                    }
+
                     Debug.Log("[DeliveryHUDController] Express restock successful.");
-                    FetchStatus();
+                    if (playerId == requestPlayerId && businessId == requestBusinessId)
+                    {
+                        FetchStatus();
+                    }
                 },
                 (string error) =>
                 {
+                    InFlightExpressDeliveryKeys.Remove(requestKey);
+                    expressDeliveryRequestInProgress = false;
+
                     Debug.LogError("[DeliveryHUDController] Express restock failed: " + error);
+                    if (playerId == requestPlayerId && businessId == requestBusinessId &&
+                        expressButton != null)
+                    {
+                        expressButton.interactable = !truckActive ||
+                            HasPendingExpressDeliveryRequest();
+                    }
                 }
             );
+        }
+
+        private bool HasPendingExpressDeliveryRequest()
+        {
+            if (string.IsNullOrEmpty(playerId) || string.IsNullOrEmpty(businessId))
+                return false;
+
+            string preferenceKey = GetPendingExpressDeliveryPreferenceKey(playerId, businessId);
+            return !string.IsNullOrEmpty(PlayerPrefs.GetString(preferenceKey, string.Empty));
+        }
+
+        private static string GetPendingExpressDeliveryPreferenceKey(
+            string requestPlayerId,
+            string requestBusinessId)
+        {
+            // Length-prefix the player ID so combined IDs cannot collide on delimiters.
+            return PendingExpressDeliveryKeyPrefix + requestPlayerId.Length + "_" +
+                requestPlayerId + requestBusinessId;
         }
 
         private string FormatSeconds(int value)

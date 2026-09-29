@@ -14,6 +14,17 @@ namespace AIBusinessTycoon.Data
     }
 
     [Serializable]
+    public class ExpressDeliveryRequest
+    {
+        public string idempotency_key;
+
+        public ExpressDeliveryRequest(string idempotencyKey)
+        {
+            idempotency_key = idempotencyKey;
+        }
+    }
+
+    [Serializable]
     public class DeliveryStatusResponse
     {
         public string business_id;

@@ -638,6 +638,7 @@ namespace AIBusinessTycoon.Services
         public void RequestExpressDelivery(
             string playerId,
             string businessId,
+            string idempotencyKey,
             Action<BusinessData> onSuccess,
             Action<string> onError)
         {
@@ -647,8 +648,18 @@ namespace AIBusinessTycoon.Services
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                onError?.Invoke("An idempotency key is required for express delivery.");
+                return;
+            }
+
             string url = $"{backendConfig.GetActiveURL()}/api/game/delivery/{playerId}/{businessId}/express";
-            StartCoroutine(PostRequest(url, new { }, onSuccess, onError));
+            StartCoroutine(PostRequest(
+                url,
+                new ExpressDeliveryRequest(idempotencyKey),
+                onSuccess,
+                onError));
         }
 
         /// <summary>
