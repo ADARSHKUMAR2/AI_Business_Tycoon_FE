@@ -36,4 +36,16 @@ namespace AIBusinessTycoon.Data
         public int delivery_interval_minutes;
         public float express_delivery_cost;
     }
+
+    [Serializable]
+    public class WorldStateResponse
+    {
+        public string time_of_day;
+        public string weather;
+        public string state_started_at;
+        public string next_time_change_at;
+        public string next_weather_change_at;
+        public float rain_spawn_multiplier;
+        public float night_spawn_multiplier;
+    }
 }

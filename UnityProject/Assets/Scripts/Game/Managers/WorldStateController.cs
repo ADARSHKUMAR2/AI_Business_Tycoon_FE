@@ -2,6 +2,8 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using AIBusinessTycoon.Data;
+using AIBusinessTycoon.Services;
 
 namespace AIBusinessTycoon.Managers
 {
@@ -30,11 +32,19 @@ namespace AIBusinessTycoon.Managers
         [SerializeField, Min(0f)] private float lightingTransitionSpeed = 2f;
         [SerializeField, Min(0f)] private float rainEmissionRate = 180f;
 
+        [Header("Backend Authority")]
+        [SerializeField] private bool useBackendWorldState;
+        [SerializeField, Min(1f)] private float backendRefreshInterval = 20f;
+
         private float timeInCurrentPhase;
         private float timeSinceWeatherChange;
         private Canvas statusCanvas;
         private Image statusBackground;
         private bool createdStatusCanvas;
+        private float timeUntilBackendRefresh;
+        private float backendRainSpawnMultiplier;
+        private float backendNightSpawnMultiplier;
+        private bool hasBackendState;
 
         public TimeOfDay CurrentTimeOfDay { get; private set; } = TimeOfDay.Day;
         public Weather CurrentWeather { get; private set; } = Weather.Clear;
@@ -45,8 +55,10 @@ namespace AIBusinessTycoon.Managers
             get
             {
                 float multiplier = 1f;
-                if (CurrentWeather == Weather.Rain) multiplier *= rainSpawnMultiplier;
-                if (CurrentTimeOfDay == TimeOfDay.Night) multiplier *= nightSpawnMultiplier;
+                if (CurrentWeather == Weather.Rain)
+                    multiplier *= hasBackendState ? backendRainSpawnMultiplier : rainSpawnMultiplier;
+                if (CurrentTimeOfDay == TimeOfDay.Night)
+                    multiplier *= hasBackendState ? backendNightSpawnMultiplier : nightSpawnMultiplier;
                 return multiplier;
             }
         }
@@ -58,13 +70,34 @@ namespace AIBusinessTycoon.Managers
             if (worldStatusText == null) CreateStatusLabel();
             ApplyRainState();
             UpdateStatusLabel();
+
+            if (useBackendWorldState)
+                RefreshBackendWorldState();
         }
 
         private void Update()
         {
+            if (useBackendWorldState)
+            {
+                timeUntilBackendRefresh -= Time.deltaTime;
+                if (timeUntilBackendRefresh <= 0f)
+                    RefreshBackendWorldState();
+            }
+            else
+            {
+                UpdateLocalWorldState();
+            }
+
+            UpdateLighting();
+            UpdateRainPosition();
+        }
+
+        private void UpdateLocalWorldState()
+        {
             timeInCurrentPhase += Time.deltaTime;
             timeSinceWeatherChange += Time.deltaTime;
             bool changed = false;
+
             while (timeInCurrentPhase >= CurrentPhaseDuration())
             {
                 timeInCurrentPhase -= CurrentPhaseDuration();
@@ -72,6 +105,7 @@ namespace AIBusinessTycoon.Managers
                 Debug.Log($"[WorldStateController] Time changed to {CurrentTimeOfDay}.");
                 changed = true;
             }
+
             float interval = Mathf.Max(1f, weatherChangeInterval);
             while (timeSinceWeatherChange >= interval)
             {
@@ -80,12 +114,49 @@ namespace AIBusinessTycoon.Managers
                 Debug.Log($"[WorldStateController] Weather changed to {CurrentWeather}.");
                 changed = true;
             }
-            UpdateLighting();
-            UpdateRainPosition();
-            UpdateStatusLabel();
+
             if (changed)
             {
                 ApplyRainState();
+                UpdateStatusLabel();
+                OnWorldStateChanged?.Invoke();
+            }
+        }
+
+        private void RefreshBackendWorldState()
+        {
+            timeUntilBackendRefresh = Mathf.Max(1f, backendRefreshInterval);
+            TycoonAPIService.Instance.GetWorldState(ApplyBackendWorldState, error =>
+            {
+                hasBackendState = false;
+                Debug.LogWarning($"[WorldStateController] Backend world state unavailable; using local state. {error}");
+            });
+        }
+
+        private void ApplyBackendWorldState(WorldStateResponse response)
+        {
+            if (response == null)
+                return;
+
+            TimeOfDay newTimeOfDay = string.Equals(response.time_of_day, "night", StringComparison.OrdinalIgnoreCase)
+                ? TimeOfDay.Night
+                : TimeOfDay.Day;
+            Weather newWeather = string.Equals(response.weather, "rain", StringComparison.OrdinalIgnoreCase)
+                ? Weather.Rain
+                : Weather.Clear;
+            bool changed = newTimeOfDay != CurrentTimeOfDay || newWeather != CurrentWeather;
+
+            CurrentTimeOfDay = newTimeOfDay;
+            CurrentWeather = newWeather;
+            backendRainSpawnMultiplier = Mathf.Max(0.01f, response.rain_spawn_multiplier);
+            backendNightSpawnMultiplier = Mathf.Max(0.01f, response.night_spawn_multiplier);
+            hasBackendState = true;
+
+            ApplyRainState();
+            UpdateStatusLabel();
+            if (changed)
+            {
+                Debug.Log($"[WorldStateController] Backend state changed to {CurrentTimeOfDay} / {CurrentWeather}.");
                 OnWorldStateChanged?.Invoke();
             }
         }
@@ -220,10 +291,8 @@ namespace AIBusinessTycoon.Managers
         {
             if (worldStatusText == null) return;
 
-            int elapsedSeconds = Mathf.FloorToInt(timeInCurrentPhase);
-            string clock = string.Format("{0:00}:{1:00}", elapsedSeconds / 60, elapsedSeconds % 60);
             string weather = CurrentWeather == Weather.Rain ? "RAIN" : "CLEAR";
-            worldStatusText.text = $"{CurrentTimeOfDay.ToString().ToUpperInvariant()}  {clock}   |   {weather}";
+            worldStatusText.text = $"{CurrentTimeOfDay.ToString().ToUpperInvariant()} | {weather}";
 
             if (statusBackground != null)
             {

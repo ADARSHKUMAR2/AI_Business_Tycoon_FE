@@ -609,6 +609,26 @@ namespace AIBusinessTycoon.Services
 
         #endregion
 
+        #region World State APIs
+
+        /// <summary>
+        /// Gets server-authoritative time, weather, and customer-spawn modifiers.
+        /// GET /api/game/world/state
+        /// </summary>
+        public void GetWorldState(Action<WorldStateResponse> onSuccess, Action<string> onError)
+        {
+            if (backendConfig == null)
+            {
+                onError?.Invoke("BackendConfig is not assigned!");
+                return;
+            }
+
+            string url = $"{backendConfig.GetActiveURL()}/api/game/world/state";
+            StartCoroutine(GetRequest(url, onSuccess, onError));
+        }
+
+        #endregion
+
         #region Delivery APIs
 
         /// <summary>
