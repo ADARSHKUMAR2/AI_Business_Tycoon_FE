@@ -12,6 +12,7 @@ namespace AIBusinessTycoon.Managers
         [SerializeField] private GameObject customerPrefab;
         [SerializeField] private float spawnInterval = 5f;
         [SerializeField] private int maxCustomers = 10;
+        [SerializeField] private WorldStateController worldState;
 
         [Header("Spawn Location")]
         [SerializeField] private Transform spawnPoint;
@@ -30,6 +31,13 @@ namespace AIBusinessTycoon.Managers
 
         private void Start()
         {
+            if (worldState == null)
+            {
+                worldState = GetComponent<WorldStateController>();
+                if (worldState == null)
+                    worldState = gameObject.AddComponent<WorldStateController>();
+            }
+
             if (spawnPoint == null)
             {
                 GameObject sp = new GameObject("CustomerSpawnPoint");
@@ -61,7 +69,9 @@ namespace AIBusinessTycoon.Managers
         {
             while (isSpawning)
             {
-                yield return new WaitForSeconds(spawnInterval);
+                float spawnMultiplier = worldState != null ? worldState.CustomerSpawnMultiplier : 1f;
+                float adjustedSpawnInterval = spawnInterval / Mathf.Max(0.01f, spawnMultiplier);
+                yield return new WaitForSeconds(adjustedSpawnInterval);
 
                 if (activeCustomerCount < maxCustomers && GameManager.Instance != null && GameManager.Instance.IsGameReady)
                 {

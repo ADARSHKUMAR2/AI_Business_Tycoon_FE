@@ -65,6 +65,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/HUDManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/RestockerAI.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GameManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/WorldStateController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/PlayerInventory.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CustomerAI.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CraftingTable.cs" />
