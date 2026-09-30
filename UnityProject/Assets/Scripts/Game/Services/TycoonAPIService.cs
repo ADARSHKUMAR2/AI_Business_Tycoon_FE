@@ -83,18 +83,17 @@ namespace AIBusinessTycoon.Services
                         string jsonResponse = request.downloadHandler.text;
                         Debug.Log($"[TycoonAPIService] Response: {jsonResponse}");
                         
+                        // Handle null/empty responses (e.g., no active event)
+                        if (string.IsNullOrWhiteSpace(jsonResponse) || jsonResponse == "null")
+                        {
+                            onSuccess?.Invoke(default(T));
+                            yield break;
+                        }
+                        
                         T data = JsonConvert.DeserializeObject<T>(jsonResponse);
                         
-                        if (data != null)
-                        {
-                            onSuccess?.Invoke(data);
-                        }
-                        else
-                        {
-                            string errorMsg = "Failed to parse response data";
-                            Debug.LogError($"[TycoonAPIService] {errorMsg}");
-                            onError?.Invoke(errorMsg);
-                        }
+                        // Invoke success even if data is null (valid for Optional<T> responses)
+                        onSuccess?.Invoke(data);
                     }
                     catch (Exception e)
                     {
