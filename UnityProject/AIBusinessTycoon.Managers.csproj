@@ -89,6 +89,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/IngredientShelf.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/RecipeDefinition.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/RestaurantInventoryUI.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/EventManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/SupplyZone.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/APITestManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CleanerAI.cs" />

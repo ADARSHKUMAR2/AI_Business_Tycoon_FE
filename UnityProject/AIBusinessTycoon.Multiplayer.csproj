@@ -18,7 +18,7 @@
     <LangVersion>9.0</LangVersion>
     <RootNamespace></RootNamespace>
     <OutputType>Library</OutputType>
-    <AssemblyName>AIBusinessTycoon.Services</AssemblyName>
+    <AssemblyName>AIBusinessTycoon.Multiplayer</AssemblyName>
     <TargetFramework>netstandard2.1</TargetFramework>
     <BaseDirectory>.</BaseDirectory>
   </PropertyGroup>
@@ -53,10 +53,11 @@
     <Analyzer Include="/Applications/Unity/Hub/Editor/6000.5.6f1/Unity.app/Contents/Resources/Scripting/BCLExtensions/TargetingPacks/netstandard2.1/analyzers/dotnet/roslyn4.0/cs/System.Text.Json.SourceGeneration.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets/Scripts/Game/Services/TycoonAPIService.cs" />
+    <Compile Include="Assets/Scripts/Multiplayer/LeaderboardModels.cs" />
+    <Compile Include="Assets/Scripts/Multiplayer/RealtimeLeaderboardService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets/Scripts/Game/Services/AIBusinessTycoon.Services.asmdef" />
+    <None Include="Assets/Scripts/Multiplayer/AIBusinessTycoon.Multiplayer.asmdef" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -1255,6 +1256,10 @@
       <HintPath>/Applications/Unity/Hub/Editor/6000.5.6f1/Unity.app/Contents/Resources/Scripting/BCLExtensions/TargetingPacks/netstandard2.1/ref/System.Text.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEditor.UI">
       <HintPath>Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
       <Private>False</Private>
@@ -1265,6 +1270,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="AIBusinessTycoon.Managers.csproj" />
+    <ProjectReference Include="AIBusinessTycoon.Services.csproj" />
     <ProjectReference Include="AIBusinessTycoon.Data.csproj" />
     <ProjectReference Include="AIBusinessTycoon.Config.csproj" />
   </ItemGroup>

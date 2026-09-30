@@ -764,5 +764,42 @@ namespace AIBusinessTycoon.Services
                 }
             }
         }
+        
+        #region Event API Methods
+        
+        /// <summary>
+        /// Get currently active event for a player.
+        /// </summary>
+        public void GetActiveEvent(string playerId, Action<EventResponse> onSuccess, Action<string> onError)
+        {
+            if (backendConfig == null)
+            {
+                Debug.LogError("[TycoonAPIService] BackendConfig not assigned");
+                onError?.Invoke("BackendConfig not assigned");
+                return;
+            }
+            
+            string url = backendConfig.GetActiveEventURL(playerId);
+            StartCoroutine(GetRequest<EventResponse>(url, onSuccess, onError));
+        }
+        
+        /// <summary>
+        /// Register player for an event.
+        /// </summary>
+        public void RegisterForEvent(string eventId, string playerId, Action<EventResponse> onSuccess, Action<string> onError)
+        {
+            if (backendConfig == null)
+            {
+                Debug.LogError("[TycoonAPIService] BackendConfig not assigned");
+                onError?.Invoke("BackendConfig not assigned");
+                return;
+            }
+            
+            string url = backendConfig.GetRegisterEventURL(eventId, playerId);
+            // POST with empty body - backend doesn't require request data for registration
+            StartCoroutine(PostRequest<object, EventResponse>(url, new { }, onSuccess, onError));
+        }
+        
+        #endregion
     }
 }

@@ -56,10 +56,13 @@
     <Analyzer Include="/Applications/Unity/Hub/Editor/6000.5.6f1/Unity.app/Contents/Resources/Scripting/BCLExtensions/TargetingPacks/netstandard2.1/analyzers/dotnet/roslyn4.0/cs/System.Text.Json.SourceGeneration.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets/Editor/EventBannerUISetup.cs" />
     <Compile Include="Assets/TutorialInfo/Scripts/Editor/ReadmeEditor.cs" />
     <Compile Include="Assets/Editor/BuildMenuAutoSetup.cs" />
     <Compile Include="Assets/Editor/RestaurantPrefabBuilderEditor.cs" />
     <Compile Include="Assets/Editor/WorldStateSetupEditor.cs" />
+    <Compile Include="Assets/Editor/LeaderboardSetupEditor.cs" />
+    <Compile Include="Assets/Editor/EventManagerSetup.cs" />
     <Compile Include="Assets/Editor/SceneSetupEditor.cs" />
     <Compile Include="Assets/Editor/RestaurantKitchenBuilder.cs" />
   </ItemGroup>
@@ -1631,8 +1634,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp.csproj" />
+    <ProjectReference Include="AIBusinessTycoon.UI.csproj" />
     <ProjectReference Include="AIBusinessTycoon.Services.csproj" />
     <ProjectReference Include="AIBusinessTycoon.Managers.csproj" />
+    <ProjectReference Include="AIBusinessTycoon.Multiplayer.csproj" />
     <ProjectReference Include="AIBusinessTycoon.Data.csproj" />
     <ProjectReference Include="AIBusinessTycoon.Config.csproj" />
   </ItemGroup>

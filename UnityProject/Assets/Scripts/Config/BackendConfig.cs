@@ -24,6 +24,10 @@ namespace AIBusinessTycoon.Config
         public string getPlayerDataEndpoint = "/api/game/player/{0}";
         public string updatePlayerDataEndpoint = "/api/game/player/{0}";
         
+        [Header("Event Endpoints")]
+        public string getActiveEventEndpoint = "/api/game/events/active?player_id={0}";
+        public string registerEventEndpoint = "/api/game/events/{0}/register/{1}";
+        
         /// <summary>
         /// Returns the active backend URL based on environment setting.
         /// </summary>
@@ -46,6 +50,22 @@ namespace AIBusinessTycoon.Config
         public string GetUpdatePlayerDataURL(string playerId)
         {
             return string.Format(GetActiveURL() + updatePlayerDataEndpoint, playerId);
+        }
+        
+        /// <summary>
+        /// Builds the full URL for getting active event.
+        /// </summary>
+        public string GetActiveEventURL(string playerId)
+        {
+            return GetActiveURL() + string.Format(getActiveEventEndpoint, playerId);
+        }
+        
+        /// <summary>
+        /// Builds the full URL for registering for an event.
+        /// </summary>
+        public string GetRegisterEventURL(string eventId, string playerId)
+        {
+            return GetActiveURL() + string.Format(registerEventEndpoint, eventId, playerId);
         }
     }
 }
