@@ -799,6 +799,22 @@ namespace AIBusinessTycoon.Services
             StartCoroutine(PostRequest<object, EventResponse>(url, new { }, onSuccess, onError));
         }
         
+        /// <summary>
+        /// Create event business for a player.
+        /// </summary>
+        public void CreateEventBusiness(string eventId, string playerId, Action<BusinessData> onSuccess, Action<string> onError)
+        {
+            if (backendConfig == null)
+            {
+                Debug.LogError("[TycoonAPIService] BackendConfig not assigned");
+                onError?.Invoke("BackendConfig not assigned");
+                return;
+            }
+            
+            string url = $"{backendConfig.GetActiveURL()}/api/game/events/{eventId}/create-business/{playerId}";
+            StartCoroutine(PostRequest<object, BusinessData>(url, new { }, onSuccess, onError));
+        }
+        
         #endregion
     }
 }

@@ -145,6 +145,37 @@ namespace AIBusinessTycoon.Managers
             CurrentEvent = r;
             OnRegistrationSuccess?.Invoke($"Registered for {r.franchise_name}!");
             OnEventUpdated?.Invoke(r);
+            
+            // Automatically create event business
+            var gm = GameManager.Instance;
+            if (gm != null && gm.CurrentPlayer != null)
+            {
+                if (enableDebugLogs) Debug.Log($"[EventManager] Creating event business for {r.franchise_name}");
+                TycoonAPIService.Instance.CreateEventBusiness(
+                    r.event_id,
+                    gm.CurrentPlayer.player_id,
+                    (business) => OnEventBusinessCreated(business, callback),
+                    (error) => OnEventBusinessError(error, callback)
+                );
+            }
+            else
+            {
+                callback?.Invoke(true);
+            }
+        }
+        
+        private void OnEventBusinessCreated(BusinessData business, Action<bool> callback)
+        {
+            if (enableDebugLogs) Debug.Log($"[EventManager] Event business created: {business.name} at ({business.position_x}, {business.position_y})");
+            // Reload player data to get the new business
+            // GameManager will handle this when player data is refreshed
+            callback?.Invoke(true);
+        }
+        
+        private void OnEventBusinessError(string error, Action<bool> callback)
+        {
+            Debug.LogWarning($"[EventManager] Failed to create event business: {error}");
+            // Still mark registration as success since the player is registered
             callback?.Invoke(true);
         }
         
