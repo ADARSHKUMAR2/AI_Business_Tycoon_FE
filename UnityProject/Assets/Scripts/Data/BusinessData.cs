@@ -57,6 +57,10 @@ namespace AIBusinessTycoon.Data
         public BusinessStats       stats;
         public string              created_at;
         public string              last_updated;
+        
+        // Event-specific fields
+        public bool                is_event_business = false;
+        public string              event_id          = null;
 
         public Position GridPosition => new Position { x = position_x, y = position_y };
         public BusinessType BusinessTypeEnum

@@ -7,11 +7,18 @@ namespace AIBusinessTycoon.Managers
 {
     /// <summary>
     /// Manages franchise tournament events.
-    /// Polls the backend for active events and notifies UI components.
+    /// Polls the backend for active events, spawns/despawns the temporary
+    /// event business prefab, and notifies UI components.
     /// </summary>
     public class EventManager : MonoBehaviour
     {
         public static EventManager Instance { get; private set; }
+        
+        /// <summary>
+        /// Fixed world-space position where event businesses are spawned.
+        /// Placed well outside the normal player grid so it never conflicts.
+        /// </summary>
+        public static readonly Vector3 EventZoneWorldPosition = new Vector3(30f, 0f, 0f);
         
         [Header("Polling Settings")]
         [SerializeField] private float pollInterval = 60f;
@@ -79,14 +86,12 @@ namespace AIBusinessTycoon.Managers
                 callback?.Invoke(false);
                 return;
             }
-            
             if (CurrentEvent.is_registered)
             {
                 OnRegistrationFailed?.Invoke("Already registered");
                 callback?.Invoke(false);
                 return;
             }
-            
             var gm = GameManager.Instance;
             if (gm == null || gm.CurrentPlayer == null)
             {
@@ -94,16 +99,13 @@ namespace AIBusinessTycoon.Managers
                 callback?.Invoke(false);
                 return;
             }
-            
             float playerMoney = gm.CurrentPlayer.money;
             if (playerMoney < CurrentEvent.entry_fee)
             {
-                string msg = $"Need ₹{CurrentEvent.entry_fee:N0}, have ₹{playerMoney:N0}";
-                OnRegistrationFailed?.Invoke(msg);
+                OnRegistrationFailed?.Invoke($"Need ₹{CurrentEvent.entry_fee:N0}, have ₹{playerMoney:N0}");
                 callback?.Invoke(false);
                 return;
             }
-            
             TycoonAPIService.Instance.RegisterForEvent(
                 CurrentEvent.event_id,
                 gm.CurrentPlayer.player_id,
@@ -115,20 +117,24 @@ namespace AIBusinessTycoon.Managers
         public void StopPolling() { isPolling = false; }
         public void StartPolling() { isPolling = true; pollTimer = 1f; }
         
+        // ── Private Callbacks ──────────────────────────────────────────────
+        
         private void OnEventFetchSuccess(EventResponse response)
         {
             if (response == null)
             {
                 if (CurrentEvent != null)
                 {
+                    // Event ended — despawn the temporary store
+                    GameManager.Instance?.DespawnEventBusinesses(CurrentEvent.event_id);
                     CurrentEvent = null;
                     OnEventEnded?.Invoke();
                 }
                 return;
             }
             
-            bool isNew = CurrentEvent == null || CurrentEvent.event_id != response.event_id;
-            bool regChanged = CurrentEvent != null && CurrentEvent.is_registered != response.is_registered;
+            bool isNew      = CurrentEvent == null || CurrentEvent.event_id != response.event_id;
+            bool regChanged = CurrentEvent != null  && CurrentEvent.is_registered != response.is_registered;
             CurrentEvent = response;
             
             if (isNew || regChanged) OnEventUpdated?.Invoke(response);
@@ -146,7 +152,7 @@ namespace AIBusinessTycoon.Managers
             OnRegistrationSuccess?.Invoke($"Registered for {r.franchise_name}!");
             OnEventUpdated?.Invoke(r);
             
-            // Automatically create event business
+            // Create event business on backend, then spawn prefab
             var gm = GameManager.Instance;
             if (gm != null && gm.CurrentPlayer != null)
             {
@@ -155,7 +161,7 @@ namespace AIBusinessTycoon.Managers
                     r.event_id,
                     gm.CurrentPlayer.player_id,
                     (business) => OnEventBusinessCreated(business, callback),
-                    (error) => OnEventBusinessError(error, callback)
+                    (error)    => OnEventBusinessError(error, callback)
                 );
             }
             else
@@ -166,16 +172,24 @@ namespace AIBusinessTycoon.Managers
         
         private void OnEventBusinessCreated(BusinessData business, Action<bool> callback)
         {
-            if (enableDebugLogs) Debug.Log($"[EventManager] Event business created: {business.name} at ({business.position_x}, {business.position_y})");
-            // Reload player data to get the new business
-            // GameManager will handle this when player data is refreshed
+            if (enableDebugLogs)
+                Debug.Log($"[EventManager] Backend business created: {business.name} — spawning prefab at {EventZoneWorldPosition}");
+            
+            var gm = GameManager.Instance;
+            if (gm != null)
+            {
+                GameObject spawned = gm.SpawnEventBusiness(business, EventZoneWorldPosition);
+                if (spawned == null)
+                    Debug.LogWarning("[EventManager] SpawnEventBusiness returned null — check prefab assignments in GameManager.");
+            }
+            
             callback?.Invoke(true);
         }
         
         private void OnEventBusinessError(string error, Action<bool> callback)
         {
             Debug.LogWarning($"[EventManager] Failed to create event business: {error}");
-            // Still mark registration as success since the player is registered
+            // Registration succeeded — let the player proceed
             callback?.Invoke(true);
         }
         

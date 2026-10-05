@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using AIBusinessTycoon.Data;
+using AIBusinessTycoon.Managers;
 using AIBusinessTycoon.Multiplayer;
 
 namespace AIBusinessTycoon.UI
@@ -40,7 +42,8 @@ namespace AIBusinessTycoon.UI
 
         // ── Toggle (open) button shown on HUD ─────────────────────────────────
         [Header("HUD Toggle Button")]
-        [SerializeField] private Button openButton;
+        [SerializeField] private Button          openButton;
+        [SerializeField] private TextMeshProUGUI openButtonText;
 
         // ── Internal state ────────────────────────────────────────────────────
         private LeaderboardUpdateEvent latestData;
@@ -62,14 +65,24 @@ namespace AIBusinessTycoon.UI
             if (closeButton  != null) closeButton.onClick.AddListener(ClosePanel);
 
             // Hide tabs since we only track Event Revenue now
-            if (tabNetWorth != null) tabNetWorth.gameObject.SetActive(false);
-            if (tabRevenue != null) tabRevenue.gameObject.SetActive(false);
+            if (tabNetWorth  != null) tabNetWorth.gameObject.SetActive(false);
+            if (tabRevenue   != null) tabRevenue.gameObject.SetActive(false);
             if (tabCustomers != null) tabCustomers.gameObject.SetActive(false);
 
             if (panelRoot != null) panelRoot.SetActive(false);
 
             if (RealtimeLeaderboardService.Instance != null)
                 RealtimeLeaderboardService.Instance.LeaderboardUpdated += OnLeaderboardUpdated;
+
+            // Subscribe to EventManager so the button reflects event availability
+            if (EventManager.Instance != null)
+            {
+                EventManager.Instance.OnEventUpdated += OnEventUpdated;
+                EventManager.Instance.OnEventEnded   += OnEventEnded;
+            }
+
+            // Set the initial button state — disabled until an event is detected
+            RefreshOpenButton();
 
             RefreshConnectionStatus();
             StartCoroutine(ConnectionStatusLoop());
@@ -82,6 +95,12 @@ namespace AIBusinessTycoon.UI
         {
             if (RealtimeLeaderboardService.Instance != null)
                 RealtimeLeaderboardService.Instance.LeaderboardUpdated -= OnLeaderboardUpdated;
+
+            if (EventManager.Instance != null)
+            {
+                EventManager.Instance.OnEventUpdated -= OnEventUpdated;
+                EventManager.Instance.OnEventEnded   -= OnEventEnded;
+            }
         }
 
         // ── Public API ────────────────────────────────────────────────────────
@@ -112,6 +131,49 @@ namespace AIBusinessTycoon.UI
             {
                 titleLabel.text = $"🏆 {update.franchise_name.ToUpper()} TOURNAMENT";
             }
+        }
+        
+        // ── EventManager handlers ─────────────────────────────────────────────
+
+        private void OnEventUpdated(EventResponse eventData)
+        {
+            // An event exists — enable the button
+            RefreshOpenButton();
+        }
+
+        private void OnEventEnded()
+        {
+            // No more event — disable the button and close panel if open
+            RefreshOpenButton();
+            if (panelRoot != null && panelRoot.activeSelf)
+                ClosePanel();
+        }
+
+        /// <summary>
+        /// Enables or disables the leaderboard open-button based on
+        /// whether EventManager currently has an active/upcoming event.
+        /// </summary>
+        private void RefreshOpenButton()
+        {
+            if (openButton == null) return;
+
+            bool hasEvent = EventManager.Instance != null
+                         && EventManager.Instance.CurrentEvent != null;
+
+            openButton.interactable = hasEvent;
+
+            // Dim button alpha when disabled so it looks visually inactive
+            var graphic = openButton.targetGraphic;
+            if (graphic != null)
+            {
+                Color c = graphic.color;
+                c.a = hasEvent ? 1f : 0.4f;
+                graphic.color = c;
+            }
+
+            // Update button label if one is assigned
+            if (openButtonText != null)
+                openButtonText.text = hasEvent ? "Leaderboard" : "No Event";
         }
         
         private IEnumerator CountdownLoop()

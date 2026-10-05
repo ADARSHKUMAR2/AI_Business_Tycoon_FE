@@ -195,7 +195,12 @@ namespace AIBusinessTycoon.Managers
             if (CurrentPlayer.businesses != null)
             {
                 foreach (BusinessData business in CurrentPlayer.businesses)
-                    SpawnBuilding(business);
+                {
+                    if (business.is_event_business)
+                        SpawnEventBusiness(business, EventManager.EventZoneWorldPosition);
+                    else
+                        SpawnBuilding(business);
+                }
             }
 
             // Step 4: Camera bounds
@@ -460,6 +465,83 @@ namespace AIBusinessTycoon.Managers
             SpawnBuilding(business);
             RefreshPlayerData();
             OnBusinessCreated?.Invoke(business);
+        }
+        
+        /// <summary>
+        /// Spawns a temporary event business at a fixed world-space position,
+        /// bypassing the grid tile system entirely. Focuses camera on it after spawning.
+        /// </summary>
+        public GameObject SpawnEventBusiness(BusinessData business, Vector3 worldPosition)
+        {
+            // Prevent duplicate spawns
+            if (spawnedBuildings.ContainsKey(business.business_id))
+            {
+                Debug.Log($"[GameManager] Event business {business.business_id} already spawned.");
+                return spawnedBuildings[business.business_id];
+            }
+            
+            GameObject prefab = GetBuildingPrefab(business.business_type);
+            if (prefab == null)
+            {
+                Debug.LogError($"[GameManager] No prefab found for business type: {business.business_type}");
+                return null;
+            }
+            
+            // Spawn at explicit world position - no grid conversion
+            worldPosition.y = 0f;
+            GameObject buildingObj = Instantiate(prefab, worldPosition, Quaternion.identity);
+            buildingObj.name = $"{business.name} ({business.business_id}) [EVENT]";
+            
+            // Add marker component to identify it as an event business
+            EventBusinessMarker marker = buildingObj.AddComponent<EventBusinessMarker>();
+            marker.EventId = business.event_id;
+            
+            StoreInteractionManager sim = buildingObj.GetComponent<StoreInteractionManager>();
+            if (sim == null) sim = buildingObj.AddComponent<StoreInteractionManager>();
+            sim.BusinessData = business;
+            
+            storesByBusinessId[business.business_id] = sim;
+            spawnedBuildings[business.business_id]   = buildingObj;
+            
+            // Give a grace period before delivery polling
+            if (!nextPollAt.ContainsKey(business.business_id))
+                nextPollAt[business.business_id] = Time.time + 5f;
+            
+            sim.SpawnSavedEmployees(cashierPrefab, restockerPrefab, cleanerPrefab);
+            
+            // Pan camera to the new event store so the player sees it
+            CameraController.Instance?.FocusOnPosition(worldPosition);
+            
+            Debug.Log($"[GameManager] Event business spawned: {business.name} at {worldPosition}");
+            return buildingObj;
+        }
+        
+        /// <summary>
+        /// Destroys all spawned event business prefabs for a given event_id.
+        /// Called when an event ends.
+        /// </summary>
+        public void DespawnEventBusinesses(string eventId)
+        {
+            var toRemove = new System.Collections.Generic.List<string>();
+            
+            foreach (var kvp in storesByBusinessId)
+            {
+                BusinessData biz = kvp.Value?.BusinessData;
+                if (biz != null && biz.is_event_business && biz.event_id == eventId)
+                    toRemove.Add(kvp.Key);
+            }
+            
+            foreach (string bizId in toRemove)
+            {
+                if (spawnedBuildings.TryGetValue(bizId, out GameObject obj))
+                {
+                    Debug.Log($"[GameManager] Despawning event business: {bizId}");
+                    Destroy(obj);
+                    spawnedBuildings.Remove(bizId);
+                }
+                storesByBusinessId.Remove(bizId);
+                nextPollAt.Remove(bizId);
+            }
         }
 
         #endregion
