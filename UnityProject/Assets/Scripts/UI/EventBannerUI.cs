@@ -121,8 +121,16 @@ namespace AIBusinessTycoon.UI
             // Update status badge
             if (statusText != null)
             {
-                statusText.text = currentEvent.IsActive ? "● ACTIVE" : "● UPCOMING";
-                statusText.color = currentEvent.IsActive ? activeColor : upcomingColor;
+                if (currentEvent.IsCompleted)
+                {
+                    statusText.text = "● COMPLETED";
+                    statusText.color = registeredColor; // Gray
+                }
+                else
+                {
+                    statusText.text = currentEvent.IsActive ? "● ACTIVE" : "● UPCOMING";
+                    statusText.color = currentEvent.IsActive ? activeColor : upcomingColor;
+                }
             }
             
             // Update details (entry fee & participants)
@@ -140,7 +148,14 @@ namespace AIBusinessTycoon.UI
         {
             if (joinButton == null || joinButtonText == null) return;
             
-            if (currentEvent.is_registered)
+            if (currentEvent.IsCompleted)
+            {
+                joinButtonText.text = "VIEW RESULTS";
+                joinButton.interactable = true; // Click to open leaderboard
+                if (joinButton.targetGraphic != null)
+                    joinButton.targetGraphic.color = upcomingColor; // Yellow
+            }
+            else if (currentEvent.is_registered)
             {
                 joinButtonText.text = "✓ REGISTERED";
                 joinButton.interactable = false;
@@ -155,6 +170,8 @@ namespace AIBusinessTycoon.UI
                 
                 joinButtonText.text = canAfford ? "JOIN NOW" : "INSUFFICIENT FUNDS";
                 joinButton.interactable = canAfford;
+                if (joinButton.targetGraphic != null)
+                    joinButton.targetGraphic.color = activeColor;
             }
         }
         
@@ -178,7 +195,21 @@ namespace AIBusinessTycoon.UI
         
         private void OnJoinButtonClicked()
         {
-            if (currentEvent == null || !currentEvent.CanJoin) return;
+            if (currentEvent == null) return;
+            
+            // If completed, clicking the button just opens the leaderboard panel
+            if (currentEvent.IsCompleted)
+            {
+                // Find and open leaderboard panel
+                var leaderboard = FindObjectOfType<LeaderboardPanel>(true);
+                if (leaderboard != null)
+                {
+                    leaderboard.OpenPanel();
+                }
+                return;
+            }
+            
+            if (!currentEvent.CanJoin) return;
             
             joinButton.interactable = false;
             joinButtonText.text = "JOINING...";

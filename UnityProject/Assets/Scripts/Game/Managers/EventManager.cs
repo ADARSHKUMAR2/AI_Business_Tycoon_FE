@@ -130,6 +130,11 @@ namespace AIBusinessTycoon.Managers
                     CurrentEvent = null;
                     OnEventEnded?.Invoke();
                 }
+                else
+                {
+                    // No active event on startup. Ensure no ghost event businesses are spawned.
+                    GameManager.Instance?.DespawnEventBusinesses(null);
+                }
                 return;
             }
             
@@ -138,6 +143,31 @@ namespace AIBusinessTycoon.Managers
             CurrentEvent = response;
             
             if (isNew || regChanged) OnEventUpdated?.Invoke(response);
+            
+            if (isNew)
+            {
+                // Cleanup any ghost event businesses that don't match the current active event
+                GameManager.Instance?.DespawnEventBusinesses(response.event_id, true);
+                
+                // If the player loaded into the game while already registered for this active event,
+                // we need to spawn their event business prefab now.
+                if (CurrentEvent.is_registered)
+                {
+                    var gm = GameManager.Instance;
+                    if (gm != null && gm.CurrentPlayer != null)
+                    {
+                        foreach (var biz in gm.CurrentPlayer.businesses)
+                        {
+                            if (biz.is_event_business && biz.event_id == CurrentEvent.event_id)
+                            {
+                                if (enableDebugLogs) Debug.Log($"[EventManager] Spawning existing event business for active event: {biz.name}");
+                                gm.SpawnEventBusiness(biz, EventZoneWorldPosition);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
         
         private void OnEventFetchError(string error)

@@ -104,9 +104,17 @@ namespace AIBusinessTycoon.Services
                 }
                 else
                 {
-                    string errorMsg = $"Request failed: {request.error} (Code: {request.responseCode})";
-                    Debug.LogError($"[TycoonAPIService] {errorMsg}");
-                    onError?.Invoke(errorMsg);
+                    if (request.responseCode == 404)
+                    {
+                        Debug.LogWarning($"[TycoonAPIService] GET returned 404 (Ignored): {url}");
+                        onSuccess?.Invoke(default(T));
+                    }
+                    else
+                    {
+                        string errorMsg = $"Request failed: {request.error} (Code: {request.responseCode})";
+                        Debug.LogError($"[TycoonAPIService] {errorMsg}");
+                        onError?.Invoke(errorMsg);
+                    }
                 }
             }
         }
@@ -133,7 +141,8 @@ namespace AIBusinessTycoon.Services
                 }
                 else
                 {
-                    string errorMsg = $"Request failed: {request.error} (Code: {request.responseCode})";
+                    string body = request.downloadHandler != null ? request.downloadHandler.text : "";
+                    string errorMsg = $"Request failed: {request.error} (Code: {request.responseCode})\nBody: {body}";
                     Debug.LogError($"[TycoonAPIService] {errorMsg}");
                     onError?.Invoke(errorMsg);
                 }
@@ -731,7 +740,15 @@ namespace AIBusinessTycoon.Services
                 }
                 else
                 {
-                    onError?.Invoke($"DELETE failed: {request.error}");
+                    if (request.responseCode == 404)
+                    {
+                        Debug.LogWarning($"[TycoonAPIService] DELETE returned 404 (Ignored): {url}");
+                        onSuccess?.Invoke(default(T));
+                    }
+                    else
+                    {
+                        onError?.Invoke($"DELETE failed: {request.error}");
+                    }
                 }
             }
         }

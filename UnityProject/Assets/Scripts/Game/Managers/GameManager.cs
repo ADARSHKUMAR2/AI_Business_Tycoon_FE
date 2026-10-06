@@ -191,15 +191,17 @@ namespace AIBusinessTycoon.Managers
 
             yield return new WaitForSeconds(0.1f);
 
-            // Step 3: Spawn existing buildings
+            // Step 3: Spawn existing businesses (but hold off on event businesses)
             if (CurrentPlayer.businesses != null)
             {
                 foreach (BusinessData business in CurrentPlayer.businesses)
                 {
-                    if (business.is_event_business)
-                        SpawnEventBusiness(business, EventManager.EventZoneWorldPosition);
-                    else
+                    // Do not spawn temporary event businesses immediately. 
+                    // EventManager will spawn the CORRECT one once it polls the active event.
+                    if (!business.is_event_business)
+                    {
                         SpawnBuilding(business);
+                    }
                 }
             }
 
@@ -520,15 +522,22 @@ namespace AIBusinessTycoon.Managers
         /// Destroys all spawned event business prefabs for a given event_id.
         /// Called when an event ends.
         /// </summary>
-        public void DespawnEventBusinesses(string eventId)
+        public void DespawnEventBusinesses(string eventId, bool inverse = false)
         {
             var toRemove = new System.Collections.Generic.List<string>();
             
             foreach (var kvp in storesByBusinessId)
             {
                 BusinessData biz = kvp.Value?.BusinessData;
-                if (biz != null && biz.is_event_business && biz.event_id == eventId)
-                    toRemove.Add(kvp.Key);
+                if (biz != null && biz.is_event_business)
+                {
+                    if (eventId == null)
+                        toRemove.Add(kvp.Key);
+                    else if (!inverse && biz.event_id == eventId)
+                        toRemove.Add(kvp.Key);
+                    else if (inverse && biz.event_id != eventId)
+                        toRemove.Add(kvp.Key);
+                }
             }
             
             foreach (string bizId in toRemove)

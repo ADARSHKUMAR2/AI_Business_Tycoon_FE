@@ -18,11 +18,17 @@ namespace AIBusinessTycoon.Data
         public int max_winners;
         public bool is_registered;
         public int participant_count;
+        public string[] winners; // Added to receive winners list from backend
         
         /// <summary>
         /// Returns true if the event is currently active.
         /// </summary>
         public bool IsActive => status == "active";
+        
+        /// <summary>
+        /// Returns true if the event is completed.
+        /// </summary>
+        public bool IsCompleted => status == "completed";
         
         /// <summary>
         /// Returns true if the event is upcoming (not started yet).

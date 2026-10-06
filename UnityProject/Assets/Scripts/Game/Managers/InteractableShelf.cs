@@ -52,6 +52,13 @@ namespace AIBusinessTycoon.Managers
                 var col = gameObject.AddComponent<BoxCollider>();
                 col.center = new Vector3(0, 0.5f, 0);
                 col.size = new Vector3(1.5f, 1.5f, 0.5f);
+                col.isTrigger = true;
+            }
+            else
+            {
+                foreach(var c in GetComponents<Collider>()) {
+                    c.isTrigger = true;
+                }
             }
 
             UpdateVisuals();
