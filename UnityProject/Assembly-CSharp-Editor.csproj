@@ -65,6 +65,7 @@
     <Compile Include="Assets/Editor/EventManagerSetup.cs" />
     <Compile Include="Assets/Editor/SceneSetupEditor.cs" />
     <Compile Include="Assets/Editor/RestaurantKitchenBuilder.cs" />
+    <Compile Include="Assets/Editor/InteractableShelfSetup.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

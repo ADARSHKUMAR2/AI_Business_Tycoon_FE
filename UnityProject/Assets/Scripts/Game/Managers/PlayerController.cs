@@ -154,12 +154,36 @@ namespace AIBusinessTycoon.Managers
 
             if (nearbyCustomerShelf != null)
             {
-                if (playerInventory.HasItem() && nearbyCustomerShelf.CanAcceptStock())
+                if (!playerInventory.HasItem())
                 {
-                    string itemGiven = playerInventory.DropHeldItem();
-                    nearbyCustomerShelf.AddStock(1);
-                    Debug.Log($"Stocked customer shelf with {itemGiven}!");
+                    Debug.Log("[PlayerController] Cannot restock: not holding any items.");
+                    return;
                 }
+                
+                // Validate the held item matches this shelf's item key
+                string heldItem  = playerInventory.HeldItemId;
+                string shelfItem = nearbyCustomerShelf.itemKey;
+                
+                if (!string.Equals(heldItem, shelfItem, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    string shelfName = nearbyCustomerShelf.itemData != null
+                        ? nearbyCustomerShelf.itemData.name
+                        : shelfItem;
+                    Debug.LogWarning($"[PlayerController] Wrong item! Holding '{heldItem}' but shelf needs '{shelfItem}'.");
+                    UI.HUDManager.Instance?.ShowNotification($"This shelf is for {shelfName}!", 1.5f);
+                    return;
+                }
+                
+                if (!nearbyCustomerShelf.CanAcceptStock())
+                {
+                    Debug.Log($"[PlayerController] Shelf '{shelfItem}' is already full.");
+                    UI.HUDManager.Instance?.ShowNotification("Shelf is already full!", 1.5f);
+                    return;
+                }
+                
+                string itemGiven = playerInventory.DropHeldItem();
+                nearbyCustomerShelf.AddStock(1);
+                Debug.Log($"[PlayerController] ✅ Stocked '{shelfItem}' shelf with '{itemGiven}'.");
                 return;
             }
         }

@@ -23,44 +23,34 @@ namespace AIBusinessTycoon.Managers
         [SerializeField] private TextMeshProUGUI itemNameTextUI; 
         [SerializeField] private Transform itemContainer;     
 
-        private GameObject boxPrefab;
-        
-        // ── Local Object Pool for Visual Boxes ──
-        private List<GameObject> visualBoxes = new List<GameObject>();
+        // We no longer instantiate at runtime. We just cache the children of itemContainer!
+        private List<GameObject> pooledBoxes = new List<GameObject>();
 
         private void Start()
         {
-            if (stockTextUI == null) CreateFloatingUI();
+            // Warn individually but NEVER return early — shelf must function even without visuals
+            if (stockTextUI == null)
+                Debug.LogWarning($"[InteractableShelf] stockTextUI missing on {gameObject.name}. Run the Editor Setup script.");
+            if (itemNameTextUI == null)
+                Debug.LogWarning($"[InteractableShelf] itemNameTextUI missing on {gameObject.name}. Run the Editor Setup script.");
 
-            boxPrefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            boxPrefab.name = "BoxTemplate_Hidden";
-            boxPrefab.transform.SetParent(transform);
-            boxPrefab.transform.localScale = new Vector3(0.35f, 0.35f, 0.35f);
-            boxPrefab.GetComponent<Renderer>().material.color = new Color(0.8f, 0.3f, 0.2f); 
-            Destroy(boxPrefab.GetComponent<Collider>());
-            boxPrefab.SetActive(false);
-
-            if (itemContainer == null)
+            // Cache all pre-built child objects inside itemContainer into the pool
+            if (itemContainer != null)
             {
-                itemContainer = new GameObject("ItemContainer").transform;
-                itemContainer.SetParent(transform);
-                itemContainer.localPosition = new Vector3(0, 1.2f, 0); 
-            }
-
-            if (GetComponent<Collider>() == null)
-            {
-                var col = gameObject.AddComponent<BoxCollider>();
-                col.center = new Vector3(0, 0.5f, 0);
-                col.size = new Vector3(1.5f, 1.5f, 0.5f);
-                col.isTrigger = true;
+                foreach (Transform child in itemContainer)
+                {
+                    pooledBoxes.Add(child.gameObject);
+                    child.gameObject.SetActive(false); // Hide all until stock is known
+                }
             }
             else
             {
-                foreach(var c in GetComponents<Collider>()) {
-                    c.isTrigger = true;
-                }
+                Debug.LogWarning($"[InteractableShelf] itemContainer missing on {gameObject.name}. Visual boxes will not show.");
             }
 
+            // NOTE: Do NOT cap maxCapacity here.
+            // InitializeFromBackend() will set the real values from backend data.
+            // pooledBoxes.Count is only a VISUAL limit, not a functional one.
             UpdateVisuals();
         }
 
@@ -71,6 +61,7 @@ namespace AIBusinessTycoon.Managers
             playerId = pId;
             businessId = bId;
 
+            // Use real backend capacity for game logic — visual limit is handled in UpdateVisuals()
             maxCapacity = data.max_stock;
             currentStock = Mathf.Min(data.stock, maxCapacity);
 
@@ -113,7 +104,7 @@ namespace AIBusinessTycoon.Managers
 
         public void UpdateVisuals()
         {
-            // Failsafe: Ensure current stock NEVER exceeds max capacity
+            // Failsafe bounds
             if (currentStock > maxCapacity) currentStock = maxCapacity;
             if (currentStock < 0) currentStock = 0;
 
@@ -123,75 +114,15 @@ namespace AIBusinessTycoon.Managers
                 stockTextUI.color = currentStock == 0 ? Color.red : Color.green;
             }
 
-            if (itemContainer == null || boxPrefab == null) return;
+            if (pooledBoxes.Count == 0) return;
 
-            // Failsafe: If we somehow have too many boxes, destroy the extras!
-            while (visualBoxes.Count > maxCapacity)
+            // Visual boxes are capped to the pool size.
+            // Game logic (CanAcceptStock etc.) always uses the real maxCapacity from backend.
+            int visualStock = Mathf.Min(currentStock, pooledBoxes.Count);
+            for (int i = 0; i < pooledBoxes.Count; i++)
             {
-                var extraBox = visualBoxes[visualBoxes.Count - 1];
-                visualBoxes.RemoveAt(visualBoxes.Count - 1);
-                Destroy(extraBox);
+                pooledBoxes[i].SetActive(i < visualStock);
             }
-
-            // Generate new boxes if we don't have enough to represent current stock
-            while (visualBoxes.Count < currentStock)
-            {
-                GameObject box = Instantiate(boxPrefab, itemContainer);
-                box.name = $"Box_{visualBoxes.Count}"; // Name them clearly!
-                
-                int i = visualBoxes.Count;
-                float xOffset = -0.4f + (i % 3) * 0.4f;
-                float yOffset = (i / 3) * 0.4f;
-                box.transform.localPosition = new Vector3(xOffset, yOffset, 0);
-
-                visualBoxes.Add(box);
-            }
-
-            // Set active strictly based on bounded stock
-            for (int i = 0; i < visualBoxes.Count; i++)
-            {
-                visualBoxes[i].SetActive(i < currentStock);
-            }
-        }
-
-        private void CreateFloatingUI()
-        {
-            GameObject canvasObj = new GameObject("ShelfCanvas");
-            canvasObj.transform.SetParent(transform);
-            canvasObj.transform.localPosition = new Vector3(0, 1.5f, 0);
-            
-            Canvas canvas = canvasObj.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;
-            canvasObj.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 150);
-            canvasObj.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
-            
-            GameObject nameObj = new GameObject("ItemNameText");
-            nameObj.transform.SetParent(canvasObj.transform);
-            itemNameTextUI = nameObj.AddComponent<TextMeshProUGUI>();
-            itemNameTextUI.fontSize = 28; 
-            itemNameTextUI.alignment = TextAlignmentOptions.Center;
-            itemNameTextUI.color = new Color(1f, 0.8f, 0.2f);
-            itemNameTextUI.outlineWidth = 0.2f;
-            itemNameTextUI.outlineColor = new Color(0, 0, 0, 0.8f);
-            RectTransform nameRect = nameObj.GetComponent<RectTransform>();
-            nameRect.sizeDelta = new Vector2(300, 50);
-            nameRect.localPosition = new Vector3(0, 40, 0);
-            nameRect.localRotation = Quaternion.identity;
-            nameRect.localScale = Vector3.one;
-
-            GameObject textObj = new GameObject("StockText");
-            textObj.transform.SetParent(canvasObj.transform);
-            stockTextUI = textObj.AddComponent<TextMeshProUGUI>();
-            stockTextUI.fontSize = 36; 
-            stockTextUI.alignment = TextAlignmentOptions.Center;
-            stockTextUI.fontStyle = FontStyles.Bold;
-            stockTextUI.outlineWidth = 0.2f;
-            stockTextUI.outlineColor = new Color(0, 0, 0, 0.8f);
-            RectTransform textRect = textObj.GetComponent<RectTransform>();
-            textRect.sizeDelta = new Vector2(300, 100);
-            textRect.localPosition = new Vector3(0, -10, 0);
-            textRect.localRotation = Quaternion.identity;
-            textRect.localScale = Vector3.one;
         }
     }
 }
