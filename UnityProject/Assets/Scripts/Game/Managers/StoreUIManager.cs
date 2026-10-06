@@ -182,8 +182,9 @@ namespace AIBusinessTycoon.UI
                 return;
             }
 
+            // Disable button immediately to prevent double-clicks, but DO NOT deduct money yet.
+            // The backend deducts money atomically during hire. We sync locally only on success.
             cashierHired = true;
-            gm.DeductMoneyLocal(CashierCost);
             CloseHireMenu();
             RefreshHireMenuLabels();
 
@@ -195,19 +196,21 @@ namespace AIBusinessTycoon.UI
                 (emp) => 
                 {
                     Debug.Log($"[StoreUIManager] Cashier hired and saved to backend: {emp.name}");
-                    // 1. Add to local state
+                    // Deduct money locally ONLY after backend confirms — avoids UpdatePlayerData race condition
+                    gm.CurrentPlayer.money -= CashierCost;
+                    gm.OnPlayerDataUpdated?.Invoke(gm.CurrentPlayer);
+                    // Add to local business state
                     if (currentBusiness.employees == null) currentBusiness.employees = new System.Collections.Generic.List<Employee>();
                     currentBusiness.employees.Add(emp);
-                    
-                    // 2. NOW spawn the AI, because the data exists!
                     SpawnEmployeeAI("cashier");
                 },
                 (err) => 
                 {
-                    Debug.LogWarning($"[StoreUIManager] Backend hire failed: {err}");
-                    // Refund if failed
+                    Debug.LogWarning($"[StoreUIManager] Backend cashier hire failed: {err}");
+                    // Revert UI — backend rejected the hire, no money was spent
                     cashierHired = false;
-                    gm.DeductMoneyLocal(-CashierCost);
+                    RefreshHireMenuLabels();
+                    UI.HUDManager.Instance?.ShowNotification("❌ Hire failed! Try again.", 2f);
                 }
             );
         }
@@ -224,7 +227,6 @@ namespace AIBusinessTycoon.UI
             }
 
             restockerHired = true;
-            gm.DeductMoneyLocal(RestockerCost);
             CloseHireMenu();
             RefreshHireMenuLabels();
 
@@ -236,15 +238,18 @@ namespace AIBusinessTycoon.UI
                 (emp) => 
                 {
                     Debug.Log($"[StoreUIManager] Restocker hired and saved to backend: {emp.name}");
+                    gm.CurrentPlayer.money -= RestockerCost;
+                    gm.OnPlayerDataUpdated?.Invoke(gm.CurrentPlayer);
                     if (currentBusiness.employees == null) currentBusiness.employees = new System.Collections.Generic.List<Employee>();
                     currentBusiness.employees.Add(emp);
                     SpawnEmployeeAI("restocker");
                 },
                 (err) => 
                 {
-                    Debug.LogWarning($"[StoreUIManager] Backend hire failed: {err}");
+                    Debug.LogWarning($"[StoreUIManager] Backend restocker hire failed: {err}");
                     restockerHired = false;
-                    gm.DeductMoneyLocal(-RestockerCost);
+                    RefreshHireMenuLabels();
+                    UI.HUDManager.Instance?.ShowNotification("❌ Hire failed! Try again.", 2f);
                 }
             );
         }
@@ -261,7 +266,6 @@ namespace AIBusinessTycoon.UI
             }
 
             cleanerHired = true;
-            gm.DeductMoneyLocal(CleanerCost);
             CloseHireMenu();
             RefreshHireMenuLabels();
 
@@ -273,15 +277,18 @@ namespace AIBusinessTycoon.UI
                 (emp) => 
                 {
                     Debug.Log($"[StoreUIManager] Cleaner hired and saved to backend: {emp.name}");
+                    gm.CurrentPlayer.money -= CleanerCost;
+                    gm.OnPlayerDataUpdated?.Invoke(gm.CurrentPlayer);
                     if (currentBusiness.employees == null) currentBusiness.employees = new System.Collections.Generic.List<Employee>();
                     currentBusiness.employees.Add(emp);
                     SpawnEmployeeAI("cleaner");
                 },
                 (err) => 
                 {
-                    Debug.LogWarning($"[StoreUIManager] Backend hire failed: {err}");
+                    Debug.LogWarning($"[StoreUIManager] Backend cleaner hire failed: {err}");
                     cleanerHired = false;
-                    gm.DeductMoneyLocal(-CleanerCost);
+                    RefreshHireMenuLabels();
+                    UI.HUDManager.Instance?.ShowNotification("❌ Hire failed! Try again.", 2f);
                 }
             );
         }
