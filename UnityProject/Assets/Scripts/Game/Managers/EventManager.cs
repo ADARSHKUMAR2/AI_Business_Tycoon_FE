@@ -7,37 +7,37 @@ namespace AIBusinessTycoon.Managers
 {
     /// <summary>
     /// Manages franchise tournament events.
-    /// Polls the backend for active events, spawns/despawns the temporary
-    /// event business prefab, and notifies UI components.
+    /// After registration the player places the event store on their own grid
+    /// (same flow as a normal building, but free). On win the store becomes
+    /// permanent exactly where placed; on loss it is removed by the backend.
     /// </summary>
     public class EventManager : MonoBehaviour
     {
         public static EventManager Instance { get; private set; }
-        
-        /// <summary>
-        /// Fixed world-space position where event businesses are spawned.
-        /// Placed well outside the normal player grid so it never conflicts.
-        /// </summary>
-        public static readonly Vector3 EventZoneWorldPosition = new Vector3(30f, 0f, 0f);
-        
+
         [Header("Polling Settings")]
         [SerializeField] private float pollInterval = 60f;
         [SerializeField] private float initialPollDelay = 2f;
-        
+
         [Header("Debug")]
         [SerializeField] private bool enableDebugLogs = true;
-        
+
         public EventResponse CurrentEvent { get; private set; }
-        
+
         public event Action<EventResponse> OnEventUpdated;
         public event Action OnEventEnded;
         public event Action<string> OnRegistrationSuccess;
         public event Action<string> OnRegistrationFailed;
-        
+
         private float pollTimer;
         private bool isPolling;
         private bool isFirstPoll = true;
-        
+
+        // Pending placement state — set after registration, consumed by placement callback
+        private string pendingEventId;
+        private string pendingPlayerId;
+        private Action<bool> pendingCallback;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -49,13 +49,13 @@ namespace AIBusinessTycoon.Managers
             DontDestroyOnLoad(gameObject);
             if (enableDebugLogs) Debug.Log("[EventManager] Initialized");
         }
-        
+
         private void Start()
         {
             pollTimer = initialPollDelay;
             isPolling = true;
         }
-        
+
         private void Update()
         {
             if (!isPolling) return;
@@ -67,7 +67,7 @@ namespace AIBusinessTycoon.Managers
                 isFirstPoll = false;
             }
         }
-        
+
         public void FetchActiveEvent()
         {
             var gm = GameManager.Instance;
@@ -76,7 +76,7 @@ namespace AIBusinessTycoon.Managers
             if (enableDebugLogs) Debug.Log($"[EventManager] Fetching event for {playerId}");
             TycoonAPIService.Instance.GetActiveEvent(playerId, OnEventFetchSuccess, OnEventFetchError);
         }
-        
+
         public void RegisterForEvent(Action<bool> callback = null)
         {
             if (CurrentEvent == null)
@@ -113,44 +113,89 @@ namespace AIBusinessTycoon.Managers
                 (e) => OnRegError(e, callback)
             );
         }
-        
-        public void StopPolling() { isPolling = false; }
+
+        /// <summary>
+        /// Allows the player to re-enter placement mode if they previously
+        /// cancelled it (e.g. they needed to go buy empty land first).
+        /// </summary>
+        public void RetryEventPlacement(Action<bool> callback = null)
+        {
+            if (CurrentEvent == null || !CurrentEvent.is_registered)
+            {
+                Debug.LogWarning("[EventManager] Cannot retry placement: Not registered for an active event.");
+                callback?.Invoke(false);
+                return;
+            }
+
+            var gm = GameManager.Instance;
+            if (gm == null || gm.CurrentPlayer == null)
+            {
+                callback?.Invoke(false);
+                return;
+            }
+
+            // Make sure they don't already have the store placed!
+            foreach (var biz in gm.CurrentPlayer.businesses)
+            {
+                if (biz.is_event_business && biz.event_id == CurrentEvent.event_id)
+                {
+                    Debug.LogWarning("[EventManager] Event store is already placed!");
+                    callback?.Invoke(false);
+                    return;
+                }
+            }
+
+            var bpm = BuildingPlacementManager.Instance;
+            if (bpm == null)
+            {
+                Debug.LogWarning("[EventManager] BuildingPlacementManager not found.");
+                callback?.Invoke(false);
+                return;
+            }
+
+            pendingEventId  = CurrentEvent.event_id;
+            pendingPlayerId = gm.CurrentPlayer.player_id;
+            pendingCallback = callback;
+
+            bpm.OnPlacementCompleted += OnEventStorePlaced;
+            bpm.OnPlacementCancelled += OnEventStorePlacementCancelled;
+            bpm.StartEventPlacement(CurrentEvent.franchise_name, gm.GetBuildingPrefabForEvent(CurrentEvent.franchise_name));
+
+            if (enableDebugLogs) Debug.Log("[EventManager] Retrying placement mode for event store.");
+        }
+
+        public void StopPolling()  { isPolling = false; }
         public void StartPolling() { isPolling = true; pollTimer = 1f; }
         
         // ── Private Callbacks ──────────────────────────────────────────────
-        
+
         private void OnEventFetchSuccess(EventResponse response)
         {
             if (response == null)
             {
                 if (CurrentEvent != null)
                 {
-                    // Event ended — despawn the temporary store
                     GameManager.Instance?.DespawnEventBusinesses(CurrentEvent.event_id);
                     CurrentEvent = null;
                     OnEventEnded?.Invoke();
                 }
                 else
                 {
-                    // No active event on startup. Ensure no ghost event businesses are spawned.
                     GameManager.Instance?.DespawnEventBusinesses(null);
                 }
                 return;
             }
-            
+
             bool isNew      = CurrentEvent == null || CurrentEvent.event_id != response.event_id;
             bool regChanged = CurrentEvent != null  && CurrentEvent.is_registered != response.is_registered;
             CurrentEvent = response;
-            
+
             if (isNew || regChanged) OnEventUpdated?.Invoke(response);
-            
+
             if (isNew)
             {
-                // Cleanup any ghost event businesses that don't match the current active event
                 GameManager.Instance?.DespawnEventBusinesses(response.event_id, true);
-                
-                // If the player loaded into the game while already registered for this active event,
-                // we need to spawn their event business prefab now.
+
                 if (CurrentEvent.is_registered)
                 {
                     var gm = GameManager.Instance;
@@ -160,8 +205,12 @@ namespace AIBusinessTycoon.Managers
                         {
                             if (biz.is_event_business && biz.event_id == CurrentEvent.event_id)
                             {
-                                if (enableDebugLogs) Debug.Log($"[EventManager] Spawning existing event business for active event: {biz.name}");
-                                gm.SpawnEventBusiness(biz, EventZoneWorldPosition);
+                                if (!gm.IsBusinessSpawned(biz.business_id))
+                                {
+                                    if (enableDebugLogs)
+                                        Debug.Log($"[EventManager] Re-spawning event business '{biz.name}' at saved grid pos ({biz.position_x},{biz.position_y})");
+                                    gm.OnBusinessCreatedCallback(biz);
+                                }
                                 break;
                             }
                         }
@@ -169,60 +218,116 @@ namespace AIBusinessTycoon.Managers
                 }
             }
         }
-        
+
         private void OnEventFetchError(string error)
         {
             if (enableDebugLogs) Debug.LogWarning($"[EventManager] Fetch error: {error}");
         }
-        
+
         private void OnRegSuccess(EventResponse r, Action<bool> callback)
         {
             if (enableDebugLogs) Debug.Log($"[EventManager] Registered for {r.franchise_name}");
             CurrentEvent = r;
-            OnRegistrationSuccess?.Invoke($"Registered for {r.franchise_name}!");
+            OnRegistrationSuccess?.Invoke($"Registered for {r.franchise_name}! Now place your store on an owned tile.");
             OnEventUpdated?.Invoke(r);
-            
-            // Create event business on backend, then spawn prefab
+
             var gm = GameManager.Instance;
-            if (gm != null && gm.CurrentPlayer != null)
+            if (gm == null || gm.CurrentPlayer == null) { callback?.Invoke(true); return; }
+
+            foreach (var biz in gm.CurrentPlayer.businesses)
             {
-                if (enableDebugLogs) Debug.Log($"[EventManager] Creating event business for {r.franchise_name}");
-                TycoonAPIService.Instance.CreateEventBusiness(
-                    r.event_id,
-                    gm.CurrentPlayer.player_id,
-                    (business) => OnEventBusinessCreated(business, callback),
-                    (error)    => OnEventBusinessError(error, callback)
-                );
+                if (biz.is_event_business && biz.event_id == r.event_id)
+                {
+                    if (enableDebugLogs) Debug.Log("[EventManager] Event business already placed — spawning at saved position.");
+                    gm.OnBusinessCreatedCallback(biz);
+                    callback?.Invoke(true);
+                    return;
+                }
             }
-            else
+
+            var bpm = BuildingPlacementManager.Instance;
+            if (bpm == null)
             {
+                Debug.LogWarning("[EventManager] BuildingPlacementManager not found — skipping placement mode.");
                 callback?.Invoke(true);
+                return;
             }
+
+            pendingEventId  = r.event_id;
+            pendingPlayerId = gm.CurrentPlayer.player_id;
+            pendingCallback = callback;
+
+            bpm.OnPlacementCompleted += OnEventStorePlaced;
+            bpm.OnPlacementCancelled += OnEventStorePlacementCancelled;
+            bpm.StartEventPlacement(r.franchise_name, gm.GetBuildingPrefabForEvent(r.franchise_name));
+
+            if (enableDebugLogs) Debug.Log("[EventManager] Entered placement mode for event store.");
         }
-        
-        private void OnEventBusinessCreated(BusinessData business, Action<bool> callback)
+
+        /// <summary>
+        /// Fired by BuildingPlacementManager when the player clicks a valid owned tile.
+        /// Sends the chosen coordinates to the backend to create the event business there.
+        /// </summary>
+        private void OnEventStorePlaced(BusinessData placedBusiness)
         {
-            if (enableDebugLogs)
-                Debug.Log($"[EventManager] Backend business created: {business.name} — spawning prefab at {EventZoneWorldPosition}");
-            
-            var gm = GameManager.Instance;
-            if (gm != null)
+            var bpm = BuildingPlacementManager.Instance;
+            if (bpm != null)
             {
-                GameObject spawned = gm.SpawnEventBusiness(business, EventZoneWorldPosition);
-                if (spawned == null)
-                    Debug.LogWarning("[EventManager] SpawnEventBusiness returned null — check prefab assignments in GameManager.");
+                bpm.OnPlacementCompleted -= OnEventStorePlaced;
+                bpm.OnPlacementCancelled -= OnEventStorePlacementCancelled;
             }
-            
-            callback?.Invoke(true);
+
+            if (string.IsNullOrEmpty(pendingEventId)) return;
+
+            string eventId  = pendingEventId;
+            string playerId = pendingPlayerId;
+            var    cb       = pendingCallback;
+            pendingEventId  = null;
+            pendingPlayerId = null;
+            pendingCallback = null;
+
+            if (enableDebugLogs)
+                Debug.Log($"[EventManager] Player chose ({placedBusiness.position_x},{placedBusiness.position_y}) — calling backend.");
+
+            TycoonAPIService.Instance.CreateEventBusiness(
+                eventId,
+                playerId,
+                placedBusiness.position_x,
+                placedBusiness.position_y,
+                (business) =>
+                {
+                    if (enableDebugLogs)
+                        Debug.Log($"[EventManager] Event business confirmed at ({business.position_x},{business.position_y})");
+                    // Use the normal grid-spawn path so the tile is marked as occupied
+                    GameManager.Instance?.OnBusinessCreatedCallback(business);
+                    cb?.Invoke(true);
+                },
+                (error) =>
+                {
+                    Debug.LogWarning($"[EventManager] Backend rejected placement: {error}");
+                    GameManager.Instance?.RefreshPlayerData();
+                    cb?.Invoke(false);
+                }
+            );
         }
-        
-        private void OnEventBusinessError(string error, Action<bool> callback)
+
+        private void OnEventStorePlacementCancelled()
         {
-            Debug.LogWarning($"[EventManager] Failed to create event business: {error}");
-            // Registration succeeded — let the player proceed
-            callback?.Invoke(true);
+            var bpm = BuildingPlacementManager.Instance;
+            if (bpm != null)
+            {
+                bpm.OnPlacementCompleted -= OnEventStorePlaced;
+                bpm.OnPlacementCancelled -= OnEventStorePlacementCancelled;
+            }
+
+            if (enableDebugLogs) Debug.Log("[EventManager] Event store placement cancelled.");
+            // Registration already succeeded — player can place the store later
+            pendingCallback?.Invoke(true);
+            pendingEventId  = null;
+            pendingPlayerId = null;
+            pendingCallback = null;
         }
-        
+
         private void OnRegError(string error, Action<bool> callback)
         {
             Debug.LogError($"[EventManager] Registration failed: {error}");

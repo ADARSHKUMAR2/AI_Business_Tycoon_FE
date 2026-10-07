@@ -817,9 +817,9 @@ namespace AIBusinessTycoon.Services
         }
         
         /// <summary>
-        /// Create event business for a player.
+        /// Create event business for a player at the grid tile they chose.
         /// </summary>
-        public void CreateEventBusiness(string eventId, string playerId, Action<BusinessData> onSuccess, Action<string> onError)
+        public void CreateEventBusiness(string eventId, string playerId, int positionX, int positionY, Action<BusinessData> onSuccess, Action<string> onError)
         {
             if (backendConfig == null)
             {
@@ -827,9 +827,10 @@ namespace AIBusinessTycoon.Services
                 onError?.Invoke("BackendConfig not assigned");
                 return;
             }
-            
+
             string url = $"{backendConfig.GetActiveURL()}/api/game/events/{eventId}/create-business/{playerId}";
-            StartCoroutine(PostRequest<object, BusinessData>(url, new { }, onSuccess, onError));
+            var payload = new { position_x = positionX, position_y = positionY };
+            StartCoroutine(PostRequest<object, BusinessData>(url, payload, onSuccess, onError));
         }
 
         /// <summary>

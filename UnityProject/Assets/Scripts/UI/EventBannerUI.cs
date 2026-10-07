@@ -147,27 +147,52 @@ namespace AIBusinessTycoon.UI
         private void UpdateJoinButton()
         {
             if (joinButton == null || joinButtonText == null) return;
-            
+
             if (currentEvent.IsCompleted)
             {
                 joinButtonText.text = "VIEW RESULTS";
                 joinButton.interactable = true; // Click to open leaderboard
                 if (joinButton.targetGraphic != null)
                     joinButton.targetGraphic.color = upcomingColor; // Yellow
+                return;
             }
-            else if (currentEvent.is_registered)
+            
+            var gm = GameManager.Instance;
+            if (currentEvent.is_registered)
             {
-                joinButtonText.text = "✓ REGISTERED";
-                joinButton.interactable = false;
-                if (joinButton.targetGraphic != null)
-                    joinButton.targetGraphic.color = registeredColor;
+                bool isPlaced = false;
+                if (gm != null && gm.CurrentPlayer != null)
+                {
+                    foreach (var biz in gm.CurrentPlayer.businesses)
+                    {
+                        if (biz.is_event_business && biz.event_id == currentEvent.event_id)
+                        {
+                            isPlaced = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (isPlaced)
+                {
+                    joinButtonText.text = "✓ STORE PLACED";
+                    joinButton.interactable = false;
+                    if (joinButton.targetGraphic != null)
+                        joinButton.targetGraphic.color = registeredColor;
+                }
+                else
+                {
+                    joinButtonText.text = "PLACE STORE";
+                    joinButton.interactable = true;
+                    if (joinButton.targetGraphic != null)
+                        joinButton.targetGraphic.color = upcomingColor; // Actionable
+                }
             }
             else
             {
-                var gm = GameManager.Instance;
-                bool canAfford = gm != null && gm.CurrentPlayer != null && 
+                bool canAfford = gm != null && gm.CurrentPlayer != null &&
                                 gm.CurrentPlayer.money >= currentEvent.entry_fee;
-                
+
                 joinButtonText.text = canAfford ? "JOIN NOW" : "INSUFFICIENT FUNDS";
                 joinButton.interactable = canAfford;
                 if (joinButton.targetGraphic != null)
@@ -196,11 +221,9 @@ namespace AIBusinessTycoon.UI
         private void OnJoinButtonClicked()
         {
             if (currentEvent == null) return;
-            
-            // If completed, clicking the button just opens the leaderboard panel
+
             if (currentEvent.IsCompleted)
             {
-                // Find and open leaderboard panel
                 var leaderboard = FindObjectOfType<LeaderboardPanel>(true);
                 if (leaderboard != null)
                 {
@@ -208,23 +231,31 @@ namespace AIBusinessTycoon.UI
                 }
                 return;
             }
-            
+
+            if (currentEvent.is_registered)
+            {
+                joinButton.interactable = false;
+                joinButtonText.text = "PLACING...";
+                
+                EventManager.Instance?.RetryEventPlacement((success) =>
+                {
+                    UpdateJoinButton();
+                });
+                return;
+            }
+
             if (!currentEvent.CanJoin) return;
-            
+
             joinButton.interactable = false;
             joinButtonText.text = "JOINING...";
-            
+
             EventManager.Instance?.RegisterForEvent((success) =>
             {
                 if (success)
                 {
                     Debug.Log("[EventBannerUI] Successfully joined event");
                 }
-                else
-                {
-                    joinButton.interactable = true;
-                    UpdateJoinButton();
-                }
+                UpdateJoinButton();
             });
         }
     }

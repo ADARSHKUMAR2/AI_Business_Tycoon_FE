@@ -22,6 +22,7 @@ namespace AIBusinessTycoon.Managers
         
         // State
         private bool isPlacingBuilding = false;
+        private bool isEventPlacement = false;
         private string currentBuildingType;
         private float currentBuildingCost;
         private GameObject ghostBuilding;
@@ -96,6 +97,7 @@ namespace AIBusinessTycoon.Managers
             }
             
             isPlacingBuilding = true;
+            isEventPlacement = false;
             currentBuildingType = buildingType;
             currentBuildingCost = cost;
             
@@ -103,6 +105,35 @@ namespace AIBusinessTycoon.Managers
             CreateGhostBuilding(buildingPrefab);
             
             Debug.Log($"[BuildingPlacementManager] Started placement: {buildingType}");
+            OnPlacementStarted?.Invoke();
+        }
+
+        /// <summary>
+        /// Start event store placement mode — same as StartPlacement but free ($0 cost).
+        /// The ghost preview uses the correct franchise prefab. The placed position is
+        /// returned via OnPlacementCompleted; EventManager sends it to the backend.
+        /// </summary>
+        public void StartEventPlacement(string franchiseName, GameObject buildingPrefab)
+        {
+            if (isPlacingBuilding)
+            {
+                Debug.LogWarning("[BuildingPlacementManager] Already placing a building!");
+                return;
+            }
+
+            if (buildingPrefab == null)
+            {
+                Debug.LogWarning($"[BuildingPlacementManager] No prefab found for event franchise '{franchiseName}' — using default.");
+            }
+
+            isPlacingBuilding   = true;
+            isEventPlacement    = true;
+            currentBuildingType = franchiseName;
+            currentBuildingCost = 0f; // Free — entry fee was already paid at registration
+
+            CreateGhostBuilding(buildingPrefab);
+
+            Debug.Log($"[BuildingPlacementManager] Started EVENT placement: {franchiseName} (free)");
             OnPlacementStarted?.Invoke();
         }
         
@@ -265,31 +296,46 @@ namespace AIBusinessTycoon.Managers
         private void PlaceBuilding()
         {
             if (currentGridPosition == null || gameManager == null) return;
-            
+
             Debug.Log($"[BuildingPlacementManager] Placing {currentBuildingType} at ({currentGridPosition.x}, {currentGridPosition.y})");
-            
-            // Create request
-            BusinessCreateRequest request = new BusinessCreateRequest(
-                gameManager.CurrentPlayer.player_id,
-                currentBuildingType,
-                $"My {currentBuildingType} Store",
-                currentGridPosition.x,
-                currentGridPosition.y
-            );
-            
-            // Optimistic update: deduct money locally
-            gameManager.DeductMoneyLocal(currentBuildingCost);
-            
-            // Clean up placement mode
+
+            // Clean up placement mode FIRST
             Position placedPosition = currentGridPosition;
-            CancelPlacement();
-            
-            // Call API
-            gameManager.GetAPIService().CreateBusiness(
-                request,
-                (business) => OnBuildingPlaced(business),
-                (error) => OnBuildingPlacementError(error, placedPosition)
-            );
+            DestroyGhostBuilding();
+            if (gridManager != null) gridManager.ClearHighlight();
+            isPlacingBuilding = false;
+            currentGridPosition = null;
+
+            if (isEventPlacement)
+            {
+                // Bypass normal API call, let EventManager handle it
+                BusinessData tempBiz = new BusinessData
+                {
+                    business_type = currentBuildingType,
+                    position_x = placedPosition.x,
+                    position_y = placedPosition.y
+                };
+                OnPlacementCompleted?.Invoke(tempBiz);
+            }
+            else
+            {
+                // Normal Purchase
+                BusinessCreateRequest request = new BusinessCreateRequest(
+                    gameManager.CurrentPlayer.player_id,
+                    currentBuildingType,
+                    $"My {currentBuildingType} Store",
+                    placedPosition.x,
+                    placedPosition.y
+                );
+
+                gameManager.DeductMoneyLocal(currentBuildingCost);
+
+                gameManager.GetAPIService().CreateBusiness(
+                    request,
+                    (business) => OnBuildingPlaced(business),
+                    (error) => OnBuildingPlacementError(error, placedPosition)
+                );
+            }
         }
         
         private void OnBuildingPlaced(BusinessData business)

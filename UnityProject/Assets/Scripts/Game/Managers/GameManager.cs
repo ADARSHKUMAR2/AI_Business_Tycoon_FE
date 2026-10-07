@@ -457,6 +457,28 @@ namespace AIBusinessTycoon.Managers
             };
         }
 
+        /// <summary>
+        /// Returns the correct building prefab for an event franchise by matching
+        /// the franchise name to a known business type keyword.
+        /// </summary>
+        public GameObject GetBuildingPrefabForEvent(string franchiseName)
+        {
+            string lower = franchiseName.ToLower();
+            if (lower.Contains("pizza"))      return pizzaPrefab;
+            if (lower.Contains("restaurant")) return restaurantPrefab;
+            if (lower.Contains("kirana"))     return kiranaPrefab;
+            return cafePrefab; // Default (Starbucks, Coffee, etc.)
+        }
+
+        /// <summary>
+        /// Returns true if a building with the given business ID is already
+        /// instantiated in the scene. Used to avoid duplicate spawns on re-login.
+        /// </summary>
+        public bool IsBusinessSpawned(string businessId)
+        {
+            return spawnedBuildings.ContainsKey(businessId);
+        }
+
         public void OnBusinessCreatedCallback(BusinessData business)
         {
             gridManager?.UpdateTileAfterBuildingPlaced(
