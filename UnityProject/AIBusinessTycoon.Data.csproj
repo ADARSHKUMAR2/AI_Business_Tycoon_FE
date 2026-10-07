@@ -63,6 +63,7 @@
     <Compile Include="Assets/Scripts/Data/DeliveryData.cs" />
     <Compile Include="Assets/Scripts/Data/BusinessData.cs" />
     <Compile Include="Assets/Scripts/Data/TransactionBatchData.cs" />
+    <Compile Include="Assets/Scripts/Data/LeaderboardModels.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets/Scripts/Data/AIBusinessTycoon.Data.asmdef" />

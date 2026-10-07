@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine;
 using AIBusinessTycoon.Config;
+using AIBusinessTycoon.Data;
 
 namespace AIBusinessTycoon.Multiplayer
 {
@@ -96,7 +97,8 @@ namespace AIBusinessTycoon.Multiplayer
             // The current HTTP gateway only proxies REST. During development this
             // intentionally connects directly to the Game Service on port 8002.
             int gameServicePort = backendUri.IsLoopback ? 8002 : backendUri.Port;
-            return $"{scheme}://{backendUri.Host}:{gameServicePort}/events/leaderboard";
+            string host = backendUri.IsLoopback ? "127.0.0.1" : backendUri.Host;
+            return $"{scheme}://{host}:{gameServicePort}/events/leaderboard";
         }
 
         private async Task SendSubscriptionAsync(CancellationToken token)

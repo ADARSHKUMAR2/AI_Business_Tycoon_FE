@@ -7,6 +7,7 @@ using TMPro;
 using AIBusinessTycoon.Data;
 using AIBusinessTycoon.Managers;
 using AIBusinessTycoon.Multiplayer;
+using AIBusinessTycoon.Services;
 
 namespace AIBusinessTycoon.UI
 {
@@ -109,6 +110,40 @@ namespace AIBusinessTycoon.UI
         {
             if (panelRoot  != null) panelRoot.SetActive(true);
             if (openButton != null) openButton.gameObject.SetActive(false);
+
+            // If the event is completed, data is frozen — fetch once via REST, no WebSocket needed.
+            // If the event is active/upcoming, the WebSocket already has live data in latestData.
+            var em = EventManager.Instance;
+            bool isCompleted = em != null && em.CurrentEvent != null 
+                            && em.CurrentEvent.status == "completed";
+
+            if (isCompleted && latestData == null)
+            {
+                // One-shot REST fetch for final results
+                var apiService = TycoonAPIService.Instance;
+                if (apiService != null)
+                {
+                    if (connectionStatusLabel != null)
+                    {
+                        connectionStatusLabel.text  = "● LOADING";
+                        connectionStatusLabel.color = new Color(1f, 0.65f, 0.1f, 1f);
+                    }
+                    apiService.GetEventLeaderboard(
+                        (data) =>
+                        {
+                            latestData = data;
+                            RefreshRows();
+                            if (connectionStatusLabel != null)
+                            {
+                                connectionStatusLabel.text  = "● FINAL RESULTS";
+                                connectionStatusLabel.color = new Color(0.27f, 0.90f, 0.45f, 1f);
+                            }
+                        },
+                        (err) => Debug.LogWarning($"[LeaderboardPanel] Failed to fetch final leaderboard: {err}")
+                    );
+                }
+            }
+
             RefreshRows();
         }
 
@@ -216,11 +251,22 @@ namespace AIBusinessTycoon.UI
                 if (emptyLabel != null)
                 {
                     emptyLabel.gameObject.SetActive(true);
-                    bool live = RealtimeLeaderboardService.Instance != null
-                             && RealtimeLeaderboardService.Instance.IsConnected;
-                    emptyLabel.text = live
-                        ? "No active tournament right now."
-                        : "Connecting to leaderboard server...";
+                    
+                    var em = EventManager.Instance;
+                    bool isCompleted = em != null && em.CurrentEvent != null && em.CurrentEvent.status == "completed";
+                    
+                    if (isCompleted)
+                    {
+                        emptyLabel.text = "Tournament finished with no participants.";
+                    }
+                    else
+                    {
+                        bool live = RealtimeLeaderboardService.Instance != null
+                                 && RealtimeLeaderboardService.Instance.IsConnected;
+                        emptyLabel.text = live
+                            ? "No active tournament right now."
+                            : "Connecting to leaderboard server...";
+                    }
                 }
                 return;
             }
@@ -231,7 +277,8 @@ namespace AIBusinessTycoon.UI
             {
                 if (rowPrefab == null || rowContainer == null) break;
 
-                GameObject row = Instantiate(rowPrefab, rowContainer);
+                GameObject row = Instantiate(rowPrefab, rowContainer, false);
+                row.SetActive(true);
                 spawnedRows.Add(row);
 
                 Color  nameColor;
@@ -274,6 +321,12 @@ namespace AIBusinessTycoon.UI
         private void RefreshConnectionStatus()
         {
             if (connectionStatusLabel == null) return;
+
+            // Do not overwrite the connection status if the event is already completed.
+            // The REST fetch handles displaying "● FINAL RESULTS" or "● LOADING".
+            var em = EventManager.Instance;
+            if (em != null && em.CurrentEvent != null && em.CurrentEvent.status == "completed")
+                return;
 
             bool connected = RealtimeLeaderboardService.Instance != null
                           && RealtimeLeaderboardService.Instance.IsConnected;

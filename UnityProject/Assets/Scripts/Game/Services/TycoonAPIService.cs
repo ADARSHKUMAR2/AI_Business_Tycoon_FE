@@ -831,6 +831,25 @@ namespace AIBusinessTycoon.Services
             string url = $"{backendConfig.GetActiveURL()}/api/game/events/{eventId}/create-business/{playerId}";
             StartCoroutine(PostRequest<object, BusinessData>(url, new { }, onSuccess, onError));
         }
+
+        /// <summary>
+        /// Fetch the event leaderboard via REST (one-shot).
+        /// Use this when the event is COMPLETED — data is frozen so WebSocket is unnecessary.
+        /// For ACTIVE events, Unity uses the WebSocket stream for live updates instead.
+        /// Returns the same LeaderboardUpdateEvent structure the WebSocket sends.
+        /// </summary>
+        public void GetEventLeaderboard(Action<LeaderboardUpdateEvent> onSuccess, Action<string> onError)
+        {
+            if (backendConfig == null)
+            {
+                Debug.LogError("[TycoonAPIService] BackendConfig not assigned");
+                onError?.Invoke("BackendConfig not assigned");
+                return;
+            }
+
+            string url = $"{backendConfig.GetActiveURL()}/api/game/events/leaderboard";
+            StartCoroutine(GetRequest<LeaderboardUpdateEvent>(url, onSuccess, onError));
+        }
         
         #endregion
     }
