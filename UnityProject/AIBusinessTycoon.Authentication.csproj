@@ -16,9 +16,9 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EnableDefaultItems>false</EnableDefaultItems>
     <LangVersion>9.0</LangVersion>
-    <RootNamespace>AIBusinessTycoon.Data</RootNamespace>
+    <RootNamespace></RootNamespace>
     <OutputType>Library</OutputType>
-    <AssemblyName>AIBusinessTycoon.Data</AssemblyName>
+    <AssemblyName>AIBusinessTycoon.Authentication</AssemblyName>
     <TargetFramework>netstandard2.1</TargetFramework>
     <BaseDirectory>.</BaseDirectory>
   </PropertyGroup>
@@ -53,21 +53,11 @@
     <Analyzer Include="/Applications/Unity/Hub/Editor/6000.5.6f1/Unity.app/Contents/Resources/Scripting/BCLExtensions/TargetingPacks/netstandard2.1/analyzers/dotnet/roslyn4.0/cs/System.Text.Json.SourceGeneration.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets/Scripts/Data/LandTileData.cs" />
-    <Compile Include="Assets/Scripts/Data/AuthModels.cs" />
-    <Compile Include="Assets/Scripts/Data/EmployeeData.cs" />
-    <Compile Include="Assets/Scripts/Data/InventoryData.cs" />
-    <Compile Include="Assets/Scripts/Data/TrashData.cs" />
-    <Compile Include="Assets/Scripts/Data/EventData.cs" />
-    <Compile Include="Assets/Scripts/Data/APIResponse.cs" />
-    <Compile Include="Assets/Scripts/Data/PlayerTycoonData.cs" />
-    <Compile Include="Assets/Scripts/Data/DeliveryData.cs" />
-    <Compile Include="Assets/Scripts/Data/BusinessData.cs" />
-    <Compile Include="Assets/Scripts/Data/TransactionBatchData.cs" />
-    <Compile Include="Assets/Scripts/Data/LeaderboardModels.cs" />
+    <Compile Include="Assets/Scripts/Authentication/TycoonAuthService.cs" />
+    <Compile Include="Assets/Scripts/Authentication/LoginUIManager.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets/Scripts/Data/AIBusinessTycoon.Data.asmdef" />
+    <None Include="Assets/Scripts/Authentication/AIBusinessTycoon.Authentication.asmdef" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -1266,6 +1256,10 @@
       <HintPath>/Applications/Unity/Hub/Editor/6000.5.6f1/Unity.app/Contents/Resources/Scripting/BCLExtensions/TargetingPacks/netstandard2.1/ref/System.Text.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEditor.UI">
       <HintPath>Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
       <Private>False</Private>
@@ -1276,6 +1270,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="AIBusinessTycoon.Services.csproj" />
+    <ProjectReference Include="AIBusinessTycoon.Data.csproj" />
+    <ProjectReference Include="AIBusinessTycoon.Config.csproj" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <ItemGroup>

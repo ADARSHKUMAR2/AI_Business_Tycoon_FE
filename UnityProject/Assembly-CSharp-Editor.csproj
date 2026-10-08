@@ -60,6 +60,7 @@
     <Compile Include="Assets/TutorialInfo/Scripts/Editor/ReadmeEditor.cs" />
     <Compile Include="Assets/Editor/BuildMenuAutoSetup.cs" />
     <Compile Include="Assets/Editor/RestaurantPrefabBuilderEditor.cs" />
+    <Compile Include="Assets/Editor/LoginSceneSetupEditor.cs" />
     <Compile Include="Assets/Editor/WorldStateSetupEditor.cs" />
     <Compile Include="Assets/Editor/LeaderboardSetupEditor.cs" />
     <Compile Include="Assets/Editor/EventManagerSetup.cs" />
@@ -1636,6 +1637,7 @@
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp.csproj" />
     <ProjectReference Include="AIBusinessTycoon.UI.csproj" />
+    <ProjectReference Include="AIBusinessTycoon.Authentication.csproj" />
     <ProjectReference Include="AIBusinessTycoon.Services.csproj" />
     <ProjectReference Include="AIBusinessTycoon.Managers.csproj" />
     <ProjectReference Include="AIBusinessTycoon.Multiplayer.csproj" />

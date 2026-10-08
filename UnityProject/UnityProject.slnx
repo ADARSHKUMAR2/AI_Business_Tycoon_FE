@@ -3,6 +3,7 @@
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="AIBusinessTycoon.Data.csproj" />
   <Project Path="AIBusinessTycoon.Multiplayer.csproj" />
+  <Project Path="AIBusinessTycoon.Authentication.csproj" />
   <Project Path="AIBusinessTycoon.Config.csproj" />
   <Project Path="AIBusinessTycoon.UI.csproj" />
   <Project Path="AIBusinessTycoon.Services.csproj" />

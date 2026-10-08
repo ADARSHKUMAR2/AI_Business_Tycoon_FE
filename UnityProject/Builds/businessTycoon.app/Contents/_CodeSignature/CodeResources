@@ -14,11 +14,11 @@
 		</data>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Managers.dll</key>
 		<data>
-		6ztIt61d7dHURxq4EvfXCAHcsVk=
+		JOt18gloREcut1Xcxb+DrRa8rig=
 		</data>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Multiplayer.dll</key>
 		<data>
-		G4ccEM4gZjwPaxYWB/46agsGll8=
+		KW7wLPR8wLLg1XQ4kk8Vky7UvEE=
 		</data>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Services.dll</key>
 		<data>
@@ -26,11 +26,11 @@
 		</data>
 		<key>Resources/Data/Managed/AIBusinessTycoon.UI.dll</key>
 		<data>
-		xx/ETXwc1Erwo3qaSwJG8vuq6EQ=
+		zNeWGtcqfHrcsBdlh+D/jEMAPl0=
 		</data>
 		<key>Resources/Data/Managed/Assembly-CSharp.dll</key>
 		<data>
-		fxAXJPoKDnxdf171rk4/1/z/8DE=
+		0ppfAs9XY/RXBkrngnoAGuvcoeA=
 		</data>
 		<key>Resources/Data/Managed/Mono.Security.dll</key>
 		<data>
@@ -646,15 +646,15 @@
 		</data>
 		<key>Resources/Data/boot.config</key>
 		<data>
-		u7cy4ZZSjOiA9SLZgNzj0yN2jg8=
+		nBZhlGfqLl3COlY87r9QNjD50gk=
 		</data>
 		<key>Resources/Data/globalgamemanagers</key>
 		<data>
-		+CYBejPp/FHC3CKaJSOOUkDo7do=
+		5Pd+75rGvQwEA6tk/Dyxhs6kE10=
 		</data>
 		<key>Resources/Data/globalgamemanagers.assets</key>
 		<data>
-		155Vwqila0FwLTH1xBOlzvLCYWM=
+		K9l0Y4coceqeIXZlTJuCaxccfNo=
 		</data>
 		<key>Resources/Data/globalgamemanagers.assets.resS</key>
 		<data>
@@ -662,7 +662,7 @@
 		</data>
 		<key>Resources/Data/level0</key>
 		<data>
-		LhZLk2WYaWJaJUkW1rgfRpF7324=
+		Nie7pn8EMyg6wK94n+VjWOy3kak=
 		</data>
 		<key>Resources/Data/resources.assets</key>
 		<data>
@@ -893,14 +893,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			iASAhDUUs56NFO3/OIpbpzdSOwXq2uhzbPuLaNCg8wE=
+			9md1CdlthxUCI090ytHygiKuLO8IjG0ofWWP/BqyoLA=
 			</data>
 		</dict>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Multiplayer.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			QdnQC3MTvOIvnrYmg+SnvnCgtg7K2iOGztrXVKyWpQU=
+			gltZrIh0Btt1nyMMyrcQAtFlETxtV9EzJTtCovKv4sw=
 			</data>
 		</dict>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Services.dll</key>
@@ -914,14 +914,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			IR16qUG+dJBhiP58bi45IzCyifRLtSOhHMJMRyC4mxc=
+			GVnNmYmyQ5+c7xxzm8OkYqnyApC8MCxfb5BM7qyVJ9Q=
 			</data>
 		</dict>
 		<key>Resources/Data/Managed/Assembly-CSharp.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			PqKFQRSi06U62ur0cuZti161rxznuWHO1irmJuMd4vU=
+			ajFvnuhystF/rk8NwLlfi2phOb1ipUgK23XtUSIPfrk=
 			</data>
 		</dict>
 		<key>Resources/Data/Managed/Mono.Security.dll</key>
@@ -1999,21 +1999,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			Rv56++rTKSkEwJczK3GyueeHvIGR+RcEVKNCrUFrhDk=
+			qN3T2hHdkX0k70iMVGsTIi2OUd1+nntBzYFDXWaSljs=
 			</data>
 		</dict>
 		<key>Resources/Data/globalgamemanagers</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			XcCvsp3KuQL7f/cxxwsJ4vE/ujjr9r5RzDJISKiTzS8=
+			FYVstwzCjZASUj+9deT4NpClVqfUILz+ZDH/okPbCrA=
 			</data>
 		</dict>
 		<key>Resources/Data/globalgamemanagers.assets</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			moToO1AFkyPUAPV77T7s4jd90Q8gTsGUMCgGh8dTecc=
+			P+69JQLflytXkDy3qkabpYpHbB9a8eS+6UPdO4US29I=
 			</data>
 		</dict>
 		<key>Resources/Data/globalgamemanagers.assets.resS</key>
@@ -2027,7 +2027,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			s2JvBMehXfvZM7Yt07m23ukk+ydgpD9Vt0EsGAgaELg=
+			nddbgHY/Ab7B3P9LBFZYHmV+3yB0s9mLShAwANb+7Zg=
 			</data>
 		</dict>
 		<key>Resources/Data/resources.assets</key>

@@ -1,0 +1,1 @@
+{"schemaVersion":1,"eventId":"45a43952-9eff-4245-aa18-e8317d7b8376","eventName":"queue_drained","surface":"vscode","surfaceVersion":"0.99.18","installId":"c76c1ab3-b325-43af-9cf2-1614707a98a9","os":"darwin","arch":"arm64","runtimeVersion":"node-24.13.0","env":"prod","tsIso":"2026-10-08T07:59:08.036Z","accountId":null,"properties":{"ops":1,"duration_ms":2862,"trigger":"unknown"}}

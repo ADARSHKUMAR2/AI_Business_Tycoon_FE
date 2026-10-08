@@ -15,7 +15,7 @@ namespace AIBusinessTycoon.Managers
         [SerializeField] private BackendConfig backendConfig;
 
         [Header("Player Settings")]
-        [SerializeField] private string currentPlayerId = "player_0eb8eddc";
+        [SerializeField] private string currentPlayerId = "";
         [SerializeField] private bool autoLoadOnStart = true;
 
         [Header("Manager References")]
@@ -81,6 +81,11 @@ namespace AIBusinessTycoon.Managers
 
         private void Start()
         {
+            // Read player_id from PlayerPrefs set by TycoonAuthService on login
+            string savedId = AIBusinessTycoon.Authentication.TycoonAuthService.GetSavedPlayerId();
+            if (!string.IsNullOrEmpty(savedId))
+                currentPlayerId = savedId;
+
             if (autoLoadOnStart)
                 StartCoroutine(InitializeGame());
         }
