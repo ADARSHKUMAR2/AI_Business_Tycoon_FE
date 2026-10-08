@@ -63,14 +63,16 @@ namespace AIBusinessTycoon.Multiplayer
                 try
                 {
                     socket = new ClientWebSocket();
+                    Debug.Log($"[RealtimeLeaderboardService] Connecting to WebSocket at {GetWebSocketUrl()}...");
                     await socket.ConnectAsync(new Uri(GetWebSocketUrl()), token);
-                    Debug.Log("[RealtimeLeaderboardService] Connected to leaderboard event stream.");
+                    Debug.Log("[RealtimeLeaderboardService] Connected to leaderboard event stream successfully!");
 
                     await SendSubscriptionAsync(token);
                     await ReceiveMessagesAsync(token);
                 }
                 catch (OperationCanceledException) when (token.IsCancellationRequested)
                 {
+                    Debug.Log("[RealtimeLeaderboardService] WebSocket connection cancelled by application.");
                     break;
                 }
                 catch (Exception error)
@@ -79,12 +81,18 @@ namespace AIBusinessTycoon.Multiplayer
                 }
                 finally
                 {
-                    socket?.Dispose();
-                    socket = null;
+                    if (socket != null)
+                    {
+                        socket.Dispose();
+                        socket = null;
+                    }
                 }
 
                 if (!token.IsCancellationRequested)
+                {
+                    Debug.LogWarning($"[RealtimeLeaderboardService] Disconnected. Attempting to reconnect in {reconnectDelaySeconds} seconds...");
                     await Task.Delay(TimeSpan.FromSeconds(reconnectDelaySeconds), token);
+                }
             }
         }
 
@@ -104,6 +112,7 @@ namespace AIBusinessTycoon.Multiplayer
         private async Task SendSubscriptionAsync(CancellationToken token)
         {
             string message = JsonConvert.SerializeObject(new RealtimeSubscribeMessage());
+            Debug.Log($"[RealtimeLeaderboardService] Sending to server: {message}");
             byte[] bytes = Encoding.UTF8.GetBytes(message);
             await socket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, token);
         }
@@ -115,16 +124,31 @@ namespace AIBusinessTycoon.Multiplayer
             {
                 WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), token);
                 if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    Debug.Log("[RealtimeLeaderboardService] Server closed connection.");
                     break;
+                }
 
                 string json = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                LeaderboardUpdateEvent update = JsonConvert.DeserializeObject<LeaderboardUpdateEvent>(json);
-                if (update != null && update.type == "leaderboard.updated")
+                Debug.Log($"[RealtimeLeaderboardService] Received raw: {json}");
+
+                try 
                 {
-                    // ClientWebSocket completes on a worker thread. Queue data so
-                    // UI subscribers are invoked from Unity's main thread in Update.
-                    lock (pendingUpdatesLock)
-                        pendingUpdates.Enqueue(update);
+                    LeaderboardUpdateEvent update = JsonConvert.DeserializeObject<LeaderboardUpdateEvent>(json);
+                    
+                    if (update != null && update.type == "leaderboard.updated")
+                    {
+                        lock (pendingUpdatesLock)
+                            pendingUpdates.Enqueue(update);
+                    }
+                    else if (json.Contains("\"error\""))
+                    {
+                        Debug.LogError($"[RealtimeLeaderboardService] Server sent error: {json}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"[RealtimeLeaderboardService] Failed to parse WebSocket JSON: {e.Message}\\nJSON: {json}");
                 }
             }
         }
@@ -157,7 +181,11 @@ namespace AIBusinessTycoon.Multiplayer
             try
             {
                 if (socket != null && socket.State == WebSocketState.Open)
+                {
+                    Debug.Log("[RealtimeLeaderboardService] Disconnecting WebSocket gracefully...");
                     await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Application closed", CancellationToken.None);
+                    Debug.Log("[RealtimeLeaderboardService] Disconnected.");
+                }
             }
             catch (Exception)
             {
