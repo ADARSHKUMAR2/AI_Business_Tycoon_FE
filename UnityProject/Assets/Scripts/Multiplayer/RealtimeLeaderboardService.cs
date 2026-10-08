@@ -30,6 +30,11 @@ namespace AIBusinessTycoon.Multiplayer
         private readonly object pendingUpdatesLock = new object();
 
         public event Action<LeaderboardUpdateEvent> LeaderboardUpdated;
+
+        [Header("Debug")]
+        [SerializeField, Tooltip("Read-only. Shows current WebSocket state.")]
+        private string currentSocketState = "Disconnected";
+
         public bool IsConnected => socket != null && socket.State == WebSocketState.Open;
 
         private void Awake()
@@ -52,8 +57,62 @@ namespace AIBusinessTycoon.Multiplayer
                 return;
             }
 
-            cancellationSource = new CancellationTokenSource();
-            connectionTask = ConnectLoopAsync(cancellationSource.Token);
+            // Do NOT connect on startup. We wait for EventManager to tell us we are registered.
+            if (AIBusinessTycoon.Managers.EventManager.Instance != null)
+            {
+                AIBusinessTycoon.Managers.EventManager.Instance.OnEventUpdated += HandleEventUpdate;
+                AIBusinessTycoon.Managers.EventManager.Instance.OnEventEnded += HandleEventEnded;
+            }
+        }
+
+        private void HandleEventUpdate(EventResponse eventData)
+        {
+            bool shouldConnect = eventData != null && 
+                               eventData.status == "active" && 
+                               eventData.is_registered;
+
+            if (shouldConnect && cancellationSource == null)
+            {
+                Debug.Log("[RealtimeLeaderboardService] Player is registered in an active event. Starting WebSocket...");
+                cancellationSource = new CancellationTokenSource();
+                connectionTask = ConnectLoopAsync(cancellationSource.Token);
+            }
+            else if (!shouldConnect && cancellationSource != null)
+            {
+                Debug.Log("[RealtimeLeaderboardService] Player not registered or event ended. Stopping WebSocket...");
+                StopConnection();
+            }
+        }
+
+        private void HandleEventEnded()
+        {
+            if (cancellationSource != null)
+            {
+                Debug.Log("[RealtimeLeaderboardService] Event ended completely. Stopping WebSocket...");
+                StopConnection();
+            }
+        }
+
+        private async void StopConnection()
+        {
+            if (cancellationSource == null) return;
+            
+            cancellationSource.Cancel();
+            try
+            {
+                if (socket != null && socket.State == WebSocketState.Open)
+                {
+                    Debug.Log("[RealtimeLeaderboardService] Disconnecting WebSocket gracefully...");
+                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Event ended or unregistered", CancellationToken.None);
+                    Debug.Log("[RealtimeLeaderboardService] Disconnected.");
+                }
+            }
+            catch (Exception) { /* expected during shutdown */ }
+            finally
+            {
+                cancellationSource.Dispose();
+                cancellationSource = null;
+            }
         }
 
         private async Task ConnectLoopAsync(CancellationToken token)
@@ -155,6 +214,12 @@ namespace AIBusinessTycoon.Multiplayer
 
         private void Update()
         {
+            // Keep Inspector updated with current socket state
+            if (socket == null)
+                currentSocketState = "Disconnected";
+            else
+                currentSocketState = socket.State.ToString();
+
             while (true)
             {
                 LeaderboardUpdateEvent update;
@@ -169,32 +234,18 @@ namespace AIBusinessTycoon.Multiplayer
             }
         }
 
-        private async void OnDestroy()
+        private void OnDestroy()
         {
             if (Instance == this)
                 Instance = null;
 
-            if (cancellationSource == null)
-                return;
+            if (AIBusinessTycoon.Managers.EventManager.Instance != null)
+            {
+                AIBusinessTycoon.Managers.EventManager.Instance.OnEventUpdated -= HandleEventUpdate;
+                AIBusinessTycoon.Managers.EventManager.Instance.OnEventEnded -= HandleEventEnded;
+            }
 
-            cancellationSource.Cancel();
-            try
-            {
-                if (socket != null && socket.State == WebSocketState.Open)
-                {
-                    Debug.Log("[RealtimeLeaderboardService] Disconnecting WebSocket gracefully...");
-                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Application closed", CancellationToken.None);
-                    Debug.Log("[RealtimeLeaderboardService] Disconnected.");
-                }
-            }
-            catch (Exception)
-            {
-                // Cancellation/disposal is expected while the Editor stops Play Mode.
-            }
-            finally
-            {
-                cancellationSource.Dispose();
-            }
+            StopConnection();
         }
     }
 }

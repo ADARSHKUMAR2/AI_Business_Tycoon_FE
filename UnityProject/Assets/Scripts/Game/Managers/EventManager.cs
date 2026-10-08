@@ -186,11 +186,13 @@ namespace AIBusinessTycoon.Managers
                 return;
             }
 
-            bool isNew      = CurrentEvent == null || CurrentEvent.event_id != response.event_id;
-            bool regChanged = CurrentEvent != null  && CurrentEvent.is_registered != response.is_registered;
+            bool isNew         = CurrentEvent == null || CurrentEvent.event_id != response.event_id;
+            bool regChanged    = CurrentEvent != null && CurrentEvent.is_registered != response.is_registered;
+            bool statusChanged = CurrentEvent != null && CurrentEvent.status != response.status;
+            
             CurrentEvent = response;
 
-            if (isNew || regChanged) OnEventUpdated?.Invoke(response);
+            if (isNew || regChanged || statusChanged) OnEventUpdated?.Invoke(response);
 
             if (isNew)
             {
