@@ -269,6 +269,11 @@ namespace AIBusinessTycoon.Managers
         
         private void HandlePlacementInput()
         {
+            // Prevent clicks from bleeding through UI (like the Join Event button)
+            if (UnityEngine.EventSystems.EventSystem.current != null &&
+                UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+                return;
+
             // Left click to place
             if (Input.GetMouseButtonDown(0))
             {
