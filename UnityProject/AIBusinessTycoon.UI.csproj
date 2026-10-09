@@ -53,6 +53,7 @@
     <Analyzer Include="/Applications/Unity/Hub/Editor/6000.5.6f1/Unity.app/Contents/Resources/Scripting/BCLExtensions/TargetingPacks/netstandard2.1/analyzers/dotnet/roslyn4.0/cs/System.Text.Json.SourceGeneration.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets/Scripts/UI/WorldNameDisplayManager.cs" />
     <Compile Include="Assets/Scripts/UI/EventBannerUI.cs" />
     <Compile Include="Assets/Scripts/UI/LeaderboardPanel.cs" />
   </ItemGroup>

@@ -42,6 +42,7 @@ namespace AIBusinessTycoon.Managers
         public bool IsLoading { get; private set; }
         public bool IsGameReady { get; private set; }
         public bool IsInStore { get; private set; }
+        public StoreInteractionManager CurrentStore => currentStore;
         private StoreInteractionManager currentStore;
         private readonly Dictionary<string, StoreInteractionManager> storesByBusinessId = new Dictionary<string, StoreInteractionManager>();
         private readonly Dictionary<string, float> nextPollAt = new Dictionary<string, float>();

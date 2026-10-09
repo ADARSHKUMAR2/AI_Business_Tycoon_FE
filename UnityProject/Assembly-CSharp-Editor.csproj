@@ -60,6 +60,7 @@
     <Compile Include="Assets/Editor/ProceduralShelfBuilder.cs" />
     <Compile Include="Assets/TutorialInfo/Scripts/Editor/ReadmeEditor.cs" />
     <Compile Include="Assets/Editor/BuildMenuAutoSetup.cs" />
+    <Compile Include="Assets/Editor/PlayModeStartSceneSetup.cs" />
     <Compile Include="Assets/Editor/RestaurantPrefabBuilderEditor.cs" />
     <Compile Include="Assets/Editor/LoginSceneSetupEditor.cs" />
     <Compile Include="Assets/Editor/WorldStateSetupEditor.cs" />
