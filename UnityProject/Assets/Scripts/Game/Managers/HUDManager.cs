@@ -143,21 +143,21 @@ namespace AIBusinessTycoon.UI
 
         private void OnGUI()
         {
-            if (!showDebugInfo || gameManager == null || gameManager.CurrentPlayer == null) return;
+            // if (!showDebugInfo || gameManager == null || gameManager.CurrentPlayer == null) return;
             
-            GUIStyle debugStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 10,
-                normal = { textColor = new Color(1, 1, 1, 0.7f) }
-            };
+            // GUIStyle debugStyle = new GUIStyle(GUI.skin.label)
+            // {
+            //     fontSize = 10,
+            //     normal = { textColor = new Color(1, 1, 1, 0.7f) }
+            // };
             
-            GUILayout.BeginArea(new Rect(Screen.width - 250, 10, 240, 150));
-            GUILayout.Label("=== DEBUG INFO ===", new GUIStyle(debugStyle) { fontStyle = FontStyle.Bold });
-            GUILayout.Label($"Player ID: {gameManager.CurrentPlayer.player_id}", debugStyle);
-            GUILayout.Label($"FPS: {(int)(1f / Time.unscaledDeltaTime)}", debugStyle);
-            GUILayout.Label($"Game Ready: {gameManager.IsGameReady}", debugStyle);
-            GUILayout.Label($"Loading: {gameManager.IsLoading}", debugStyle);
-            GUILayout.EndArea();
+            // GUILayout.BeginArea(new Rect(Screen.width - 250, 10, 240, 150));
+            // GUILayout.Label("=== DEBUG INFO ===", new GUIStyle(debugStyle) { fontStyle = FontStyle.Bold });
+            // GUILayout.Label($"Player ID: {gameManager.CurrentPlayer.player_id}", debugStyle);
+            // GUILayout.Label($"FPS: {(int)(1f / Time.unscaledDeltaTime)}", debugStyle);
+            // GUILayout.Label($"Game Ready: {gameManager.IsGameReady}", debugStyle);
+            // GUILayout.Label($"Loading: {gameManager.IsLoading}", debugStyle);
+            // GUILayout.EndArea();
         }
     }
 }

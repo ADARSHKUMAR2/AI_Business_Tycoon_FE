@@ -599,11 +599,11 @@ namespace AIBusinessTycoon.Managers
 
             GUIStyle s = new GUIStyle(GUI.skin.label) { fontSize = 10, normal = { textColor = Color.white } };
             GUILayout.BeginArea(new Rect(10, Screen.height - 120, 320, 120));
-            GUILayout.Label($"Player: {CurrentPlayer.name}", s);
-            GUILayout.Label($"Money: Rs.{CurrentPlayer.money:N0}", s);
-            GUILayout.Label($"Businesses: {CurrentPlayer.OwnedBusinessCount}", s);
+            // GUILayout.Label($"Player: {CurrentPlayer.name}", s);
+            // GUILayout.Label($"Money: Rs.{CurrentPlayer.money:N0}", s);
+            // GUILayout.Label($"Businesses: {CurrentPlayer.OwnedBusinessCount}", s);
             GUILayout.Label($"Mode: {(IsInStore ? "Inside Store (ESC to exit)" : "City View")}", s);
-            GUILayout.Label("Ctrl+R: Refresh | G: Toggle Grid", new GUIStyle(s) { fontSize = 8 });
+            // GUILayout.Label("Ctrl+R: Refresh | G: Toggle Grid", new GUIStyle(s) { fontSize = 8 });
             GUILayout.EndArea();
         }
 
