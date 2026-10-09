@@ -333,8 +333,6 @@ namespace AIBusinessTycoon.Managers
                     placedPosition.y
                 );
 
-                gameManager.DeductMoneyLocal(currentBuildingCost);
-
                 gameManager.GetAPIService().CreateBusiness(
                     request,
                     (business) => OnBuildingPlaced(business),
@@ -349,6 +347,7 @@ namespace AIBusinessTycoon.Managers
             
             // Notify GameManager to spawn building and refresh data
             gameManager.OnBusinessCreatedCallback(business);
+            gameManager.RefreshPlayerData();
             
             OnPlacementCompleted?.Invoke(business);
         }

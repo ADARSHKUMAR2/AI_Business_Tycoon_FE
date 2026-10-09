@@ -133,7 +133,7 @@ namespace AIBusinessTycoon.UI
         private void OnGuestClicked()
         {
             ShowLoading("Entering as Guest...");
-            string guestName = $"Tycoon_{UnityEngine.Random.Range(1000, 9999)}";
+            string guestName = $"Tycoon {UnityEngine.Random.Range(1000, 9999)}";
             TycoonAuthService.Instance.LoginGuest(guestName,
                 (r) => { TycoonAuthService.SaveSession(r); HideLoading(); LoadGame(); },
                 (e) => { HideLoading(); ShowToast(e); }
