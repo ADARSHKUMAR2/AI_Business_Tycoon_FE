@@ -59,6 +59,7 @@
     <Compile Include="Assets/Editor/EventBannerUISetup.cs" />
     <Compile Include="Assets/Editor/ProceduralShelfBuilder.cs" />
     <Compile Include="Assets/TutorialInfo/Scripts/Editor/ReadmeEditor.cs" />
+    <Compile Include="Assets/Editor/CustomerStatusSpriteAssetCreator.cs" />
     <Compile Include="Assets/Editor/BuildMenuAutoSetup.cs" />
     <Compile Include="Assets/Editor/PlayModeStartSceneSetup.cs" />
     <Compile Include="Assets/Editor/RestaurantPrefabBuilderEditor.cs" />
@@ -69,6 +70,7 @@
     <Compile Include="Assets/Editor/SceneSetupEditor.cs" />
     <Compile Include="Assets/Editor/RestaurantKitchenBuilder.cs" />
     <Compile Include="Assets/Editor/InteractableShelfSetup.cs" />
+    <Compile Include="Assets/Editor/CustomerPrefabUpdater.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

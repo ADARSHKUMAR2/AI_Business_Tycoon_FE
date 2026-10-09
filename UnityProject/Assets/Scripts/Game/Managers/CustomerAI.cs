@@ -6,13 +6,14 @@ using System.Linq;
 using AIBusinessTycoon.Data;
 using AIBusinessTycoon.Services;
 using TMPro; 
+using UnityEngine.UI;
 
 namespace AIBusinessTycoon.Managers
 {
     [RequireComponent(typeof(NavMeshAgent))]
     public class CustomerAI : MonoBehaviour
     {
-        private enum CustomerState { Initializing, WalkingToStore, Shopping, WalkingToCheckout, WaitingAtCounter, Leaving }
+        private enum CustomerState { Initializing, WalkingToStore, Shopping, WaitingAtShelf, WalkingToCheckout, WaitingAtCounter, Leaving }
         
         private CustomerState currentState = CustomerState.Initializing;
         private NavMeshAgent agent;
@@ -21,6 +22,8 @@ namespace AIBusinessTycoon.Managers
         [Header("Visuals")]
         private Transform carryPoint;
         private TextMeshProUGUI floatingEmoji;
+        private Image statusIcon;
+        private Dictionary<string, Sprite> statusSprites = new Dictionary<string, Sprite>();
         
         // ── Local Object Pool for Boxes ──
         private List<GameObject> boxPool = new List<GameObject>();
@@ -76,7 +79,7 @@ namespace AIBusinessTycoon.Managers
                 if (box != null) box.SetActive(false);
             }
 
-            ShowEmoji("", Color.white);
+            ShowStatusIcon(string.Empty, Color.white);
             
             if (agent != null && agent.isOnNavMesh) 
             {
@@ -97,69 +100,53 @@ namespace AIBusinessTycoon.Managers
         private void SetupVisuals()
         {
             // 1. Setup Carry Point
-            Transform existingCp = transform.Find("CarryPoint");
-            if (existingCp != null)
+            carryPoint = transform.Find("CarryPoint");
+            if (carryPoint == null)
             {
-                carryPoint = existingCp;
-                // Clean up any legacy unpooled boxes if they exist
-                var tempChildren = new List<GameObject>();
-                foreach (Transform child in carryPoint) tempChildren.Add(child.gameObject);
-                foreach (var child in tempChildren) Destroy(child);
-            }
-            else
-            {
-                GameObject cp = new GameObject("CarryPoint");
-                cp.transform.SetParent(transform);
-                cp.transform.localPosition = new Vector3(0, 0.6f, 0.5f); 
-                carryPoint = cp.transform;
+                Debug.LogWarning($"[CustomerAI] '{gameObject.name}' is missing the 'CarryPoint' object. Please run the prefab update tool.");
+                return;
             }
 
-            // 2. Initialize Local Object Pool (5 boxes is a safe buffer since max items is usually 3)
+            // 2. Initialize Local Object Pool from prefab children
             boxPool.Clear();
-            for (int i = 0; i < 5; i++)
+            foreach (Transform child in carryPoint)
             {
-                GameObject box = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                box.name = $"PooledBox_{i}";
-                box.transform.SetParent(carryPoint);
-                // Pre-calculate their stacked positions
-                box.transform.localPosition = new Vector3(0, i * 0.45f, 0);
-                box.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
-                box.GetComponent<Renderer>().material.color = Color.red;
-                Destroy(box.GetComponent<Collider>());
-                box.SetActive(false); // Hide by default
-                boxPool.Add(box);
+                if (child.name.StartsWith("PooledBox"))
+                {
+                    child.gameObject.SetActive(false);
+                    boxPool.Add(child.gameObject);
+                }
             }
 
-            // 3. Setup Emoji Canvas
-            Transform existingCanvas = transform.Find("EmojiCanvas");
-            if (existingCanvas != null)
+            if (boxPool.Count == 0)
             {
-                floatingEmoji = existingCanvas.GetComponentInChildren<TextMeshProUGUI>();
+                Debug.LogWarning($"[CustomerAI] '{gameObject.name}' CarryPoint has no pooled boxes. Please run the prefab update tool.");
             }
-            else
+
+            // 3. Setup status icon canvas.
+            Transform existingCanvas = transform.Find("EmojiCanvas");
+            if (existingCanvas == null)
             {
-                GameObject canvasObj = new GameObject("EmojiCanvas");
-                canvasObj.transform.SetParent(transform);
-                canvasObj.transform.localPosition = new Vector3(0, 2.2f, 0); 
-                
-                Canvas canvas = canvasObj.AddComponent<Canvas>();
-                canvas.renderMode = RenderMode.WorldSpace;
-                
-                RectTransform canvasRect = canvasObj.GetComponent<RectTransform>();
-                canvasRect.sizeDelta = new Vector2(2f, 2f); 
-                
-                GameObject textObj = new GameObject("EmojiText");
-                textObj.transform.SetParent(canvasObj.transform);
-                
-                floatingEmoji = textObj.AddComponent<TextMeshProUGUI>();
-                floatingEmoji.alignment = TextAlignmentOptions.Center;
-                floatingEmoji.fontSize = 5; 
-                floatingEmoji.text = "";
-                
-                RectTransform textRect = textObj.GetComponent<RectTransform>();
-                textRect.localPosition = Vector3.zero;
-                textRect.sizeDelta = new Vector2(2f, 2f); 
-                textRect.localScale = Vector3.one; 
+                Debug.LogWarning($"[CustomerAI] '{gameObject.name}' is missing the 'EmojiCanvas' object. Please run the prefab update tool.");
+                return;
+            }
+
+            // Disable the old TMP text component if it still exists.
+            floatingEmoji = existingCanvas.GetComponentInChildren<TextMeshProUGUI>();
+            if (floatingEmoji != null) floatingEmoji.gameObject.SetActive(false);
+
+            statusIcon = existingCanvas.GetComponentsInChildren<Image>(true).FirstOrDefault(img => img.name == "StatusIcon");
+            if (statusIcon == null)
+            {
+                Debug.LogWarning($"[CustomerAI] '{gameObject.name}' is missing the 'StatusIcon' Image under 'EmojiCanvas'. Please run the prefab update tool.");
+                return;
+            }
+
+            statusSprites.Clear();
+            Sprite[] loadedSprites = Resources.LoadAll<Sprite>("Sprite Assets/CustomerStatusIcons");
+            foreach (Sprite sprite in loadedSprites)
+            {
+                statusSprites[sprite.name] = sprite;
             }
         }
 
@@ -279,9 +266,20 @@ namespace AIBusinessTycoon.Managers
                     ShowEmoji("🛒", Color.white);
                     yield return new WaitForSeconds(1.0f);
 
-                    var item = inventory[currentItem];
-                    item.stock = Mathf.Max(0, item.stock - 1);
-                    inventory[currentItem] = item; 
+                    if (targetShelf == null || !targetShelf.TryTakeStock())
+                    {
+                        ShowEmoji("❌", Color.red);
+                        yield return new WaitForSeconds(1.0f);
+                        BeginWaitingAtShelf(currentItem);
+                        yield break;
+                    }
+
+                    // Keep the store inventory synchronized with the shelf's local stock.
+                    // UpdateShelfVisuals reads from BusinessData.inventory, so the backend
+                    // mirror must also be decremented when the customer takes the item.
+                    var updatedItem = inventory[currentItem];
+                    updatedItem.stock = Mathf.Max(0, updatedItem.stock - 1);
+                    inventory[currentItem] = updatedItem;
                     
                     itemsInCart.Add(currentItem);
                     UpdateShelfVisuals(currentItem);
@@ -297,8 +295,8 @@ namespace AIBusinessTycoon.Managers
                 {
                     ShowEmoji("❌", Color.red);
                     yield return new WaitForSeconds(1.0f);
-                    
-                    itemsWaiting.Add(currentItem);
+                    BeginWaitingAtShelf(currentItem);
+                    yield break;
                 }
 
                 itemsToBuy.RemoveAt(0);
@@ -312,6 +310,104 @@ namespace AIBusinessTycoon.Managers
             else
             {
                 GoToCheckout();  
+            }
+        }
+
+        private void BeginWaitingAtShelf(string itemKey)
+        {
+            if (targetShelf == null)
+            {
+                itemsWaiting.Add(itemKey);
+                FinishShoppingOrGoToCheckout();
+                return;
+            }
+
+            if (itemsToBuy.Count > 0 && itemsToBuy[0] == itemKey)
+            {
+                itemsToBuy.RemoveAt(0);
+            }
+
+            itemsWaiting.Remove(itemKey);
+            currentState = CustomerState.WaitingAtShelf;
+            hasItem = false;
+            waitTimer = 15f;
+
+            if (agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+                agent.ResetPath();
+            }
+
+            ShowEmoji("⏳", Color.yellow);
+            if (waitCoroutine == null)
+            {
+                waitCoroutine = StartCoroutine(WaitForShelfStockRoutine(itemKey));
+            }
+        }
+
+        private IEnumerator WaitForShelfStockRoutine(string itemKey)
+        {
+            while (waitTimer > 0f)
+            {
+                if (targetShelf != null && targetShelf.itemKey == itemKey && targetShelf.currentStock > 0)
+                {
+                    if (targetShelf.TryTakeStock())
+                    {
+                        if (targetStore?.BusinessData?.inventory != null &&
+                            targetStore.BusinessData.inventory.TryGetValue(itemKey, out var updatedItem))
+                        {
+                            updatedItem.stock = Mathf.Max(0, updatedItem.stock - 1);
+                            targetStore.BusinessData.inventory[itemKey] = updatedItem;
+                        }
+
+                        itemsInCart.Add(itemKey);
+                        UpdateShelfVisuals(itemKey);
+                        ShowEmoji("🛒", Color.white);
+
+                        if (activeBoxCount < boxPool.Count)
+                        {
+                            boxPool[activeBoxCount].SetActive(true);
+                            activeBoxCount++;
+                        }
+
+                        waitCoroutine = null;
+                        FinishShoppingOrGoToCheckout();
+                        yield break;
+                    }
+                }
+
+                yield return new WaitForSeconds(1f);
+                waitTimer -= 1f;
+            }
+
+            waitCoroutine = null;
+            ShowEmoji("😠", Color.red);
+            Leave();
+        }
+
+        private void FinishShoppingOrGoToCheckout()
+        {
+            if (agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+            }
+
+            if (itemsToBuy.Count > 0)
+            {
+                hasItem = false;
+                FindShelf();
+            }
+            else if (itemsWaiting.Count > 0)
+            {
+                currentState = CustomerState.WaitingAtCounter;
+                if (waitCoroutine == null)
+                {
+                    waitCoroutine = StartCoroutine(WaitTimerRoutine());
+                }
+            }
+            else
+            {
+                GoToCheckout();
             }
         }
 
@@ -561,6 +657,11 @@ namespace AIBusinessTycoon.Managers
         {
             currentState = CustomerState.Leaving;
 
+            if (agent != null && agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+            }
+
             // Use the new method instead of the spawner's transform
             Vector3 exitPos = CustomerSpawner.Instance.GetExitPosition();
 
@@ -576,11 +677,29 @@ namespace AIBusinessTycoon.Managers
         
         private void ShowEmoji(string emoji, Color color)
         {
-            if (floatingEmoji != null)
+            string spriteName = emoji switch
             {
-                floatingEmoji.text = emoji;
-                floatingEmoji.color = color;
-            }
+                "⏳" => "waiting",
+                "😠" => "error",
+                "🛒" => "shopping",
+                "💲" => "success",
+                "❌" => "error",
+                _ => string.Empty
+            };
+
+            ShowStatusIcon(spriteName, color);
+        }
+
+        private void ShowStatusIcon(string spriteName, Color color)
+        {
+            if (statusIcon == null)
+                return;
+
+            statusIcon.color = color;
+            statusIcon.sprite = string.IsNullOrEmpty(spriteName) || !statusSprites.TryGetValue(spriteName, out Sprite sprite)
+                ? null
+                : sprite;
+            statusIcon.enabled = statusIcon.sprite != null;
         }
     }
 }

@@ -5,6 +5,7 @@
   <Project Path="AIBusinessTycoon.Managers.csproj" />
   <Project Path="AIBusinessTycoon.Multiplayer.csproj" />
   <Project Path="AIBusinessTycoon.Services.csproj" />
+  <Project Path="AIBusinessTycoon.UI.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
 </Solution>
