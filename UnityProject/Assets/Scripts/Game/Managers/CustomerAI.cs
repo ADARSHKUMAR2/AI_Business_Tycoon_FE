@@ -167,11 +167,15 @@ namespace AIBusinessTycoon.Managers
                     // If the store actually has sellable menu items available
                     if (menuItems.Count > 0)
                     {
-                        int itemsCount = Random.Range(1, 4); 
-                        for(int i = 0; i < itemsCount; i++) 
+                        // Pick unique sellable product keys; random selection with replacement
+                        // could make a customer request the same product multiple times.
+                        int itemsCount = Random.Range(1, Mathf.Min(3, menuItems.Count) + 1);
+                        var selectedItems = menuItems
+                            .OrderBy(_ => Random.value)
+                            .Take(itemsCount);
+                        foreach (var item in selectedItems)
                         {
-                            string randomKey = menuItems[Random.Range(0, menuItems.Count)].Key;
-                            itemsToBuy.Add(randomKey);
+                            itemsToBuy.Add(item.Key);
                         }
                     }
                 }
@@ -274,13 +278,8 @@ namespace AIBusinessTycoon.Managers
                         yield break;
                     }
 
-                    // Keep the store inventory synchronized with the shelf's local stock.
-                    // UpdateShelfVisuals reads from BusinessData.inventory, so the backend
-                    // mirror must also be decremented when the customer takes the item.
-                    var updatedItem = inventory[currentItem];
-                    updatedItem.stock = Mathf.Max(0, updatedItem.stock - 1);
-                    inventory[currentItem] = updatedItem;
-                    
+                    // TryTakeStock decrements both shelf.currentStock and itemData.stock.
+                    // The latter is the same inventory object, so do not decrement it again.
                     itemsInCart.Add(currentItem);
                     UpdateShelfVisuals(currentItem);
                     
@@ -353,13 +352,8 @@ namespace AIBusinessTycoon.Managers
                 {
                     if (targetShelf.TryTakeStock())
                     {
-                        if (targetStore?.BusinessData?.inventory != null &&
-                            targetStore.BusinessData.inventory.TryGetValue(itemKey, out var updatedItem))
-                        {
-                            updatedItem.stock = Mathf.Max(0, updatedItem.stock - 1);
-                            targetStore.BusinessData.inventory[itemKey] = updatedItem;
-                        }
-
+                        // TryTakeStock already updates itemData.stock, which is the
+                        // corresponding BusinessData.inventory entry. Avoid a second decrement.
                         itemsInCart.Add(itemKey);
                         UpdateShelfVisuals(itemKey);
                         ShowEmoji("🛒", Color.white);
