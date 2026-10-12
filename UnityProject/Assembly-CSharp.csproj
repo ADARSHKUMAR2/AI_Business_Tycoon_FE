@@ -78,6 +78,7 @@
     <None Include="Assets/TextMesh Pro/Shaders/TMP_SDF-Mobile SpaceWarp.shader" />
     <None Include="Assets/TextMesh Pro/Resources/LineBreaking Following Characters.txt" />
     <None Include="Assets/TextMesh Pro/Shaders/TMP_SDF SSD SpaceWarp.shader" />
+    <None Include="Assets/IMages/kenney_ui-pack/License.txt" />
     <None Include="Assets/TextMesh Pro/Shaders/TMP_SDF-Mobile Masking.shader" />
     <None Include="Assets/TextMesh Pro/Shaders/TMP_SDF Overlay.shader" />
     <None Include="Assets/TextMesh Pro/Shaders/TMP_Bitmap-Mobile.shader" />
@@ -1566,6 +1567,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="AIBusinessTycoon.UI.csproj" />
+    <ProjectReference Include="AIBusinessTycoon.Authentication.csproj" />
     <ProjectReference Include="AIBusinessTycoon.Services.csproj" />
     <ProjectReference Include="AIBusinessTycoon.Managers.csproj" />
     <ProjectReference Include="AIBusinessTycoon.Multiplayer.csproj" />

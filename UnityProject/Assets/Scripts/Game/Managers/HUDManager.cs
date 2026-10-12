@@ -83,12 +83,12 @@ namespace AIBusinessTycoon.UI
             if (player == null) return;
             
             if (playerNameText != null) playerNameText.text = player.name;
-            if (moneyText != null) moneyText.text = $"Rs.{player.money:N0}"; 
+            if (moneyText != null) moneyText.text = $"{player.money:N0}"; 
             if (levelText != null) levelText.text = $"Level {player.Level}";
             
-            if (businessCountText != null) businessCountText.text = $"Businesses: {player.OwnedBusinessCount}";
-            if (landTilesText != null) landTilesText.text = $"Land Tiles: {player.stats.land_tiles_owned}";
-            if (revenueText != null) revenueText.text = $"Revenue: Rs.{player.stats.total_revenue:N0}"; 
+            if (businessCountText != null) businessCountText.text = $"{player.OwnedBusinessCount}";
+            if (landTilesText != null) landTilesText.text = $"{player.stats.land_tiles_owned}";
+            if (revenueText != null) revenueText.text = $"Rs.{player.stats.total_revenue:N0}"; 
         }
         
         public void UpdateStatus(string status)

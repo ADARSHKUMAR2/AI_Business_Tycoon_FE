@@ -64,6 +64,7 @@
     <Compile Include="Assets/Editor/PlayModeStartSceneSetup.cs" />
     <Compile Include="Assets/Editor/RestaurantPrefabBuilderEditor.cs" />
     <Compile Include="Assets/Editor/LoginSceneSetupEditor.cs" />
+    <Compile Include="Assets/Editor/StoreDashboardUIBuilder.cs" />
     <Compile Include="Assets/Editor/WorldStateSetupEditor.cs" />
     <Compile Include="Assets/Editor/LeaderboardSetupEditor.cs" />
     <Compile Include="Assets/Editor/EventManagerSetup.cs" />
