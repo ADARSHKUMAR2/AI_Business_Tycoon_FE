@@ -40,7 +40,8 @@ namespace AIBusinessTycoon.Editor
             BuildHeader(root.transform);
             Transform tabs = BuildTabs(root.transform);
             ScrollRect scroll = BuildScroll(root.transform);
-            GameObject[] cards = BuildCards(scroll.content);
+            BuildMenuManager manager = GetOrCreateBuildMenuManager();
+            GameObject[] cards = BuildCards(scroll.content, manager);
 
             BuildMenuTabFilter tabFilter = root.AddComponent<BuildMenuTabFilter>();
             tabFilter.Configure(tabs.GetComponentsInChildren<Button>(true),
@@ -49,7 +50,7 @@ namespace AIBusinessTycoon.Editor
                 new[] { "RETAIL", "FOOD", "FOOD", "FOOD" },
                 scroll);
 
-            WireManager(root);
+            WireManager(root, manager);
             root.SetActive(false);
             EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             Selection.activeGameObject = root;
@@ -151,15 +152,23 @@ namespace AIBusinessTycoon.Editor
             return scroll;
         }
 
-        private static GameObject[] BuildCards(RectTransform content)
+        private static GameObject[] BuildCards(RectTransform content, BuildMenuManager manager)
         {
+            SerializedObject managerData = new SerializedObject(manager);
             return new[]
             {
-                CreateBuildingCard(content, "Kirana Store", "Daily essentials for your customers.", "₹5,000", "🛒", Green, "kiranaButton"),
-                CreateBuildingCard(content, "Pizza Outlet", "Fresh pizza, great taste, more customers.", "₹15,000", "🍕", new Color(0.85f, 0.25f, 0.18f), "pizzaButton"),
-                CreateBuildingCard(content, "Cafe", "Coffee, snacks and happy vibes.", "₹25,000", "☕", new Color(0.50f, 0.30f, 0.18f), "cafeButton"),
-                CreateBuildingCard(content, "Restaurant", "Fine dining for a better tomorrow.", "₹18,000", "🍽", new Color(0.35f, 0.26f, 0.18f), "restaurantButton")
+                CreateBuildingCard(content, "Kirana Store", "Daily essentials for your customers.", GetCostLabel(managerData, "kiranaCost", 5000f), "🛒", Green, "kiranaButton"),
+                CreateBuildingCard(content, "Pizza Outlet", "Fresh pizza, great taste, more customers.", GetCostLabel(managerData, "pizzaCost", 15000f), "🍕", new Color(0.85f, 0.25f, 0.18f), "pizzaButton"),
+                CreateBuildingCard(content, "Cafe", "Coffee, snacks and happy vibes.", GetCostLabel(managerData, "cafeCost", 25000f), "☕", new Color(0.50f, 0.30f, 0.18f), "cafeButton"),
+                CreateBuildingCard(content, "Restaurant", "Fine dining for a better tomorrow.", GetCostLabel(managerData, "restaurantCost", 18000f), "🍽", new Color(0.35f, 0.26f, 0.18f), "restaurantButton")
             };
+        }
+
+        private static string GetCostLabel(SerializedObject managerData, string propertyName, float fallbackCost)
+        {
+            SerializedProperty costProperty = managerData.FindProperty(propertyName);
+            float cost = costProperty != null ? costProperty.floatValue : fallbackCost;
+            return "₹" + cost.ToString("N0");
         }
 
         private static GameObject CreateBuildingCard(Transform parent, string title, string description, string price, string icon, Color accent, string buttonName)
@@ -186,7 +195,7 @@ namespace AIBusinessTycoon.Editor
             return card;
         }
 
-        private static void WireManager(GameObject root)
+        private static BuildMenuManager GetOrCreateBuildMenuManager()
         {
             BuildMenuManager manager = Object.FindFirstObjectByType<BuildMenuManager>();
             if (manager == null)
@@ -199,7 +208,11 @@ namespace AIBusinessTycoon.Editor
                 }
                 manager = Undo.AddComponent<BuildMenuManager>(host);
             }
+            return manager;
+        }
 
+        private static void WireManager(GameObject root, BuildMenuManager manager)
+        {
             SerializedObject so = new SerializedObject(manager);
             SetRef(so, "menuPanel", root);
             SetRef(so, "closeButton", root.transform.Find("Header/CloseButton")?.GetComponent<Button>());
