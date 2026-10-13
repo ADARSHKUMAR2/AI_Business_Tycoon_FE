@@ -23,6 +23,7 @@ namespace AIBusinessTycoon.UI
         [SerializeField] private TextMeshProUGUI detailsText;
         [SerializeField] private TextMeshProUGUI timerText;
         [SerializeField] private Button joinButton;
+        [SerializeField] private Button closeButton;
         [SerializeField] private TextMeshProUGUI joinButtonText;
         
         [Header("Colors")]
@@ -47,6 +48,9 @@ namespace AIBusinessTycoon.UI
             
             if (joinButton != null)
                 joinButton.onClick.AddListener(OnJoinButtonClicked);
+
+            if (closeButton != null)
+                closeButton.onClick.AddListener(OnCloseButtonClicked);
             
             if (EventManager.Instance != null)
             {
@@ -65,6 +69,9 @@ namespace AIBusinessTycoon.UI
             
             if (joinButton != null)
                 joinButton.onClick.RemoveListener(OnJoinButtonClicked);
+
+            if (closeButton != null)
+                closeButton.onClick.RemoveListener(OnCloseButtonClicked);
         }
         
         private void Update()
@@ -257,6 +264,11 @@ namespace AIBusinessTycoon.UI
                 }
                 UpdateJoinButton();
             });
+        }
+
+        private void OnCloseButtonClicked()
+        {
+            gameObject.SetActive(false);
         }
     }
 }

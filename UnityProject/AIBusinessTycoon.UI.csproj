@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets/Scripts/UI/WorldNameDisplayManager.cs" />
+    <Compile Include="Assets/Scripts/UI/BuildMenuTabFilter.cs" />
     <Compile Include="Assets/Scripts/UI/EventBannerUI.cs" />
     <Compile Include="Assets/Scripts/UI/LeaderboardPanel.cs" />
   </ItemGroup>
@@ -1261,12 +1262,12 @@
       <HintPath>Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="UnityEditor.UI">
       <HintPath>Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>

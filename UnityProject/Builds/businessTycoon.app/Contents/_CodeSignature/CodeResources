@@ -6,7 +6,7 @@
 	<dict>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Authentication.dll</key>
 		<data>
-		zrHftpbwVsn1qiyrWfcvudlXPEc=
+		ozZNoWXR5QeBbwlLi1N0+4FAfvU=
 		</data>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Config.dll</key>
 		<data>
@@ -14,27 +14,27 @@
 		</data>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Data.dll</key>
 		<data>
-		zieCchj+tpGKKFmHEmPx2Q0zTIA=
+		0hmHqyHGB/dB5OVh7YfOLNhAQiE=
 		</data>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Managers.dll</key>
 		<data>
-		kh6dxi6lR2d4y6ELh7IzxLsteR0=
+		KZ9KDfk5dN5Gtee+PnZI2dzguaY=
 		</data>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Multiplayer.dll</key>
 		<data>
-		AxEnTjo5QUHl/190dxw+Q5bTs1Y=
+		mmti/zd00niOH0BzEFpIC9qf/FI=
 		</data>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Services.dll</key>
 		<data>
-		qyNwoSkI3aC5TSdLKnwdNef/Y7w=
+		gEH1iCP9EvGjZokmsqT9Raq1q6o=
 		</data>
 		<key>Resources/Data/Managed/AIBusinessTycoon.UI.dll</key>
 		<data>
-		vpNDml7nC3H6quAm22LqAwgsBE4=
+		Bik8Me+I4Ct8MzgNUEi1QENHLlU=
 		</data>
 		<key>Resources/Data/Managed/Assembly-CSharp.dll</key>
 		<data>
-		xOXQYpKR0E5gcoqBSWbw8j0Rt/8=
+		tJHANkilFRFx3u3jzhb0+Qio/z4=
 		</data>
 		<key>Resources/Data/Managed/Mono.Security.dll</key>
 		<data>
@@ -650,15 +650,15 @@
 		</data>
 		<key>Resources/Data/boot.config</key>
 		<data>
-		/7aWk2z09sdPeituEsJyC7jZ2/I=
+		ahbGvmQDozjRO05EbnxTvw11cGI=
 		</data>
 		<key>Resources/Data/globalgamemanagers</key>
 		<data>
-		4sBcmb+Ru4KRCl+o8loFh0HLgxk=
+		7ufUHI9dgK2NKgf/ZQUDo75pq/g=
 		</data>
 		<key>Resources/Data/globalgamemanagers.assets</key>
 		<data>
-		IBJRswO3/wesLbE45fGBSMNhJ2w=
+		0hsahKFmhnqtEze3Icl6kO/mSt0=
 		</data>
 		<key>Resources/Data/globalgamemanagers.assets.resS</key>
 		<data>
@@ -666,19 +666,23 @@
 		</data>
 		<key>Resources/Data/level0</key>
 		<data>
-		loJ8VOItK+nLKjOCjfUJcaSSUYs=
+		9W7slej/W4Td8zNXvtfyKXxmsb4=
 		</data>
 		<key>Resources/Data/level1</key>
 		<data>
-		C6sJfvOeFclx3RFTC0qF7TpxFW4=
+		PTTP928sAMNVUe6P/R8pKMmnQzU=
 		</data>
 		<key>Resources/Data/resources.assets</key>
 		<data>
-		0fEXoAsEjsFBy9FK19tLlKqkkn0=
+		vPWzyE+ZefZ8gjyP/EvmbnEjKNw=
+		</data>
+		<key>Resources/Data/resources.assets.resS</key>
+		<data>
+		cAy/62pLgiFoYx7hdBSwmP66/9M=
 		</data>
 		<key>Resources/Data/sharedassets0.assets</key>
 		<data>
-		hTZnATyIZPsdKQVdIHeD4Lj8IjE=
+		MmoJoQ7EaMOw1FubzxKgGLy4DLE=
 		</data>
 		<key>Resources/Data/sharedassets0.assets.resS</key>
 		<data>
@@ -686,11 +690,11 @@
 		</data>
 		<key>Resources/Data/sharedassets1.assets</key>
 		<data>
-		iLRczpVyq4NfwODU6K/kxNa9TGo=
+		GywHTEvmfIlH7W4kzT1YXZHNivs=
 		</data>
 		<key>Resources/Data/sharedassets1.assets.resS</key>
 		<data>
-		cXBG6IYZpISHlTcAR8V3F5DmKe0=
+		HP7+vPdMvUncEshDBZqrKdRgxdA=
 		</data>
 		<key>Resources/DefaultPreferences.plist</key>
 		<data>
@@ -895,7 +899,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			r6BTi3M+Xep4XXOuHJL+AqTv8bhFHWjvW0Zk+uttag4=
+			s7zTblGDIi2XhUbsLWNuhN/ggP+kR+72UYp8SFzyxMQ=
 			</data>
 		</dict>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Config.dll</key>
@@ -909,42 +913,42 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			oRacLo1ITm64FwupvjrIWCZGqiqm+lc1NjideN/d/XU=
+			4ZkmFJbpTbrH6dVMJ80/B503CTx5nzK9nGyMOk11jd8=
 			</data>
 		</dict>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Managers.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			tDSFqhVCd/o5Kn2aMJsbytmNkQ4iv0qQNWPto25scrk=
+			Gn3eLv8y7P+FKAHCHcUBFYrInHESj8i8MN50wSVJeCo=
 			</data>
 		</dict>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Multiplayer.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			CjFK3qy/jGcJ1z1uS0PGAaOZJFwFNYbWZhiaXqhp+fU=
+			lS+N7eWLmn2/io6l3Fe92HqnifCqNuMNzqOwqjaf+6Q=
 			</data>
 		</dict>
 		<key>Resources/Data/Managed/AIBusinessTycoon.Services.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			jBqbjM92TIw68L6e48Z0y0sM63fBUBQpxCiDG00Dm0Y=
+			OJf2+ez5qkvyxkB1lYjHw0bUEFIrUrr4aXp0fVMWpt4=
 			</data>
 		</dict>
 		<key>Resources/Data/Managed/AIBusinessTycoon.UI.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			gE+9n5xd4Ru00tT7HeUpTeZTD6XAgt+ZRTglwFYlkyY=
+			HAGiJn/2PlCdHK24vjZMlbEclnI741dc0qcDGa8rpb8=
 			</data>
 		</dict>
 		<key>Resources/Data/Managed/Assembly-CSharp.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			xoBJCV59EdS0f9ZrPSKsNpi6WhmRgf+elzoaAogdqpQ=
+			WBv9nC2Gd/IL+MW5MtprgRzPk2NI9EBshwx8onSfWG4=
 			</data>
 		</dict>
 		<key>Resources/Data/Managed/Mono.Security.dll</key>
@@ -2022,21 +2026,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			fa292pgFqZtum8WolL/CUrDHF45vxiBKFE4bWJrUoI0=
+			r/EHlqFtswpPv9hNZMhRb+joJ/E++DjQrsR+6HfgsUQ=
 			</data>
 		</dict>
 		<key>Resources/Data/globalgamemanagers</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			CIj8S3/lnPt35zrE8+h+63HNDOALN+bKuvMZubQRlHs=
+			mFULIGzXX5wDgUTFpFSn5PfZ2V4V0ggtmXWDllW2VcQ=
 			</data>
 		</dict>
 		<key>Resources/Data/globalgamemanagers.assets</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			058OYFRoxi4XpUfVEwSuG6O8eECoNmftOhHyYnB3rEs=
+			b8ZfvwCmX3U2TKMPruck84ZVmlH8yrxMCT9Wd0FlpYw=
 			</data>
 		</dict>
 		<key>Resources/Data/globalgamemanagers.assets.resS</key>
@@ -2050,28 +2054,35 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			g31GxAiwedMqsiIKiknRhQ4wXoO0ZI3DwsnvSGsslko=
+			ISzC8Dvf+VDsGi5DNaJPMDNbwSFHkZBR5y2ofm/r2vM=
 			</data>
 		</dict>
 		<key>Resources/Data/level1</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Ml8XBU4WsUufBRzaQ6PEJ2Gu3pjdbr9qh86rJ0e4by8=
+			XskAtGNJup/yN+32bmQfpae8EmWvsNIVxOAgz9V5ykA=
 			</data>
 		</dict>
 		<key>Resources/Data/resources.assets</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			kZwkyEGeMaU8XTyoUpNyIlJFISOErbd5BjA0/Zue/Yg=
+			OAOvQ477A20IGLaAy9VE6an6a/dUs6TlIxdSsvtzfCY=
+			</data>
+		</dict>
+		<key>Resources/Data/resources.assets.resS</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			25Of4I2hF8U8IGqXTee94xdQ4SIiKO8ildV3nLhQN1A=
 			</data>
 		</dict>
 		<key>Resources/Data/sharedassets0.assets</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			FmYswE6SQFNNd5TjQ80gKNMAtERJSZdH6QujKjfNrr0=
+			6flTCMiX/jNF1JtpbEdUzkvztfzwoOVrJjzNGVx4qPo=
 			</data>
 		</dict>
 		<key>Resources/Data/sharedassets0.assets.resS</key>
@@ -2085,14 +2096,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			YCmVftk0df4VG+b1+EQCwYGmjZA1rl2OgEfLqVRm/ZI=
+			Dhz53a5XaIneAmogQZkShe4q2T4L9OCQTxonhA9Axfo=
 			</data>
 		</dict>
 		<key>Resources/Data/sharedassets1.assets.resS</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			AXo3ItipXdWA0EU0dpxGfXdS4ekgoQEPOErEIm15Igw=
+			douQSOZ9swjzrAhynK/5klGwJzAX6dV/kFQJKTe9M/Y=
 			</data>
 		</dict>
 		<key>Resources/DefaultPreferences.plist</key>

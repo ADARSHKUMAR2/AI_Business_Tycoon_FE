@@ -311,6 +311,50 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: FULL_UI_ASSET_SHEET_6
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 84
+        width: 285
+        height: 72
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 936f281e7c5ab4be6b1b68ea4b1df577
+      internalID: 1485026415
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FULL_UI_ASSET_SHEET_10
+      rect:
+        serializedVersion: 2
+        x: 692
+        y: 294
+        width: 371
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 57959eac53b5f455b967134957a04966
+      internalID: -1532481357
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
