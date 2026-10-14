@@ -13,7 +13,9 @@ MonoBehaviour:
   m_Name: BackendConfig
   m_EditorClassIdentifier: AIBusinessTycoon.Config::AIBusinessTycoon.Config.BackendConfig
   localBackendURL: http://localhost:8000
-  productionBackendURL: https://api.yourgame.com
-  useLocalBackend: 1
+  productionBackendURL: https://business-tycoon-gateway-704416931022.asia-south1.run.app
+  useLocalBackend: 0
   getPlayerDataEndpoint: /api/game/player/{0}
   updatePlayerDataEndpoint: /api/game/player/{0}
+  getActiveEventEndpoint: /api/game/events/active?player_id={0}
+  registerEventEndpoint: /api/game/events/{0}/register/{1}
