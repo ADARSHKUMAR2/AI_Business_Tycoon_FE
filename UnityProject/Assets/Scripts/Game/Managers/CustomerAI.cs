@@ -28,6 +28,21 @@ namespace AIBusinessTycoon.Managers
         // ── Local Object Pool for Boxes ──
         private List<GameObject> boxPool = new List<GameObject>();
         private int activeBoxCount = 0;
+        private readonly Dictionary<string, GameObject> productPrefabs = new Dictionary<string, GameObject>();
+        private readonly Dictionary<string, string> productPrefabNames = new Dictionary<string, string>
+        {
+            { "rice", "Rice" }, { "dal", "Dal" }, { "milk", "Milk" }, { "bread", "Bread" },
+            { "oil", "Oil" }, { "sugar", "Sugar" }, { "salt", "Salt" }, { "tea", "Tea" },
+            { "margherita", "Margherita" }, { "pepperoni", "Pepperoni_Pizza" },
+            { "garlic_bread", "Garlic_Bread" }, { "cola", "Cola" },
+            { "espresso", "Espresso" }, { "cappuccino", "Cappuccino" },
+            { "croissant", "Butter_Croissant" }, { "muffin", "Blueberry_Muffin" },
+            { "tomato", "Tomato" }, { "onion", "Onion" }, { "lettuce", "Lettuce" },
+            { "flour", "Flour" }, { "herb", "Herb" }, { "buns", "Burger_Buns" },
+            { "patty", "Burger_Patty" }, { "cheese", "Cheese_Slice" },
+            { "dough", "Pizza_Dough" }, { "sauce", "Tomato_Sauce" },
+            { "burger", "Burger" }, { "pizza", "Pizza" }
+        };
         
         private InteractableShelf targetShelf;
         private CheckoutCounter targetCheckout;
@@ -114,6 +129,7 @@ namespace AIBusinessTycoon.Managers
                 if (child.name.StartsWith("PooledBox"))
                 {
                     child.gameObject.SetActive(false);
+                    DisableProductColliders(child.gameObject);
                     boxPool.Add(child.gameObject);
                 }
             }
@@ -283,12 +299,7 @@ namespace AIBusinessTycoon.Managers
                     itemsInCart.Add(currentItem);
                     UpdateShelfVisuals(currentItem);
                     
-                    // Show next pooled box instead of instantiating
-                    if (activeBoxCount < boxPool.Count)
-                    {
-                        boxPool[activeBoxCount].SetActive(true);
-                        activeBoxCount++;
-                    }
+                    ShowCarriedProduct(currentItem);
                 }
                 else
                 {
@@ -358,11 +369,7 @@ namespace AIBusinessTycoon.Managers
                         UpdateShelfVisuals(itemKey);
                         ShowEmoji("🛒", Color.white);
 
-                        if (activeBoxCount < boxPool.Count)
-                        {
-                            boxPool[activeBoxCount].SetActive(true);
-                            activeBoxCount++;
-                        }
+                        ShowCarriedProduct(itemKey);
 
                         waitCoroutine = null;
                         FinishShoppingOrGoToCheckout();
@@ -377,6 +384,60 @@ namespace AIBusinessTycoon.Managers
             waitCoroutine = null;
             ShowEmoji("😠", Color.red);
             Leave();
+        }
+
+        private void ShowCarriedProduct(string itemKey)
+        {
+            if (activeBoxCount >= boxPool.Count) return;
+            GameObject slot = boxPool[activeBoxCount];
+            GameObject prefab = GetProductPrefab(itemKey);
+            if (prefab != null)
+            {
+                Transform parent = slot.transform.parent;
+                Vector3 position = slot.transform.localPosition;
+                Quaternion rotation = slot.transform.localRotation;
+                Vector3 scale = slot.transform.localScale;
+                GameObject product = Instantiate(prefab, parent);
+                product.name = "PooledProduct_" + itemKey + "_" + activeBoxCount;
+                product.transform.localPosition = position;
+                product.transform.localRotation = rotation;
+                product.transform.localScale = scale;
+                DisableProductColliders(product);
+                product.SetActive(false);
+                boxPool[activeBoxCount] = product;
+                Destroy(slot);
+                slot = product;
+            }
+            slot.SetActive(true);
+            activeBoxCount++;
+        }
+
+        private GameObject GetProductPrefab(string itemKey)
+        {
+            string prefabName;
+            if (string.IsNullOrEmpty(itemKey) || !productPrefabNames.TryGetValue(itemKey, out prefabName))
+            {
+                Debug.LogWarning("[CustomerAI] No carried product mapping for '" + itemKey + "'; using fallback cube.", this);
+                return null;
+            }
+            GameObject prefab;
+            if (!productPrefabs.TryGetValue(itemKey, out prefab))
+            {
+                prefab = Resources.Load<GameObject>("Generated/Products/" + prefabName);
+                if (prefab == null)
+                {
+                    Debug.LogWarning("[CustomerAI] Product prefab missing: " + prefabName + "; using fallback cube.", this);
+                    return null;
+                }
+                productPrefabs[itemKey] = prefab;
+            }
+            return prefab;
+        }
+
+        private static void DisableProductColliders(GameObject product)
+        {
+            foreach (Collider productCollider in product.GetComponentsInChildren<Collider>(true))
+                productCollider.enabled = false;
         }
 
         private void FinishShoppingOrGoToCheckout()
