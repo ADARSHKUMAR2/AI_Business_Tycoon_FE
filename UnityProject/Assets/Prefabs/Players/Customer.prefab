@@ -840,6 +840,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5432944833713256318}
     m_Modifications:
+    - target: {fileID: 2594355490238712, guid: 3e62071466b7b49199de008c9ecb5a6c, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 6295e4b4535b747ca98417cc1d5b0ea1, type: 2}
     - target: {fileID: 1761421743785381302, guid: 3e62071466b7b49199de008c9ecb5a6c, type: 3}
       propertyPath: m_Name
       value: AnimatedCustomer

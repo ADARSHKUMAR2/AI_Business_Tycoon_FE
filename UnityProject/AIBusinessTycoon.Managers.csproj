@@ -84,6 +84,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/IngredientPlotInteractable.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/PlayerIngredientInteractor.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/StoreUIManager.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/PlayerCharacterAnimator.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/IngredientPlotVisual.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CameraController.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CheckoutCounter.cs" />
