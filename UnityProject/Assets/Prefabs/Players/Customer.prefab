@@ -556,8 +556,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: AIBusinessTycoon.Managers::AIBusinessTycoon.Managers.CustomerCharacterAnimator
   animatedVisual: {fileID: 3191526883836521491}
-  leftArm: {fileID: 4927153037249590045}
-  rightArm: {fileID: 2655405971383512519}
+  leftArm: {fileID: 0}
+  rightArm: {fileID: 0}
   leftLeg: {fileID: 7931613802351420273}
   rightLeg: {fileID: 8081988735733477754}
   walkFrequency: 7
@@ -907,6 +907,18 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 6295e4b4535b747ca98417cc1d5b0ea1, type: 2}
+    - target: {fileID: 1090620168695919920, guid: 3e62071466b7b49199de008c9ecb5a6c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9596092
+      objectReference: {fileID: 0}
+    - target: {fileID: 1090620168695919920, guid: 3e62071466b7b49199de008c9ecb5a6c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.28133664
+      objectReference: {fileID: 0}
+    - target: {fileID: 1090620168695919920, guid: 3e62071466b7b49199de008c9ecb5a6c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 32.68
+      objectReference: {fileID: 0}
     - target: {fileID: 1761421743785381302, guid: 3e62071466b7b49199de008c9ecb5a6c, type: 3}
       propertyPath: m_Name
       value: AnimatedCustomer
@@ -963,24 +975,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8042179338076122090, guid: 3e62071466b7b49199de008c9ecb5a6c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9596092
+      objectReference: {fileID: 0}
+    - target: {fileID: 8042179338076122090, guid: 3e62071466b7b49199de008c9ecb5a6c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.28133664
+      objectReference: {fileID: 0}
+    - target: {fileID: 8042179338076122090, guid: 3e62071466b7b49199de008c9ecb5a6c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 32.68
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3e62071466b7b49199de008c9ecb5a6c, type: 3}
---- !u!4 &2655405971383512519 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 8042179338076122090, guid: 3e62071466b7b49199de008c9ecb5a6c, type: 3}
-  m_PrefabInstance: {fileID: 5423014372165322285}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &3191526883836521491 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7424463383190039102, guid: 3e62071466b7b49199de008c9ecb5a6c, type: 3}
-  m_PrefabInstance: {fileID: 5423014372165322285}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &4927153037249590045 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1090620168695919920, guid: 3e62071466b7b49199de008c9ecb5a6c, type: 3}
   m_PrefabInstance: {fileID: 5423014372165322285}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &6135411787486383276 stripped
