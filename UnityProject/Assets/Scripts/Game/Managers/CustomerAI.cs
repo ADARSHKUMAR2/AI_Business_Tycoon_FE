@@ -21,6 +21,7 @@ namespace AIBusinessTycoon.Managers
         
         [Header("Visuals")]
         private Transform carryPoint;
+        private Transform basketItemsPoint;
         private TextMeshProUGUI floatingEmoji;
         private Image statusIcon;
         private Dictionary<string, Sprite> statusSprites = new Dictionary<string, Sprite>();
@@ -121,6 +122,11 @@ namespace AIBusinessTycoon.Managers
                 Debug.LogWarning($"[CustomerAI] '{gameObject.name}' is missing the 'CarryPoint' object. Please run the prefab update tool.");
                 return;
             }
+
+            Transform shoppingCart = carryPoint.Find("ShoppingBasket");
+            basketItemsPoint = shoppingCart != null ? shoppingCart.Find("BasketItems") : null;
+            if (basketItemsPoint == null)
+                Debug.LogWarning($"[CustomerAI] '{gameObject.name}' is missing ShoppingBasket/BasketItems under CarryPoint. Product visuals will use CarryPoint.", this);
 
             // 2. Initialize Local Object Pool from prefab children
             boxPool.Clear();
@@ -393,14 +399,11 @@ namespace AIBusinessTycoon.Managers
             GameObject prefab = GetProductPrefab(itemKey);
             if (prefab != null)
             {
-                Transform parent = slot.transform.parent;
-                Vector3 position = slot.transform.localPosition;
-                Quaternion rotation = slot.transform.localRotation;
-                Vector3 scale = slot.transform.localScale;
-                GameObject product = Instantiate(prefab, parent);
+                Vector3 scale = GetCarryItemScale(prefab, slot.transform.localScale);
+                GameObject product = Instantiate(prefab, basketItemsPoint != null ? basketItemsPoint : carryPoint);
                 product.name = "PooledProduct_" + itemKey + "_" + activeBoxCount;
-                product.transform.localPosition = position;
-                product.transform.localRotation = rotation;
+                product.transform.localPosition = GetBasketItemPosition(activeBoxCount);
+                product.transform.localRotation = Quaternion.identity;
                 product.transform.localScale = scale;
                 DisableProductColliders(product);
                 product.SetActive(false);
@@ -410,6 +413,33 @@ namespace AIBusinessTycoon.Managers
             }
             slot.SetActive(true);
             activeBoxCount++;
+        }
+
+        private Vector3 GetCarryItemScale(GameObject prefab, Vector3 fallbackScale)
+        {
+            Renderer[] renderers = prefab.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
+                return fallbackScale;
+
+            Bounds bounds = renderers[0].bounds;
+            foreach (Renderer productRenderer in renderers)
+                bounds.Encapsulate(productRenderer.bounds);
+
+            float largestDimension = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
+            if (largestDimension <= 0.001f)
+                return fallbackScale;
+
+            return Vector3.one * (0.3f / largestDimension);
+        }
+
+        private static Vector3 GetBasketItemPosition(int index)
+        {
+            const float columnSpacing = 0.22f;
+            const float rowSpacing = 0.18f;
+            float x = index % 2 == 0 ? -columnSpacing * 0.5f : columnSpacing * 0.5f;
+            float z = index / 2 == 0 ? -rowSpacing * 0.5f : rowSpacing * 0.5f;
+            float y = 0.04f + (index / 4) * 0.12f;
+            return new Vector3(x, y, z);
         }
 
         private GameObject GetProductPrefab(string itemKey)
