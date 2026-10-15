@@ -3,6 +3,7 @@ using UnityEngine.EventSystems;
 using TMPro;
 using System.Collections.Generic;
 using AIBusinessTycoon.Data;
+using System;
 
 namespace AIBusinessTycoon.Managers
 {
@@ -23,8 +24,23 @@ namespace AIBusinessTycoon.Managers
         [SerializeField] private TextMeshProUGUI itemNameTextUI; 
         [SerializeField] private Transform itemContainer;     
 
-        // We no longer instantiate at runtime. We just cache the children of itemContainer!
+        // Children are prebuilt shelf slots; each slot gets a matching product prefab.
         private List<GameObject> pooledBoxes = new List<GameObject>();
+
+        private static readonly Dictionary<string, string> ProductPrefabNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "rice", "Rice" }, { "dal", "Dal" }, { "milk", "Milk" }, { "bread", "Bread" },
+            { "oil", "Oil" }, { "sugar", "Sugar" }, { "salt", "Salt" }, { "tea", "Tea" },
+            { "margherita", "Margherita" }, { "pepperoni", "Pepperoni" },
+            { "garlic_bread", "Garlic_Bread" }, { "cola", "Cola" },
+            { "espresso", "Espresso" }, { "cappuccino", "Cappuccino" },
+            { "croissant", "Butter_Croissant" }, { "muffin", "Blueberry_Muffin" },
+            { "tomato", "Tomato" }, { "onion", "Onion" }, { "lettuce", "Lettuce" },
+            { "flour", "Flour" }, { "herb", "Herb" }, { "buns", "Burger_Buns" },
+            { "patty", "Burger_Patty" }, { "cheese", "Cheese_Slice" },
+            { "dough", "Pizza_Dough" }, { "sauce", "Tomato_Sauce" },
+            { "burger", "Burger" }, { "pizza", "Pizza" }
+        };
 
         private void Start()
         {
@@ -43,10 +59,13 @@ namespace AIBusinessTycoon.Managers
                     child.gameObject.SetActive(false); // Hide all until stock is known
                 }
             }
+
             else
             {
                 Debug.LogWarning($"[InteractableShelf] itemContainer missing on {gameObject.name}. Visual boxes will not show.");
             }
+
+            RefreshProductModels();
 
             // NOTE: Do NOT cap maxCapacity here.
             // InitializeFromBackend() will set the real values from backend data.
@@ -67,6 +86,7 @@ namespace AIBusinessTycoon.Managers
 
             if (itemNameTextUI != null) itemNameTextUI.text = data.name;
 
+            RefreshProductModels();
             UpdateVisuals();
         }
 
@@ -122,6 +142,43 @@ namespace AIBusinessTycoon.Managers
             for (int i = 0; i < pooledBoxes.Count; i++)
             {
                 pooledBoxes[i].SetActive(i < visualStock);
+            }
+        }
+
+        private void RefreshProductModels()
+        {
+            if (pooledBoxes.Count == 0 || string.IsNullOrEmpty(itemKey)) return;
+
+            if (!ProductPrefabNames.TryGetValue(itemKey, out string prefabName))
+            {
+                Debug.LogWarning($"[InteractableShelf] No product prefab mapping for item key '{itemKey}'. Keeping existing shelf visuals.");
+                return;
+            }
+
+            GameObject prefab = Resources.Load<GameObject>($"Generated/Products/{prefabName}");
+            if (prefab == null)
+            {
+                Debug.LogWarning($"[InteractableShelf] Could not load Resources/Generated/Products/{prefabName}.prefab. Product prefabs must be in a Resources folder.");
+                return;
+            }
+
+            for (int i = 0; i < pooledBoxes.Count; i++)
+            {
+                GameObject slot = pooledBoxes[i];
+                Vector3 localPosition = slot.transform.localPosition;
+                Quaternion localRotation = slot.transform.localRotation;
+                Vector3 localScale = slot.transform.localScale;
+                bool wasActive = slot.activeSelf;
+
+                GameObject model = Instantiate(prefab, slot.transform.parent);
+                model.name = $"{prefabName}_{i}";
+                model.transform.localPosition = localPosition;
+                model.transform.localRotation = localRotation;
+                model.transform.localScale = localScale;
+                model.SetActive(wasActive);
+
+                pooledBoxes[i] = model;
+                Destroy(slot);
             }
         }
     }

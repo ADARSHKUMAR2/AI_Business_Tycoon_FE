@@ -66,6 +66,7 @@
     <Compile Include="Assets/Scripts/Game/Managers/RestockerAI.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/GameManager.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/WorldStateController.cs" />
+    <Compile Include="Assets/Scripts/Game/Managers/CustomerCharacterAnimator.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/PlayerInventory.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CustomerAI.cs" />
     <Compile Include="Assets/Scripts/Game/Managers/CraftingTable.cs" />
@@ -1300,12 +1301,12 @@
       <HintPath>Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="UnityEditor.UI">
       <HintPath>Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
