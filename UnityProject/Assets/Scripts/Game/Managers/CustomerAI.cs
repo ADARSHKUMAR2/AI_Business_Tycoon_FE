@@ -292,7 +292,19 @@ namespace AIBusinessTycoon.Managers
                     ShowEmoji("🛒", Color.white);
                     yield return new WaitForSeconds(1.0f);
 
-                    if (targetShelf == null || !targetShelf.TryTakeStock())
+                    if (targetShelf == null)
+                    {
+                        Debug.LogWarning($"[CustomerAI][ShelfStock] Pickup aborted for '{currentItem}': target shelf is null.", this);
+                        ShowEmoji("❌", Color.red);
+                        yield return new WaitForSeconds(1.0f);
+                        BeginWaitingAtShelf(currentItem);
+                        yield break;
+                    }
+
+                    LogShelfStock("BEFORE PICKUP", currentItem, targetShelf);
+                    bool tookStock = targetShelf.TryTakeStock();
+                    LogShelfStock(tookStock ? "AFTER PICKUP" : "PICKUP FAILED (NO STOCK)", currentItem, targetShelf);
+                    if (!tookStock)
                     {
                         ShowEmoji("❌", Color.red);
                         yield return new WaitForSeconds(1.0f);
@@ -367,7 +379,10 @@ namespace AIBusinessTycoon.Managers
             {
                 if (targetShelf != null && targetShelf.itemKey == itemKey && targetShelf.currentStock > 0)
                 {
-                    if (targetShelf.TryTakeStock())
+                    LogShelfStock("BEFORE WAITING PICKUP", itemKey, targetShelf);
+                    bool tookStock = targetShelf.TryTakeStock();
+                    LogShelfStock(tookStock ? "AFTER WAITING PICKUP" : "WAITING PICKUP FAILED (NO STOCK)", itemKey, targetShelf);
+                    if (tookStock)
                     {
                         // TryTakeStock already updates itemData.stock, which is the
                         // corresponding BusinessData.inventory entry. Avoid a second decrement.
@@ -390,6 +405,31 @@ namespace AIBusinessTycoon.Managers
             waitCoroutine = null;
             ShowEmoji("😠", Color.red);
             Leave();
+        }
+
+        private void LogShelfStock(string stage, string itemKey, InteractableShelf shelf)
+        {
+            if (shelf == null)
+            {
+                Debug.LogWarning($"[CustomerAI][ShelfStock] {stage} | item='{itemKey}' | shelf=NULL", this);
+                return;
+            }
+
+            int shelfStock = shelf.currentStock;
+            int itemDataStock = shelf.itemData != null ? shelf.itemData.stock : -1;
+            int businessInventoryStock = -1;
+            if (targetStore?.BusinessData?.inventory != null &&
+                targetStore.BusinessData.inventory.TryGetValue(itemKey, out InventoryItem inventoryItem) &&
+                inventoryItem != null)
+            {
+                businessInventoryStock = inventoryItem.stock;
+            }
+
+            Debug.Log(
+                $"[CustomerAI][ShelfStock] {stage} | item='{itemKey}' | shelf='{shelf.name}' " +
+                $"| shelf.currentStock={shelfStock} | shelf.itemData.stock={itemDataStock} " +
+                $"| store inventory stock={businessInventoryStock} | capacity={shelf.maxCapacity}",
+                shelf);
         }
 
         private void ShowCarriedProduct(string itemKey)

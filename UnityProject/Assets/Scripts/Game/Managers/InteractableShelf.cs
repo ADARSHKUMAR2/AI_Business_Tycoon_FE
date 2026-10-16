@@ -85,9 +85,37 @@ namespace AIBusinessTycoon.Managers
             currentStock = Mathf.Min(data.stock, maxCapacity);
 
             if (itemNameTextUI != null) itemNameTextUI.text = data.name;
+            Debug.Log("[ShelfStockTrace][Initialize] business=" + businessId + " shelf=" + name + " item=" + itemKey + " initialStock=" + currentStock + " itemDataId=" + data.GetHashCode(), this);
 
             RefreshProductModels();
             UpdateVisuals();
+        }
+
+        public void RebindInventoryItem(InventoryItem updatedItem)
+        {
+            if (updatedItem == null)
+            {
+                Debug.LogWarning($"[InteractableShelf] Cannot rebind '{itemKey}' on {gameObject.name}: updated inventory item is null.", this);
+                return;
+            }
+
+            int oldShelfStock = currentStock;
+            int oldItemDataStock = itemData != null ? itemData.stock : -1;
+
+            itemData = updatedItem;
+            maxCapacity = updatedItem.max_stock;
+            currentStock = Mathf.Clamp(updatedItem.stock, 0, maxCapacity);
+
+            if (itemNameTextUI != null)
+                itemNameTextUI.text = updatedItem.name;
+
+            UpdateVisuals();
+
+            Debug.Log(
+                $"[ShelfStockTrace][ShelfRebound] business='{businessId}' shelf='{name}' item='{itemKey}' " +
+                $"oldShelfStock={oldShelfStock} oldItemDataStock={oldItemDataStock} " +
+                $"newStock={currentStock} itemDataId={updatedItem.GetHashCode()}",
+                this);
         }
 
         private void OnMouseDown()
@@ -112,14 +140,19 @@ namespace AIBusinessTycoon.Managers
 
         public bool TryTakeStock()
         {
-            if (currentStock > 0)
+            int stockBefore = currentStock;
+            int itemStockBefore = itemData != null ? itemData.stock : -1;
+            if (currentStock <= 0)
             {
-                currentStock--;
-                if (itemData != null) itemData.stock = currentStock;
-                UpdateVisuals();
-                return true;
+                Debug.LogWarning("[ShelfStockTrace][TryTakeStock] OUT OF STOCK business=" + businessId + " shelf=" + name + " item=" + itemKey + " shelfStock=" + currentStock + " itemDataStock=" + itemStockBefore, this);
+                return false;
             }
-            return false;
+
+            currentStock--;
+            if (itemData != null) itemData.stock = currentStock;
+            UpdateVisuals();
+            Debug.Log("[ShelfStockTrace][TryTakeStock] business=" + businessId + " shelf=" + name + " item=" + itemKey + " shelfStock=" + stockBefore + "->" + currentStock + " itemDataStock=" + itemStockBefore + "->" + (itemData != null ? itemData.stock : -1) + " itemDataId=" + (itemData != null ? itemData.GetHashCode() : 0), this);
+            return true;
         }
 
         public void UpdateVisuals()

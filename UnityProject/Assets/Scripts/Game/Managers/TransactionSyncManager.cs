@@ -57,6 +57,12 @@ namespace AIBusinessTycoon.Managers
                     isSyncing = true;
 
                     TransactionBatchData batchToSend = currentBatch;
+                    Debug.Log(
+                        "[ShelfStockTrace][SyncRequest] business=" + store.BusinessData.business_id +
+                        " batchId=" + batchToSend.batch_id +
+                        " sold=[" + string.Join(", ", batchToSend.items_sold.Select(item => item.Key + "=" + item.Value)) + "]" +
+                        " localStock=[" + string.Join(", ", store.BusinessData.inventory.Select(item => item.Key + "=" + item.Value.stock)) + "]",
+                        this);
 
                     // 2. Replaced the manual serialization with Newtonsoft!
                     string jsonPayload = JsonConvert.SerializeObject(batchToSend);
@@ -69,7 +75,14 @@ namespace AIBusinessTycoon.Managers
                         (response) => {
                             BusinessData syncedBusiness = JsonConvert.DeserializeObject<BusinessData>(response);
                             if (syncedBusiness != null)
+                            {
+                                Debug.Log(
+                                    "[ShelfStockTrace][SyncResponse] business=" + syncedBusiness.business_id +
+                                    " serverStock=[" + string.Join(", ", syncedBusiness.inventory.Select(item => item.Key + "=" + item.Value.stock)) + "]",
+                                    this);
                                 store.BusinessData = syncedBusiness;
+                                RebindShelvesToInventory(syncedBusiness);
+                            }
                             currentBatch = new TransactionBatchData();
                             DeletePendingBatch();
                             isSyncing = false;
@@ -79,6 +92,25 @@ namespace AIBusinessTycoon.Managers
                             isSyncing = false;
                         }
                     ));
+                }
+            }
+        }
+
+        private void RebindShelvesToInventory(BusinessData updatedBusiness)
+        {
+            foreach (InteractableShelf shelf in store.GetComponentsInChildren<InteractableShelf>(true))
+            {
+                if (updatedBusiness.inventory != null &&
+                    updatedBusiness.inventory.TryGetValue(shelf.itemKey, out InventoryItem updatedItem))
+                {
+                    shelf.RebindInventoryItem(updatedItem);
+                }
+                else
+                {
+                    Debug.LogWarning(
+                        "[ShelfStockTrace][ShelfRebindMissing] business=" + updatedBusiness.business_id +
+                        " shelf=" + shelf.name + " item=" + shelf.itemKey + " not found in synced inventory",
+                        shelf);
                 }
             }
         }
