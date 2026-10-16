@@ -46,13 +46,22 @@ namespace AIBusinessTycoon.Managers
             SavePendingBatch();
         }
 
+        public void RecordRestock(string itemKey, int quantity)
+        {
+            if (currentBatch.items_restocked.ContainsKey(itemKey))
+                currentBatch.items_restocked[itemKey] += quantity;
+            else
+                currentBatch.items_restocked[itemKey] = quantity;
+            SavePendingBatch();
+        }
+
         private IEnumerator SyncRoutine()
         {
             while (true)
             {
                 yield return new WaitForSeconds(syncIntervalSeconds);
 
-                if (currentBatch.total_customers_served > 0 && !isSyncing && GameManager.Instance.CurrentPlayer != null)
+                if ((currentBatch.total_customers_served > 0 || currentBatch.items_restocked.Count > 0) && !isSyncing && GameManager.Instance.CurrentPlayer != null)
                 {
                     isSyncing = true;
 
@@ -165,6 +174,13 @@ namespace AIBusinessTycoon.Managers
                     currentBatch.items_sold[kvp.Key] += kvp.Value;
                 else
                     currentBatch.items_sold[kvp.Key] = kvp.Value;
+            }
+            foreach(var kvp in failed.items_restocked)
+            {
+                if (currentBatch.items_restocked.ContainsKey(kvp.Key))
+                    currentBatch.items_restocked[kvp.Key] += kvp.Value;
+                else
+                    currentBatch.items_restocked[kvp.Key] = kvp.Value;
             }
         }
     }

@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using AIBusinessTycoon.Data;
 using TMPro;
+using AIBusinessTycoon.Services;
 
 namespace AIBusinessTycoon.Managers
 {
@@ -60,7 +61,7 @@ namespace AIBusinessTycoon.Managers
                 int activeZones = 0;
                 foreach (var item in BusinessData.inventory)
                 {
-                    if (item.Value != null && item.Value.stock > 0 && item.Value.has_supply_zone)
+                    if (item.Value != null && item.Value.has_supply_zone)
                     {
                         SupplyZone zone = GetOrCreateSupplyZone(item.Key, item.Value.name);
                         zone.gameObject.SetActive(true);
@@ -166,19 +167,28 @@ namespace AIBusinessTycoon.Managers
                 return;
             }
 
-            // Check if this specific item has stock in delivery
-            if (BusinessData == null || 
-                !BusinessData.inventory.ContainsKey(itemKey) ||
-                BusinessData.inventory[itemKey] == null ||
-                BusinessData.inventory[itemKey].stock <= 0)
+            // Supply-zone pickup is local player inventory only. It does not
+            // modify shelf stock; shelf deposits are persisted separately.
+            if (BusinessData == null ||
+                BusinessData.inventory == null ||
+                !BusinessData.inventory.TryGetValue(itemKey, out InventoryItem itemData) ||
+                itemData == null ||
+                !itemData.has_supply_zone)
             {
-                Debug.Log($"{name}: No stock available for {itemKey} in delivery");
+                Debug.Log($"{name}: No deliverable supply zone for {itemKey}");
                 return;
             }
 
-            // Give item to player
+            if (TycoonAPIService.Instance == null)
+            {
+                Debug.LogError($"{name}: TycoonAPIService is unavailable; cannot verify supply pickup.");
+                return;
+            }
+
+            // No separate supply quantity is tracked. The delivery window allows
+            // the player to carry this ingredient; shelf stock is unchanged here.
             player.Inventory.PickUpItem(itemKey);
-            Debug.Log($"✅ [StoreInteractionManager] Player picked up '{itemKey}' from supply zone");
+            Debug.Log($"[StoreInteractionManager] Player picked up '{itemKey}' during the active delivery window");
         }
 
         public bool IsSupplyUsable()

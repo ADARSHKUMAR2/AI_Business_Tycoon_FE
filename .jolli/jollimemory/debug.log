@@ -4518,3 +4518,58 @@
 [2026-10-16T07:08:28.108Z] INFO  [QueueWorker] [trace=4c8b9f264c8fdd403e442d6df3787f98] === Queue worker finished ===
 [2026-10-16T07:08:28.109Z] INFO  [SessionStartHook] [trace=4c8b9f264c8fdd403e442d6df3787f98] Briefing cache not warmed — nothing to brief on this branch
 [2026-10-16T07:08:28.117Z] INFO  [SessionSync] [trace=4c8b9f264c8fdd403e442d6df3787f98] session sync: not uploading — no API key configured
+[2026-10-16T07:55:32.092Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook started (source: message) ===
+[2026-10-16T07:55:32.097Z] INFO  [RepoProfile] manual-disable read → false (by=manuallyDisabled, pid=1568, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-10-16T07:55:32.108Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook finished ===
+[2026-10-16T07:55:32.211Z] INFO  [RepoProfile] [trace=421da4eb9efea5fe2b820edeffee261c] manual-disable read → false (by=manuallyDisabled, pid=1575, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-10-16T07:55:32.218Z] INFO  [PostCommitHook] [trace=421da4eb9efea5fe2b820edeffee261c] Detected operation: commit
+[2026-10-16T07:55:32.227Z] INFO  [PostCommitHook] [trace=421da4eb9efea5fe2b820edeffee261c] Enqueued: type=commit hash=d2958f9e
+[2026-10-16T07:55:32.227Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Launching background worker
+[2026-10-16T07:55:32.228Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Background worker spawned (PID: 1580)
+[2026-10-16T07:55:32.229Z] INFO  [EnsureGlobalDaemon] [trace=421da4eb9efea5fe2b820edeffee261c] spawned global daemon ensure helper (pid 1581)
+[2026-10-16T07:55:32.311Z] INFO  [RepoProfile] [trace=421da4eb9efea5fe2b820edeffee261c] manual-disable read → false (by=manuallyDisabled, pid=1580, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-10-16T07:55:32.352Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] === Queue worker started === node=24.13.0 kind=vscode-plugin source=vscode pkgVer=0.99.18 cliVer=0.99.18 dist=/Users/adarsh/.vscode/extensions/jolli.jollimemory-vscode-0.99.18/dist
+[2026-10-16T07:55:32.361Z] INFO  [StorageFactory] [trace=421da4eb9efea5fe2b820edeffee261c] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-10-16T07:55:32.444Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Processing queue entry: type=commit hash=d2958f9e
+[2026-10-16T07:55:32.454Z] INFO  [GitOps] [trace=421da4eb9efea5fe2b820edeffee261c] Commit d2958f9e: updated prefab
+[2026-10-16T07:55:32.454Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Commit: d2958f9e - updated prefab (7ms)
+[2026-10-16T07:55:32.516Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] No active sessions found — will infer topics from diff if available
+[2026-10-16T07:55:32.544Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Git diff: 9 files changed, +80 -8 (27ms)
+[2026-10-16T07:55:32.563Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Prompt blocks: plans=0 notes=0 references=0 (+0 track-only archived, not prompted) (AI soft-excluded 0)
+[2026-10-16T07:55:32.563Z] INFO  [Summarizer] [trace=421da4eb9efea5fe2b820edeffee261c] Generating summary for commit d2958f9e
+[2026-10-16T07:55:32.563Z] INFO  [Summarizer] [trace=421da4eb9efea5fe2b820edeffee261c] Context: transcript=0, files=9, lines=80+8
+[2026-10-16T07:55:32.563Z] WARN  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] First API attempt failed: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).. Retrying in 2000ms...
+[2026-10-16T07:55:34.368Z] INFO  [PrePushHook] [trace=5bdd57d713815934a03051ef2d612e55] pre-push hook: remote=origin budget=3000ms
+[2026-10-16T07:55:34.372Z] INFO  [RepoProfile] [trace=5bdd57d713815934a03051ef2d612e55] manual-disable read → false (by=manuallyDisabled, pid=1639, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-10-16T07:55:34.387Z] INFO  [PushPendingStore] [trace=5bdd57d713815934a03051ef2d612e55] Pruned 1 stale push-pending entries (>168h old)
+[2026-10-16T07:55:34.387Z] INFO  [PushPendingStore] [trace=5bdd57d713815934a03051ef2d612e55] Enqueued 1 new push-pending entries (branch=main)
+[2026-10-16T07:55:34.388Z] INFO  [PrePushHook] [trace=5bdd57d713815934a03051ef2d612e55] pre-push: recorded 1 commit(s) across 1 pushed ref(s)
+[2026-10-16T07:55:34.395Z] INFO  [PrePushHook] [trace=5bdd57d713815934a03051ef2d612e55] Recorded 1 commit(s) for later sync — not signed in to Jolli
+[2026-10-16T07:55:34.413Z] INFO  [StorageFactory] [trace=5bdd57d713815934a03051ef2d612e55] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-10-16T07:55:34.565Z] INFO  [Summarizer] [trace=421da4eb9efea5fe2b820edeffee261c] Generating summary for commit d2958f9e
+[2026-10-16T07:55:34.565Z] INFO  [Summarizer] [trace=421da4eb9efea5fe2b820edeffee261c] Context: transcript=0, files=9, lines=80+8
+[2026-10-16T07:55:34.565Z] ERROR [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] API call failed after retry: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).
+[2026-10-16T07:55:34.566Z] WARN  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Saving summary with empty topics + llm-failed marker for commit d2958f9e
+[2026-10-16T07:55:34.566Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] API summary generated (2.0s)
+[2026-10-16T07:55:34.567Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Plan registry scan: found 0 uncommitted slug(s) on main: []
+[2026-10-16T07:55:34.567Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Plan association: detected 0 slug(s) from transcripts: []
+[2026-10-16T07:55:34.569Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Note registry scan: found 0 uncommitted note(s) on main: []
+[2026-10-16T07:55:34.569Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Note association: detected 0 note(s): []
+[2026-10-16T07:55:34.570Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Reference association: detected 0 ref(s) for branch main
+[2026-10-16T07:55:34.572Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Summary built for d2958f9e: recap=no, topics=0, plans=absent, notes=absent, references=absent
+[2026-10-16T07:55:34.635Z] INFO  [MetadataManager] [trace=421da4eb9efea5fe2b820edeffee261c] Manifest updated: main/updated-prefab-d2958f9e.md (commit)
+[2026-10-16T07:55:34.635Z] INFO  [FolderStorage] [trace=421da4eb9efea5fe2b820edeffee261c] Markdown generated: main/updated-prefab-d2958f9e.md
+[2026-10-16T07:55:34.635Z] INFO  [FolderStorage] [trace=421da4eb9efea5fe2b820edeffee261c] Wrote 3 files, deleted 0 (Add summary for d2958f9e: updated prefab)
+[2026-10-16T07:55:34.635Z] INFO  [SummaryStore] [trace=421da4eb9efea5fe2b820edeffee261c] Summary stored successfully for commit d2958f9e
+[2026-10-16T07:55:34.636Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Summary stored successfully for commit d2958f9e (64ms, 0 plans, 0 notes, 0 references)
+[2026-10-16T07:55:34.636Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] === Pipeline completed in 2.2s ===
+[2026-10-16T07:55:34.636Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] === Summary content (0 topics) ===
+[2026-10-16T07:55:34.639Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] Processed 1 queue entries
+[2026-10-16T07:55:34.640Z] INFO  [PushExecutor] [trace=421da4eb9efea5fe2b820edeffee261c] Post-queue push trigger: scheduling drain for 1 newly generated summar(ies)
+[2026-10-16T07:55:34.642Z] INFO  [PushExecutor] [trace=421da4eb9efea5fe2b820edeffee261c] processPushPending(post-queue): 22 pending entr(ies) (filtered to 1 hash(es))
+[2026-10-16T07:55:34.647Z] INFO  [PushExecutor] [trace=421da4eb9efea5fe2b820edeffee261c] processPushPending(post-queue): not signed in — keeping 22 entries for later
+[2026-10-16T07:55:34.675Z] INFO  [GitOps] [trace=421da4eb9efea5fe2b820edeffee261c] Commit d2958f9e: updated prefab
+[2026-10-16T07:55:34.734Z] INFO  [StorageFactory] [trace=421da4eb9efea5fe2b820edeffee261c] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-10-16T07:55:34.776Z] INFO  [QueueWorker] [trace=421da4eb9efea5fe2b820edeffee261c] === Queue worker finished ===
+[2026-10-16T07:55:34.777Z] INFO  [SessionStartHook] [trace=421da4eb9efea5fe2b820edeffee261c] Briefing cache not warmed — nothing to brief on this branch
+[2026-10-16T07:55:34.779Z] INFO  [SessionSync] [trace=421da4eb9efea5fe2b820edeffee261c] session sync: not uploading — no API key configured

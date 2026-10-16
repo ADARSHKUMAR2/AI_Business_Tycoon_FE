@@ -119,6 +119,15 @@ namespace AIBusinessTycoon.Managers
             return item;
         }
 
+        public bool TryDropHeldItem(string expectedItemId)
+        {
+            if (heldItems.Count == 0 || heldItems[0] != expectedItemId)
+                return false;
+
+            DropHeldItem();
+            return true;
+        }
+
         public void DropAllItems()
         {
             int count = heldItems.Count;

@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections;
+using AIBusinessTycoon.Data;
+using AIBusinessTycoon.Services;
 
 namespace AIBusinessTycoon.Managers
 {
@@ -181,9 +183,38 @@ namespace AIBusinessTycoon.Managers
                     return;
                 }
                 
-                string itemGiven = playerInventory.DropHeldItem();
+                InventoryItem shelfItemData = nearbyCustomerShelf.itemData;
+                if (shelfItemData == null)
+                {
+                    UI.HUDManager.Instance?.ShowNotification("Shelf inventory is not ready. Try again.", 3f);
+                    return;
+                }
+
+                StoreInteractionManager shelfStore = nearbyCustomerShelf.GetComponentInParent<StoreInteractionManager>();
+                if (shelfStore == null || !shelfStore.IsSupplyUsable())
+                {
+                    UI.HUDManager.Instance?.ShowNotification("Wait for the delivery window before stocking shelves.", 3f);
+                    return;
+                }
+
+                int newShelfStock = nearbyCustomerShelf.currentStock + 1;
+
+                // Deposit is purely local — TransactionSyncManager reconciles with BE every 10s.
+                // No money is charged here; the delivery fee covers supply zone restocking.
+                if (!playerInventory.TryDropHeldItem(shelfItem))
+                {
+                    Debug.LogWarning($"[PlayerController] Inventory item '{shelfItem}' was already gone.");
+                    return;
+                }
+
                 nearbyCustomerShelf.AddStock(1);
-                Debug.Log($"[PlayerController] ✅ Stocked '{shelfItem}' shelf with '{itemGiven}'.");
+                
+                // Record restock for the next sync batch
+                TransactionSyncManager syncManager = shelfStore.GetComponent<TransactionSyncManager>();
+                if (syncManager != null)
+                    syncManager.RecordRestock(shelfItem, 1);
+                
+                Debug.Log($"[PlayerController] Stocked shelf '{shelfItem}' locally. New stock: {newShelfStock}");
                 return;
             }
         }
@@ -222,7 +253,7 @@ namespace AIBusinessTycoon.Managers
             if (table != null) nearbyTable = table;
 
             InteractableShelf custShelf = other.GetComponentInParent<InteractableShelf>();
-            if (custShelf != null) nearbyCustomerShelf = custShelf;
+            if (custShelf != null && nearbyCustomerShelf == null) nearbyCustomerShelf = custShelf;
 
             IngredientPlot plot = other.GetComponentInParent<IngredientPlot>();
             if (plot != null) nearbyPlot = plot;

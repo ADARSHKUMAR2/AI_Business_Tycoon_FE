@@ -3,6 +3,7 @@ using UnityEngine.AI;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using AIBusinessTycoon.Data;
 
 namespace AIBusinessTycoon.Managers
 {
@@ -91,17 +92,11 @@ namespace AIBusinessTycoon.Managers
                 agent.ResetPath();
                 ShowLabel("📦", Color.cyan);
 
-                // Pick up items from the zone
-                float pickUpDelay = supplyLoadTime / carryCapacity;
-                while (currentCarrying < carryCapacity)
-                {
-                    yield return new WaitForSeconds(pickUpDelay);
-                    currentCarrying++;
-                    UpdateVisuals();
-                }
-
+                // Pick up items from the zone — purely local, no API call.
+                // The BE is only updated when items are physically deposited onto the shelf.
                 yield return new WaitForSeconds(supplyLoadTime);
                 currentCarrying = carryCapacity;
+                UpdateVisuals();
 
                 currentState = RestockerState.WalkingToShelf;
                 ShowLabel("🚶", Color.white);
@@ -124,14 +119,33 @@ namespace AIBusinessTycoon.Managers
                 while (currentCarrying > 0 && targetShelf != null && targetShelf.CanAcceptStock())
                 {
                     yield return new WaitForSeconds(fillTime);
-                    currentCarrying--;
-                    targetShelf.AddStock(1);
-                    UpdateVisuals();
+                    DepositCarriedItem();
                 }
 
                 ShowLabel("✅", Color.green);
                 yield return new WaitForSeconds(0.5f);
             }
+        }
+
+        private void DepositCarriedItem()
+        {
+            if (targetShelf == null) return;
+
+            // Deposit is purely local — TransactionSyncManager reconciles with BE every 10s.
+            // No money is charged here; the delivery fee covers supply zone restocking.
+            targetShelf.AddStock(1);
+            currentCarrying--;
+            UpdateVisuals();
+            
+            // Record restock for the next sync batch
+            if (currentStore != null)
+            {
+                TransactionSyncManager syncManager = currentStore.GetComponent<TransactionSyncManager>();
+                if (syncManager != null)
+                    syncManager.RecordRestock(targetShelf.itemKey, 1);
+            }
+            
+            Debug.Log($"[RestockerAI] Deposited 1x '{targetShelf.itemKey}' locally. Shelf stock: {targetShelf.currentStock}, carrying: {currentCarrying}");
         }
 
         public void BindToStore(StoreInteractionManager store)
@@ -162,7 +176,7 @@ namespace AIBusinessTycoon.Managers
                 currentStore.BusinessData.inventory.ContainsKey(itemKey))
             {
                 var itemData = currentStore.BusinessData.inventory[itemKey];
-                return itemData != null && itemData.stock > 0;
+                return itemData != null && itemData.has_supply_zone;
             }
 
             return false;

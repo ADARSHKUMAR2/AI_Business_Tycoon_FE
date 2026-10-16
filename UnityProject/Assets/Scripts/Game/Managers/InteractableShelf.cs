@@ -131,6 +131,17 @@ namespace AIBusinessTycoon.Managers
 
         public bool CanAcceptStock() => currentStock < maxCapacity;
 
+        public void ApplyBackendInventory(InventoryItem updatedItem)
+        {
+            if (updatedItem == null)
+                return;
+
+            itemData = updatedItem;
+            maxCapacity = updatedItem.max_stock;
+            currentStock = Mathf.Clamp(updatedItem.stock, 0, maxCapacity);
+            UpdateVisuals();
+        }
+
         public void AddStock(int amount)
         {
             currentStock = Mathf.Clamp(currentStock + amount, 0, maxCapacity);

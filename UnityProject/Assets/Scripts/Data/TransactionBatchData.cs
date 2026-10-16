@@ -8,6 +8,7 @@ namespace AIBusinessTycoon.Data
     {
         public string batch_id = Guid.NewGuid().ToString("N");
         public Dictionary<string, int> items_sold = new Dictionary<string, int>();
+        public Dictionary<string, int> items_restocked = new Dictionary<string, int>();
         public float total_revenue = 0f;
         public int total_customers_served = 0;
     }

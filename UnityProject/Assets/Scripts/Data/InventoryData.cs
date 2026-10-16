@@ -31,8 +31,8 @@ namespace AIBusinessTycoon.Data
     public class InventoryUpdate
     {
         public string item_key;
-        public int    stock;   
-        public float  price;   
+        public int    stock;
+        public float  price;
 
         public InventoryUpdate(string itemKey, int newStock, float newPrice)
         {
