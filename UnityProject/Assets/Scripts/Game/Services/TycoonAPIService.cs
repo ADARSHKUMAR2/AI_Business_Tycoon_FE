@@ -7,6 +7,7 @@ using AIBusinessTycoon.Config;
 using AIBusinessTycoon.Data;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 
 namespace AIBusinessTycoon.Services
@@ -193,10 +194,31 @@ namespace AIBusinessTycoon.Services
                 }
                 else
                 {
-                    string errorMsg = $"Request failed: {request.error} (Code: {request.responseCode})";
-                    Debug.LogError($"[TycoonAPIService] {errorMsg}");
+                    string responseBody = request.downloadHandler != null ? request.downloadHandler.text : string.Empty;
+                    string errorMsg = ExtractBackendErrorMessage(responseBody);
+                    if (string.IsNullOrWhiteSpace(errorMsg))
+                        errorMsg = $"Request failed: {request.error} (Code: {request.responseCode})";
+
+                    Debug.LogError($"[TycoonAPIService] {errorMsg} (Code: {request.responseCode})");
                     onError?.Invoke(errorMsg);
                 }
+            }
+        }
+
+        private static string ExtractBackendErrorMessage(string responseBody)
+        {
+            if (string.IsNullOrWhiteSpace(responseBody))
+                return null;
+
+            try
+            {
+                JObject response = JObject.Parse(responseBody);
+                return response.SelectToken("error.message")?.Value<string>()
+                    ?? response["message"]?.Value<string>();
+            }
+            catch (JsonException)
+            {
+                return null;
             }
         }
         

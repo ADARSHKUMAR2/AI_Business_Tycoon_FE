@@ -194,7 +194,8 @@ namespace AIBusinessTycoon.UI
             gameManager.RefreshPlayerData();
             
             // Show error notification
-            HUDManager.Instance?.ShowNotification("Purchase failed! Check your balance.", 3f);
+            string displayError = string.IsNullOrWhiteSpace(error) ? "Please try again." : error;
+            HUDManager.Instance?.ShowNotification($"❌ Land purchase failed: {displayError}", 5f);
         }
         
         #endregion

@@ -359,8 +359,10 @@ namespace AIBusinessTycoon.Managers
             // Refund money (optimistic update failed)
             gameManager.RefreshPlayerData();
             
-            // Show error to player
-            // TODO: Integrate with UI notification system
+            string displayError = string.IsNullOrWhiteSpace(error)
+                ? $"Could not build at ({attemptedPosition.x}, {attemptedPosition.y}). Please try again."
+                : error;
+            UI.HUDManager.Instance?.ShowNotification($"❌ Build failed: {displayError}", 5f);
         }
         
         #endregion
