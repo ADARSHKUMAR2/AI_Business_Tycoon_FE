@@ -45,8 +45,6 @@ namespace AIBusinessTycoon.Managers
         public StoreInteractionManager CurrentStore => currentStore;
         private StoreInteractionManager currentStore;
         private readonly Dictionary<string, StoreInteractionManager> storesByBusinessId = new Dictionary<string, StoreInteractionManager>();
-        private readonly Dictionary<string, float> nextPollAt = new Dictionary<string, float>();
-
         private Coroutine worldDeliveryPollRoutine;
 
 
@@ -228,7 +226,7 @@ namespace AIBusinessTycoon.Managers
             if (worldDeliveryPollRoutine != null)
                 StopCoroutine(worldDeliveryPollRoutine);
 
-            worldDeliveryPollRoutine = StartCoroutine(PollAllStoresDeliveryStatus());
+            RefreshAllStoresDeliveryStatus();
 
             Debug.Log("[GameManager] === Game Initialized ===");
         }
@@ -325,34 +323,23 @@ namespace AIBusinessTycoon.Managers
 
         #region Player Management
 
-        private IEnumerator PollAllStoresDeliveryStatus()
+        private void RefreshAllStoresDeliveryStatus()
         {
-            while (true)
+            if (TycoonAPIService.Instance == null || string.IsNullOrEmpty(CurrentPlayerId))
+                return;
+
+            foreach (var pair in storesByBusinessId)
             {
-                float now = Time.time;
+                StoreInteractionManager store = pair.Value;
+                if (store == null || store.BusinessData == null)
+                    continue;
 
-                foreach (var pair in storesByBusinessId)
-                {
-                    var store = pair.Value;
-                    if (store == null || store.BusinessData == null)
-                        continue;
-
-                    if (!nextPollAt.TryGetValue(store.BusinessData.business_id, out float nextAt) || now >= nextAt)
-                    {
-                        nextPollAt[store.BusinessData.business_id] = now + 15f; // or 10f / 20f
-                        PollSingleStore(store);
-                    }
-                }
-
-                yield return new WaitForSeconds(1f); // cheap scheduler tick
+                PollSingleStore(store);
             }
         }
 
         private void PollSingleStore(StoreInteractionManager store)
         {
-            if (TycoonAPIService.Instance == null || string.IsNullOrEmpty(CurrentPlayerId))
-                return;
-
             TycoonAPIService.Instance.GetDeliveryStatus(
                 CurrentPlayerId,
                 store.BusinessData.business_id,
@@ -440,15 +427,30 @@ namespace AIBusinessTycoon.Managers
 
             storesByBusinessId[business.business_id] = sim;
 
-            // Give new stores a short grace period before the first delivery poll
-            // so the backend state is fully settled after creation.
-            if (!nextPollAt.ContainsKey(business.business_id))
-                nextPollAt[business.business_id] = Time.time + 5f;
-
             spawnedBuildings[business.business_id] = buildingObj;
             sim.SpawnSavedEmployees(cashierPrefab, restockerPrefab, cleanerPrefab);
+            RefreshStoreDeliveryStatus(sim);
 
             return buildingObj;
+        }
+
+        private void RefreshStoreDeliveryStatus(StoreInteractionManager store)
+        {
+            if (store == null || store.BusinessData == null ||
+                TycoonAPIService.Instance == null || string.IsNullOrEmpty(CurrentPlayerId))
+                return;
+
+            string businessId = store.BusinessData.business_id;
+            TycoonAPIService.Instance.GetDeliveryStatus(
+                CurrentPlayerId,
+                businessId,
+                response =>
+                {
+                    if (response != null && storesByBusinessId.TryGetValue(businessId, out StoreInteractionManager registeredStore))
+                        registeredStore.ApplyDeliveryStatus(response);
+                },
+                error => Debug.LogWarning($"[GameManager] Initial delivery refresh failed for {businessId}: {error}")
+            );
         }
 
         private GameObject GetBuildingPrefab(string businessType)
@@ -533,11 +535,8 @@ namespace AIBusinessTycoon.Managers
             storesByBusinessId[business.business_id] = sim;
             spawnedBuildings[business.business_id]   = buildingObj;
             
-            // Give a grace period before delivery polling
-            if (!nextPollAt.ContainsKey(business.business_id))
-                nextPollAt[business.business_id] = Time.time + 5f;
-            
             sim.SpawnSavedEmployees(cashierPrefab, restockerPrefab, cleanerPrefab);
+            RefreshStoreDeliveryStatus(sim);
             
             // Pan camera to the new event store so the player sees it
             CameraController.Instance?.FocusOnPosition(worldPosition);
@@ -577,7 +576,6 @@ namespace AIBusinessTycoon.Managers
                     spawnedBuildings.Remove(bizId);
                 }
                 storesByBusinessId.Remove(bizId);
-                nextPollAt.Remove(bizId);
             }
         }
 

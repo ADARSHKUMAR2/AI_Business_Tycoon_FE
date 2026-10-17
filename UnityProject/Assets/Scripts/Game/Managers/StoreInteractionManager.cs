@@ -73,6 +73,15 @@ namespace AIBusinessTycoon.Managers
             }
         }
 
+        public void HideSupplyZones()
+        {
+            foreach (SupplyZone zone in supplyZonesByItem.Values)
+            {
+                if (zone != null)
+                    zone.gameObject.SetActive(false);
+            }
+        }
+
         private void CreateSupplyZoneParent()
         {
             GameObject parent = new GameObject("SupplyZones");

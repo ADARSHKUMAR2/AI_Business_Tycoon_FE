@@ -22,9 +22,15 @@ namespace AIBusinessTycoon.Managers
         private static readonly HashSet<string> InFlightExpressDeliveryKeys = new HashSet<string>();
         private const string PendingExpressDeliveryKeyPrefix = "pending_express_delivery_";
 
-        private float activeWindowTimer = 0f;
-        private float nextDeliveryTimer = 0f;
+        private DateTime? supplyWindowEndUtc;
+        private DateTime? nextDeliveryUtc;
         private bool truckActive = false;
+        private bool statusRequestInProgress;
+        private bool deliveryBoundaryHandled;
+        private bool nextDeliveryBoundaryHandled;
+        private float nextResumeRefreshTime;
+
+        private const float ResumeRefreshCooldownSeconds = 2f;
 
         private void Awake()
         {
@@ -37,22 +43,9 @@ namespace AIBusinessTycoon.Managers
 
         private void Update()
         {
-            if (truckActive)
-            {
-                activeWindowTimer = Mathf.Max(0f, activeWindowTimer - Time.deltaTime);
-                if (countdownText != null)
-                {
-                    countdownText.text = "Truck here! " + FormatSeconds(Mathf.CeilToInt(activeWindowTimer));
-                }
-            }
-            else
-            {
-                nextDeliveryTimer = Mathf.Max(0f, nextDeliveryTimer - Time.deltaTime);
-                if (countdownText != null)
-                {
-                    countdownText.text = "Next truck in " + FormatSeconds(Mathf.CeilToInt(nextDeliveryTimer));
-                }
-            }
+            UpdateCountdownText();
+            HandleExpiredSupplyWindow();
+            HandleNextDeliveryBoundary();
         }
 
         public void BindToStore(StoreInteractionManager store)
@@ -83,9 +76,12 @@ namespace AIBusinessTycoon.Managers
             playerId = "";
             businessId = "";
 
-            activeWindowTimer = 0f;
-            nextDeliveryTimer = 0f;
+            supplyWindowEndUtc = null;
+            nextDeliveryUtc = null;
             truckActive = false;
+            statusRequestInProgress = false;
+            deliveryBoundaryHandled = false;
+            nextDeliveryBoundaryHandled = false;
 
             if (panel != null)
                 panel.SetActive(false);
@@ -96,18 +92,23 @@ namespace AIBusinessTycoon.Managers
 
         private void FetchStatus()
         {
-            if (TycoonAPIService.Instance == null)
+            if (TycoonAPIService.Instance == null || statusRequestInProgress ||
+                string.IsNullOrEmpty(playerId) || string.IsNullOrEmpty(businessId))
                 return;
+
+            statusRequestInProgress = true;
 
             TycoonAPIService.Instance.GetDeliveryStatus(
                 playerId,
                 businessId,
                 (DeliveryStatusResponse response) =>
                 {
+                    statusRequestInProgress = false;
                     ApplyDeliveryStatus(response);
                 },
                 (string error) =>
                 {
+                    statusRequestInProgress = false;
                     Debug.LogError("[DeliveryHUDController] Delivery status failed: " + error);
                 }
             );
@@ -118,6 +119,9 @@ namespace AIBusinessTycoon.Managers
             if (response == null)
                 return;
 
+            deliveryBoundaryHandled = false;
+            nextDeliveryBoundaryHandled = false;
+
             if (currentStore != null)
             {
                 currentStore.ApplyDeliveryStatus(response);
@@ -127,11 +131,14 @@ namespace AIBusinessTycoon.Managers
 
             if (response.supply_available)
             {
-                activeWindowTimer = response.supply_window_remaining;
+                supplyWindowEndUtc = DateTime.UtcNow.AddSeconds(Mathf.Max(0, response.supply_window_remaining));
+                nextDeliveryUtc = ParseUtc(response.next_delivery_at);
             }
             else
             {
-                nextDeliveryTimer = response.seconds_until_next;
+                nextDeliveryUtc = ParseUtc(response.next_delivery_at) ??
+                    DateTime.UtcNow.AddSeconds(Mathf.Max(0, response.seconds_until_next));
+                supplyWindowEndUtc = null;
             }
 
             if (expressButton != null)
@@ -141,6 +148,89 @@ namespace AIBusinessTycoon.Managers
                     (!response.supply_available || hasPendingRequest) &&
                     !expressDeliveryRequestInProgress;
             }
+        }
+
+        private void HandleExpiredSupplyWindow()
+        {
+            if (!truckActive || !supplyWindowEndUtc.HasValue || deliveryBoundaryHandled)
+                return;
+
+            if (DateTime.UtcNow < supplyWindowEndUtc.Value)
+                return;
+
+            deliveryBoundaryHandled = true;
+            truckActive = false;
+            supplyWindowEndUtc = null;
+            currentStore?.HideSupplyZones();
+            FetchStatus();
+        }
+
+        private void HandleNextDeliveryBoundary()
+        {
+            if (truckActive || !nextDeliveryUtc.HasValue || nextDeliveryBoundaryHandled)
+                return;
+
+            if (DateTime.UtcNow < nextDeliveryUtc.Value)
+                return;
+
+            nextDeliveryBoundaryHandled = true;
+            FetchStatus();
+        }
+
+        private void OnApplicationPause(bool isPaused)
+        {
+            if (!isPaused)
+                RequestResumeRefresh();
+        }
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            if (hasFocus)
+                RequestResumeRefresh();
+        }
+
+        private void RequestResumeRefresh()
+        {
+            if (Time.unscaledTime < nextResumeRefreshTime)
+                return;
+
+            nextResumeRefreshTime = Time.unscaledTime + ResumeRefreshCooldownSeconds;
+            FetchStatus();
+        }
+
+        private void UpdateCountdownText()
+        {
+            if (countdownText == null)
+                return;
+
+            DateTime now = DateTime.UtcNow;
+            if (truckActive && supplyWindowEndUtc.HasValue)
+            {
+                int remaining = Mathf.Max(0, (int)Math.Ceiling((supplyWindowEndUtc.Value - now).TotalSeconds));
+                countdownText.text = "Truck here! " + FormatSeconds(remaining);
+                return;
+            }
+
+            if (nextDeliveryUtc.HasValue)
+            {
+                int remaining = Mathf.Max(0, (int)Math.Ceiling((nextDeliveryUtc.Value - now).TotalSeconds));
+                countdownText.text = "Next truck in " + FormatSeconds(remaining);
+            }
+        }
+
+        private static DateTime? ParseUtc(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value) || !DateTime.TryParse(
+                    value,
+                    null,
+                    System.Globalization.DateTimeStyles.AssumeUniversal |
+                    System.Globalization.DateTimeStyles.AdjustToUniversal,
+                    out DateTime parsed))
+            {
+                return null;
+            }
+
+            return parsed;
         }
 
         private void OnExpressDeliveryClicked()
