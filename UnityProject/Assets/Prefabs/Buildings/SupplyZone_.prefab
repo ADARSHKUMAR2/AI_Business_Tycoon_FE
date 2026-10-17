@@ -1,36 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5047201884415887585
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1024639577668055291}
-  m_Layer: 0
-  m_Name: ProductAnchor
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1024639577668055291
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5047201884415887585}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.34, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 6416953465590566221}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8164036412827368502
 GameObject:
   m_ObjectHideFlags: 0
@@ -100,8 +69,48 @@ MonoBehaviour:
   m_EditorClassIdentifier: AIBusinessTycoon.Managers::AIBusinessTycoon.Managers.SupplyZone
   platformRenderer: {fileID: 4631144886232651258}
   itemNameLabel: {fileID: 7430061022510860387}
-  productAnchor: {fileID: 1024639577668055291}
+  productAnchor: {fileID: 4141880589563364674}
+  productSpriteRenderer: {fileID: 773654203567672217}
   productResourceFolder: Generated/Products
+  productSpriteMappings:
+  - product: 3
+    sprite: {fileID: -1235873481, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 2
+    sprite: {fileID: -335553518, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 1
+    sprite: {fileID: 235748133, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 4
+    sprite: {fileID: 1430076, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 2
+    sprite: {fileID: -11176100, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 5
+    sprite: {fileID: -792811542, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 6
+    sprite: {fileID: 551861585, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 7
+    sprite: {fileID: -464283006, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 8
+    sprite: {fileID: -89918431, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 9
+    sprite: {fileID: 528013175, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 10
+    sprite: {fileID: -729226817, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 12
+    sprite: {fileID: 865615475, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 13
+    sprite: {fileID: 967653079, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 14
+    sprite: {fileID: -378674520, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 15
+    sprite: {fileID: 176644262, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 16
+    sprite: {fileID: 277981045, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 17
+    sprite: {fileID: 1038365946, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 18
+    sprite: {fileID: 465155296, guid: dc859475333d8472a9165870d6583c76, type: 3}
+  - product: 19
+    sprite: {fileID: 993977926, guid: dc859475333d8472a9165870d6583c76, type: 3}
 --- !u!1001 &3042870941579340488
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -110,10 +119,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8088427872114387958}
     m_Modifications:
-    - target: {fileID: 3703590411402976812, guid: 1f157cfa60fa24ddd8a3d1754719b78c, type: 3}
-      propertyPath: m_LocalScale.x
-      value: -1
-      objectReference: {fileID: 0}
     - target: {fileID: 5770654277889240442, guid: 1f157cfa60fa24ddd8a3d1754719b78c, type: 3}
       propertyPath: m_Name
       value: SupplyDisplayPlatform
@@ -160,12 +165,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 8302363726641440645, guid: 1f157cfa60fa24ddd8a3d1754719b78c, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1024639577668055291}
+    m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1f157cfa60fa24ddd8a3d1754719b78c, type: 3}
+--- !u!212 &773654203567672217 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 2343807607259685201, guid: 1f157cfa60fa24ddd8a3d1754719b78c, type: 3}
+  m_PrefabInstance: {fileID: 3042870941579340488}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &4141880589563364674 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1387276414326370186, guid: 1f157cfa60fa24ddd8a3d1754719b78c, type: 3}
+  m_PrefabInstance: {fileID: 3042870941579340488}
+  m_PrefabAsset: {fileID: 0}
 --- !u!23 &4631144886232651258 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 7673943838724095794, guid: 1f157cfa60fa24ddd8a3d1754719b78c, type: 3}

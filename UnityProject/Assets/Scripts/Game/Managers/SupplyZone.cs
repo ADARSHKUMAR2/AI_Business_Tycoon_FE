@@ -1,5 +1,8 @@
 using UnityEngine;
 using TMPro;
+using System;
+using System.Collections.Generic;
+using AIBusinessTycoon.Data;
 
 namespace AIBusinessTycoon.Managers
 {
@@ -9,13 +12,22 @@ namespace AIBusinessTycoon.Managers
     /// </summary>
     public class SupplyZone : MonoBehaviour
     {
+        [Serializable]
+        private class ProductSpriteEntry
+        {
+            public SupplyProduct product;
+            public Sprite sprite;
+        }
+
         [Header("References")]
         [SerializeField] private Renderer platformRenderer;
         [SerializeField] private TextMesh itemNameLabel;
         [SerializeField] private Transform productAnchor;
+        [SerializeField] private SpriteRenderer productSpriteRenderer;
 
         [Header("Product Visuals")]
         [SerializeField] private string productResourceFolder = "Generated/Products";
+        [SerializeField] private List<ProductSpriteEntry> productSpriteMappings = new List<ProductSpriteEntry>();
 
         private GameObject _productVisual;
 
@@ -42,7 +54,26 @@ namespace AIBusinessTycoon.Managers
                 platformRenderer.material.color = zoneColor;
             }
 
+            ApplyProductSprite(itemKey);
             SpawnProductVisual(itemKey);
+        }
+
+        private void ApplyProductSprite(string itemKey)
+        {
+            if (productSpriteRenderer == null)
+                return;
+
+            for (int index = 0; index < productSpriteMappings.Count; index++)
+            {
+                ProductSpriteEntry entry = productSpriteMappings[index];
+                if (entry != null && entry.product == itemKey.ToSupplyProduct())
+                {
+                    productSpriteRenderer.sprite = entry.sprite;
+                    return;
+                }
+            }
+
+            productSpriteRenderer.sprite = null;
         }
 
         private void SpawnProductVisual(string itemKey)
