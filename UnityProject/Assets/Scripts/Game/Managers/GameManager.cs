@@ -240,7 +240,8 @@ namespace AIBusinessTycoon.Managers
         /// </summary>
         public void EnterStore(StoreInteractionManager store)
         {
-            if (IsInStore) return;
+            if (IsInStore || cameraController == null || !cameraController.IsMacroViewReady)
+                return;
 
             if (store == null)
             {

@@ -10,7 +10,7 @@ namespace AIBusinessTycoon.Managers
     /// </summary>
     public class CameraController : MonoBehaviour
     {
-        public enum CameraMode { MacroView, MicroView }
+        public enum CameraMode { MacroView, EnteringMicroView, MicroView, ExitingMicroView }
         
         [Header("Camera References")]
         [SerializeField] private Camera mainCamera;
@@ -51,6 +51,10 @@ namespace AIBusinessTycoon.Managers
         private Vector3 targetPosition;
         private float targetRotationY;
         private bool isTransitioning = false;
+        public bool IsTransitioning => isTransitioning;
+        public bool IsMacroViewReady => CurrentMode == CameraMode.MacroView && !isTransitioning;
+
+        private Coroutine transitionCoroutine;
 
         // Drag
         private Vector3 dragOrigin;
@@ -206,9 +210,12 @@ namespace AIBusinessTycoon.Managers
         /// </summary>
         public void EnterMicroView(Transform avatarTransform)
         {
-            if (isTransitioning) return;
+            if (avatarTransform == null || CurrentMode != CameraMode.MacroView || isTransitioning)
+                return;
+
             followTarget = avatarTransform;
-            StartCoroutine(TransitionToMicroView());
+            CurrentMode = CameraMode.EnteringMicroView;
+            transitionCoroutine = StartCoroutine(TransitionToMicroView());
         }
 
         /// <summary>
@@ -217,8 +224,17 @@ namespace AIBusinessTycoon.Managers
         /// </summary>
         public void ExitToMacroView()
         {
-            if (isTransitioning) return;
-            StartCoroutine(TransitionToMacroView());
+            if (CurrentMode == CameraMode.MacroView || CurrentMode == CameraMode.ExitingMicroView)
+                return;
+
+            if (transitionCoroutine != null)
+            {
+                StopCoroutine(transitionCoroutine);
+                transitionCoroutine = null;
+            }
+
+            CurrentMode = CameraMode.ExitingMicroView;
+            transitionCoroutine = StartCoroutine(TransitionToMacroView());
         }
 
         private IEnumerator TransitionToMicroView()
@@ -252,6 +268,7 @@ namespace AIBusinessTycoon.Managers
             
             CurrentMode = CameraMode.MicroView;
             isTransitioning = false;
+            transitionCoroutine = null;
 
             Debug.Log("[CameraController] Switched to MicroView");
         }
@@ -298,6 +315,7 @@ namespace AIBusinessTycoon.Managers
             followTarget = null;
             CurrentMode = CameraMode.MacroView;
             isTransitioning = false;
+            transitionCoroutine = null;
 
             Debug.Log("[CameraController] Switched to MacroView");
         }

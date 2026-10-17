@@ -4741,3 +4741,57 @@
 [2026-10-17T08:45:23.151Z] INFO  [QueueWorker] [trace=790ac07fe13d99f588c0d26b75c66780] === Queue worker finished ===
 [2026-10-17T08:45:23.152Z] INFO  [SessionStartHook] [trace=790ac07fe13d99f588c0d26b75c66780] Briefing cache not warmed — nothing to brief on this branch
 [2026-10-17T08:45:23.197Z] INFO  [SessionSync] [trace=790ac07fe13d99f588c0d26b75c66780] session sync: not uploading — no API key configured
+[2026-10-17T09:33:37.341Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook started (source: message) ===
+[2026-10-17T09:33:37.362Z] INFO  [RepoProfile] manual-disable read → false (by=manuallyDisabled, pid=56936, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-10-17T09:33:37.395Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook finished ===
+[2026-10-17T09:33:37.630Z] INFO  [RepoProfile] [trace=5685d886b04bc81bd03de02aeac7eb10] manual-disable read → false (by=manuallyDisabled, pid=56943, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-10-17T09:33:37.644Z] INFO  [PostCommitHook] [trace=5685d886b04bc81bd03de02aeac7eb10] Detected operation: commit
+[2026-10-17T09:33:37.657Z] INFO  [PostCommitHook] [trace=5685d886b04bc81bd03de02aeac7eb10] Enqueued: type=commit hash=feb76c9f
+[2026-10-17T09:33:37.657Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Launching background worker
+[2026-10-17T09:33:37.658Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Background worker spawned (PID: 56948)
+[2026-10-17T09:33:37.659Z] INFO  [EnsureGlobalDaemon] [trace=5685d886b04bc81bd03de02aeac7eb10] spawned global daemon ensure helper (pid 56949)
+[2026-10-17T09:33:38.007Z] INFO  [RepoProfile] [trace=5685d886b04bc81bd03de02aeac7eb10] manual-disable read → false (by=manuallyDisabled, pid=56948, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-10-17T09:33:38.143Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] === Queue worker started === node=24.13.0 kind=vscode-plugin source=vscode pkgVer=0.99.18 cliVer=0.99.18 dist=/Users/adarsh/.vscode/extensions/jolli.jollimemory-vscode-0.99.18/dist
+[2026-10-17T09:33:38.175Z] INFO  [StorageFactory] [trace=5685d886b04bc81bd03de02aeac7eb10] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-10-17T09:33:38.564Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Processing queue entry: type=commit hash=feb76c9f
+[2026-10-17T09:33:38.732Z] INFO  [GitOps] [trace=5685d886b04bc81bd03de02aeac7eb10] Commit feb76c9f: fixed truck not showing on time
+[2026-10-17T09:33:38.733Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Commit: feb76c9f - fixed truck not showing on time (144ms)
+[2026-10-17T09:33:39.021Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] No active sessions found — will infer topics from diff if available
+[2026-10-17T09:33:39.076Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Git diff: 9 files changed, +291 -151 (54ms)
+[2026-10-17T09:33:39.203Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Prompt blocks: plans=0 notes=0 references=0 (+0 track-only archived, not prompted) (AI soft-excluded 0)
+[2026-10-17T09:33:39.213Z] INFO  [Summarizer] [trace=5685d886b04bc81bd03de02aeac7eb10] Generating summary for commit feb76c9f
+[2026-10-17T09:33:39.213Z] INFO  [Summarizer] [trace=5685d886b04bc81bd03de02aeac7eb10] Context: transcript=0, files=9, lines=291+151
+[2026-10-17T09:33:39.214Z] WARN  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] First API attempt failed: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).. Retrying in 2000ms...
+[2026-10-17T09:33:41.025Z] INFO  [PrePushHook] [trace=ff8a60f74145f54426351fc2ae060d00] pre-push hook: remote=origin budget=3000ms
+[2026-10-17T09:33:41.029Z] INFO  [RepoProfile] [trace=ff8a60f74145f54426351fc2ae060d00] manual-disable read → false (by=manuallyDisabled, pid=57010, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-10-17T09:33:41.058Z] INFO  [PushPendingStore] [trace=ff8a60f74145f54426351fc2ae060d00] Enqueued 1 new push-pending entries (branch=main)
+[2026-10-17T09:33:41.060Z] INFO  [PrePushHook] [trace=ff8a60f74145f54426351fc2ae060d00] pre-push: recorded 1 commit(s) across 1 pushed ref(s)
+[2026-10-17T09:33:41.080Z] INFO  [PrePushHook] [trace=ff8a60f74145f54426351fc2ae060d00] Recorded 1 commit(s) for later sync — not signed in to Jolli
+[2026-10-17T09:33:41.130Z] INFO  [StorageFactory] [trace=ff8a60f74145f54426351fc2ae060d00] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-10-17T09:33:41.451Z] INFO  [Summarizer] [trace=5685d886b04bc81bd03de02aeac7eb10] Generating summary for commit feb76c9f
+[2026-10-17T09:33:41.458Z] INFO  [Summarizer] [trace=5685d886b04bc81bd03de02aeac7eb10] Context: transcript=0, files=9, lines=291+151
+[2026-10-17T09:33:41.470Z] ERROR [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] API call failed after retry: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).
+[2026-10-17T09:33:41.480Z] WARN  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Saving summary with empty topics + llm-failed marker for commit feb76c9f
+[2026-10-17T09:33:41.481Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] API summary generated (2.3s)
+[2026-10-17T09:33:41.482Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Plan registry scan: found 0 uncommitted slug(s) on main: []
+[2026-10-17T09:33:41.483Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Plan association: detected 0 slug(s) from transcripts: []
+[2026-10-17T09:33:41.488Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Note registry scan: found 0 uncommitted note(s) on main: []
+[2026-10-17T09:33:41.489Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Note association: detected 0 note(s): []
+[2026-10-17T09:33:41.491Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Reference association: detected 0 ref(s) for branch main
+[2026-10-17T09:33:41.506Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Summary built for feb76c9f: recap=no, topics=0, plans=absent, notes=absent, references=absent
+[2026-10-17T09:33:41.824Z] INFO  [MetadataManager] [trace=5685d886b04bc81bd03de02aeac7eb10] Manifest updated: main/fixed-truck-not-showing-on-time-feb76c9f.md (commit)
+[2026-10-17T09:33:41.824Z] INFO  [FolderStorage] [trace=5685d886b04bc81bd03de02aeac7eb10] Markdown generated: main/fixed-truck-not-showing-on-time-feb76c9f.md
+[2026-10-17T09:33:41.826Z] INFO  [FolderStorage] [trace=5685d886b04bc81bd03de02aeac7eb10] Wrote 3 files, deleted 0 (Add summary for feb76c9f: fixed truck not showing on time)
+[2026-10-17T09:33:41.826Z] INFO  [SummaryStore] [trace=5685d886b04bc81bd03de02aeac7eb10] Summary stored successfully for commit feb76c9f
+[2026-10-17T09:33:41.830Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Summary stored successfully for commit feb76c9f (325ms, 0 plans, 0 notes, 0 references)
+[2026-10-17T09:33:41.831Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] === Pipeline completed in 3.2s ===
+[2026-10-17T09:33:41.831Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] === Summary content (0 topics) ===
+[2026-10-17T09:33:41.864Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] Processed 1 queue entries
+[2026-10-17T09:33:41.871Z] INFO  [PushExecutor] [trace=5685d886b04bc81bd03de02aeac7eb10] Post-queue push trigger: scheduling drain for 1 newly generated summar(ies)
+[2026-10-17T09:33:41.880Z] INFO  [PushExecutor] [trace=5685d886b04bc81bd03de02aeac7eb10] processPushPending(post-queue): 20 pending entr(ies) (filtered to 1 hash(es))
+[2026-10-17T09:33:41.918Z] INFO  [PushExecutor] [trace=5685d886b04bc81bd03de02aeac7eb10] processPushPending(post-queue): not signed in — keeping 20 entries for later
+[2026-10-17T09:33:42.140Z] INFO  [GitOps] [trace=5685d886b04bc81bd03de02aeac7eb10] Commit feb76c9f: fixed truck not showing on time
+[2026-10-17T09:33:42.344Z] INFO  [StorageFactory] [trace=5685d886b04bc81bd03de02aeac7eb10] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-10-17T09:33:42.531Z] INFO  [QueueWorker] [trace=5685d886b04bc81bd03de02aeac7eb10] === Queue worker finished ===
+[2026-10-17T09:33:42.533Z] INFO  [SessionStartHook] [trace=5685d886b04bc81bd03de02aeac7eb10] Briefing cache not warmed — nothing to brief on this branch
+[2026-10-17T09:33:42.539Z] INFO  [SessionSync] [trace=5685d886b04bc81bd03de02aeac7eb10] session sync: not uploading — no API key configured
