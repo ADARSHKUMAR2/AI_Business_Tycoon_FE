@@ -1126,6 +1126,37 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &6240684887955394423
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3309307429424129731}
+  m_Layer: 7
+  m_Name: 'SupplyZoneSpawnPoint '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3309307429424129731
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6240684887955394423}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -13.03, y: 0, z: -11.9}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7427039899693321781}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7209748222554120202
 GameObject:
   m_ObjectHideFlags: 0
@@ -1620,6 +1651,7 @@ Transform:
   - {fileID: 2317703240964966134}
   - {fileID: 7113536290327074319}
   - {fileID: 8282305139108385438}
+  - {fileID: 3309307429424129731}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &6848897362763968288
@@ -1679,6 +1711,7 @@ MonoBehaviour:
   entrancePoint: {fileID: 0}
   interactionPromptUI: {fileID: 0}
   supplyZoneParent: {fileID: 2767925085951732407}
+  supplyZoneSpawnPoint: {fileID: 3309307429424129731}
   supplyZonePrefab: {fileID: 8164036412827368502, guid: 42583a423c861425e94721922d7a1192, type: 3}
 --- !u!114 &8457945036198016557
 MonoBehaviour:

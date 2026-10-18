@@ -20,6 +20,8 @@ namespace AIBusinessTycoon.Managers
         [Header("Delivery - Multi-Zone System")]
         [SerializeField] private Transform supplyZoneParent;
 
+        [SerializeField] private Transform supplyZoneSpawnPoint;
+
         [SerializeField] private GameObject supplyZonePrefab; 
          
         // Parent object that will hold all supply zones
@@ -37,10 +39,7 @@ namespace AIBusinessTycoon.Managers
         {
             CurrentDeliveryStatus = status;
 
-            if (supplyZoneParent == null)
-            {
-                CreateSupplyZoneParent();
-            }
+            ResolveSupplyZoneParent();
 
             // Hide all existing zones first
             foreach (var zone in supplyZonesByItem.Values)
@@ -91,7 +90,21 @@ namespace AIBusinessTycoon.Managers
             }
         }
 
-        private void CreateSupplyZoneParent()
+        private void ResolveSupplyZoneParent()
+        {
+            if (supplyZoneSpawnPoint != null)
+            {
+                supplyZoneParent = supplyZoneSpawnPoint;
+                return;
+            }
+
+            if (supplyZoneParent != null)
+                return;
+
+            CreateFallbackSupplyZoneParent();
+        }
+
+        private void CreateFallbackSupplyZoneParent()
         {
             GameObject parent = new GameObject("SupplyZones");
             parent.transform.SetParent(transform);
