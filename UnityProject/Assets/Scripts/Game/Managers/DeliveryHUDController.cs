@@ -28,6 +28,7 @@ namespace AIBusinessTycoon.Managers
         private bool statusRequestInProgress;
         private bool deliveryBoundaryHandled;
         private bool nextDeliveryBoundaryHandled;
+        private int bindingVersion;
         private float nextResumeRefreshTime;
 
         private const float ResumeRefreshCooldownSeconds = 2f;
@@ -50,6 +51,7 @@ namespace AIBusinessTycoon.Managers
 
         public void BindToStore(StoreInteractionManager store)
         {
+            bindingVersion++;
             currentStore = store;
 
             if (store == null || store.BusinessData == null)
@@ -68,11 +70,14 @@ namespace AIBusinessTycoon.Managers
             {
                 ApplyDeliveryStatus(store.CurrentDeliveryStatus);
             }
+
+            FetchStatus(bindingVersion);
         }
 
         public void Unbind()
         {
             currentStore = null;
+            bindingVersion++;
             playerId = "";
             businessId = "";
 
@@ -92,6 +97,11 @@ namespace AIBusinessTycoon.Managers
 
         private void FetchStatus()
         {
+            FetchStatus(bindingVersion);
+        }
+
+        private void FetchStatus(int requestBindingVersion)
+        {
             if (TycoonAPIService.Instance == null || statusRequestInProgress ||
                 string.IsNullOrEmpty(playerId) || string.IsNullOrEmpty(businessId))
                 return;
@@ -104,12 +114,14 @@ namespace AIBusinessTycoon.Managers
                 (DeliveryStatusResponse response) =>
                 {
                     statusRequestInProgress = false;
-                    ApplyDeliveryStatus(response);
+                    if (requestBindingVersion == bindingVersion)
+                        ApplyDeliveryStatus(response);
                 },
                 (string error) =>
                 {
                     statusRequestInProgress = false;
-                    Debug.LogError("[DeliveryHUDController] Delivery status failed: " + error);
+                    if (requestBindingVersion == bindingVersion)
+                        Debug.LogError("[DeliveryHUDController] Delivery status failed: " + error);
                 }
             );
         }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using AIBusinessTycoon.Services;
 using AIBusinessTycoon.Data;
@@ -46,6 +47,10 @@ namespace AIBusinessTycoon.Managers
         private StoreInteractionManager currentStore;
         private readonly Dictionary<string, StoreInteractionManager> storesByBusinessId = new Dictionary<string, StoreInteractionManager>();
         private Coroutine worldDeliveryPollRoutine;
+        private DateTime? nextDeliveryBoundaryUtc;
+        private readonly Dictionary<string, DateTime> supplyWindowEndByBusinessId =
+            new Dictionary<string, DateTime>();
+        private bool deliveryBoundaryRequestInProgress;
 
 
         // Services
@@ -103,6 +108,14 @@ namespace AIBusinessTycoon.Managers
 
         private void Update()
         {
+            // Check delivery boundary
+            if (nextDeliveryBoundaryUtc.HasValue &&
+                !deliveryBoundaryRequestInProgress &&
+                DateTime.UtcNow >= nextDeliveryBoundaryUtc.Value)
+            {
+                RefreshAllStoresDeliveryStatus();
+            }
+
             if (Input.GetKeyDown(KeyCode.Escape) && IsInStore)
                 ExitStore();
 
@@ -338,24 +351,93 @@ namespace AIBusinessTycoon.Managers
 
         private void RefreshAllStoresDeliveryStatus()
         {
-            if (TycoonAPIService.Instance == null || string.IsNullOrEmpty(CurrentPlayerId))
+            if (deliveryBoundaryRequestInProgress ||
+                TycoonAPIService.Instance == null ||
+                string.IsNullOrEmpty(CurrentPlayerId))
                 return;
+
+            deliveryBoundaryRequestInProgress = true;
 
             TycoonAPIService.Instance.GetAllDeliveryStatuses(
                 CurrentPlayerId,
                 response =>
                 {
                     if (response?.businesses == null)
+                    {
+                        deliveryBoundaryRequestInProgress = false;
                         return;
+                    }
 
                     foreach (DeliveryStatusResponse status in response.businesses)
                     {
-                        if (status != null && storesByBusinessId.TryGetValue(status.business_id, out StoreInteractionManager store))
+                        if (status == null)
+                            continue;
+
+                        if (storesByBusinessId.TryGetValue(
+                                status.business_id,
+                                out StoreInteractionManager store))
+                        {
                             store.ApplyDeliveryStatus(status);
+                        }
                     }
+
+                    nextDeliveryBoundaryUtc = FindEarliestDeliveryBoundary(response.businesses);
+                    deliveryBoundaryRequestInProgress = false;
                 },
-                error => Debug.LogWarning($"[GameManager] Batch delivery refresh failed: {error}")
+                error =>
+                {
+                    deliveryBoundaryRequestInProgress = false;
+                    Debug.LogWarning($"[GameManager] Batch delivery refresh failed: {error}");
+                }
             );
+        }
+
+        private static DateTime? FindEarliestDeliveryBoundary(DeliveryStatusResponse[] statuses)
+        {
+            DateTime? earliest = null;
+            DateTime now = DateTime.UtcNow;
+
+            foreach (DeliveryStatusResponse status in statuses)
+            {
+                if (status == null)
+                    continue;
+
+                DateTime? nextDeliveryUtc = ParseUtc(status.next_delivery_at);
+                if (nextDeliveryUtc.HasValue && nextDeliveryUtc.Value > now)
+                    earliest = MinFutureBoundary(earliest, nextDeliveryUtc.Value);
+
+                if (status.supply_available && status.supply_window_remaining > 0)
+                {
+                    DateTime supplyWindowEnd = now.AddSeconds(status.supply_window_remaining);
+                    earliest = MinFutureBoundary(earliest, supplyWindowEnd);
+                }
+            }
+
+            return earliest;
+        }
+
+        private static DateTime MinFutureBoundary(DateTime? current, DateTime candidate)
+        {
+            if (!current.HasValue || candidate < current.Value)
+                return candidate;
+
+            return current.Value;
+        }
+
+        private static DateTime? ParseUtc(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value) ||
+                !DateTime.TryParse(
+                    value,
+                    null,
+                    System.Globalization.DateTimeStyles.AssumeUniversal |
+                    System.Globalization.DateTimeStyles.AdjustToUniversal,
+                    out DateTime parsed))
+            {
+                return null;
+            }
+
+            return parsed;
         }
 
         private void RefreshAllStoresAtDeliveryBoundary()

@@ -38,7 +38,12 @@ namespace AIBusinessTycoon.Managers
             agent = GetComponent<NavMeshAgent>();
             SetupVisuals();
 
-            yield return new WaitUntil(() => agent.isOnNavMesh);
+            while (agent != null && !agent.isOnNavMesh)
+                yield return new WaitForSeconds(0.5f);
+
+            if (agent == null)
+                yield break;
+
             yield return new WaitForSeconds(0.5f);
 
             StartCoroutine(RestockerLoop());
@@ -81,13 +86,10 @@ namespace AIBusinessTycoon.Managers
                 }
 
                 Vector3 supplyDest = supplyZone.transform.position;
-                if (NavMesh.SamplePosition(supplyDest, out NavMeshHit supplyHit, 3f, NavMesh.AllAreas))
-                    agent.SetDestination(supplyHit.position);
-                else
-                    agent.SetDestination(supplyDest);
+                yield return MoveTo(supplyDest);
 
-                yield return new WaitUntil(() =>
-                    !agent.pathPending && agent.remainingDistance <= arrivalThreshold);
+                if (agent == null || !agent.isOnNavMesh)
+                    continue;
 
                 agent.ResetPath();
                 ShowLabel("📦", Color.cyan);
@@ -104,13 +106,10 @@ namespace AIBusinessTycoon.Managers
                 Vector3 shelfDest = targetShelf.transform.position;
                 Vector3 offset = (transform.position - shelfDest).normalized * 1.5f;
 
-                if (NavMesh.SamplePosition(shelfDest + offset, out NavMeshHit hit, 3f, NavMesh.AllAreas))
-                    agent.SetDestination(hit.position);
-                else
-                    agent.SetDestination(shelfDest);
+                yield return MoveTo(shelfDest + offset);
 
-                yield return new WaitUntil(() =>
-                    !agent.pathPending && agent.remainingDistance <= arrivalThreshold);
+                if (agent == null || !agent.isOnNavMesh)
+                    continue;
 
                 agent.ResetPath();
                 ShowLabel("🛠️", Color.yellow);
@@ -127,23 +126,60 @@ namespace AIBusinessTycoon.Managers
             }
         }
 
+        private IEnumerator MoveTo(Vector3 destination)
+        {
+            while (agent != null && !agent.isOnNavMesh)
+                yield return new WaitForSeconds(0.5f);
+
+            if (agent == null || !agent.isOnNavMesh)
+                yield break;
+
+            if (!NavMesh.SamplePosition(
+                    destination,
+                    out NavMeshHit hit,
+                    3f,
+                    NavMesh.AllAreas))
+            {
+                Debug.LogWarning($"[RestockerAI] Could not find NavMesh position near {destination}.");
+                yield break;
+            }
+
+            agent.SetDestination(hit.position);
+
+            while (agent != null && agent.isOnNavMesh &&
+                   (agent.pathPending || agent.remainingDistance > arrivalThreshold))
+            {
+                yield return null;
+            }
+
+            if (agent != null && agent.isOnNavMesh)
+                agent.ResetPath();
+        }
+
         private void DepositCarriedItem()
         {
-            if (targetShelf == null) return;
+            if (targetShelf == null || currentStore == null)
+                return;
 
             // Deposit is purely local — TransactionSyncManager reconciles with BE every 10s.
             // No money is charged here; the delivery fee covers supply zone restocking.
             targetShelf.AddStock(1);
             currentCarrying--;
             UpdateVisuals();
+
+            // Keep the store's authoritative local inventory object in sync with the shelf.
+            // This prevents a later local rebind from restoring the pre-restock value while
+            // the transaction batch is still waiting to be acknowledged by the backend.
+            if (currentStore.BusinessData?.inventory != null &&
+                currentStore.BusinessData.inventory.TryGetValue(targetShelf.itemKey, out InventoryItem itemData) &&
+                itemData != null)
+            {
+                itemData.stock = targetShelf.currentStock;
+            }
             
             // Record restock for the next sync batch
-            if (currentStore != null)
-            {
-                TransactionSyncManager syncManager = currentStore.GetComponent<TransactionSyncManager>();
-                if (syncManager != null)
-                    syncManager.RecordRestock(targetShelf.itemKey, 1);
-            }
+            TransactionSyncManager syncManager = currentStore.GetComponent<TransactionSyncManager>();
+            syncManager?.RecordRestock(targetShelf.itemKey, 1);
             
             Debug.Log($"[RestockerAI] Deposited 1x '{targetShelf.itemKey}' locally. Shelf stock: {targetShelf.currentStock}, carrying: {currentCarrying}");
         }

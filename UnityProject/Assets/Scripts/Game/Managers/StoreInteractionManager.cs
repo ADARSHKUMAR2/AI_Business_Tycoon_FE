@@ -302,6 +302,11 @@ namespace AIBusinessTycoon.Managers
             }
 
             employeesSpawned = true;
+
+            // Keep AI employees bound even when the store is spawned in city view.
+            // They should not depend on entering the store to receive their owner.
+            foreach (RestockerAI restockerAI in GetComponentsInChildren<RestockerAI>(true))
+                restockerAI.BindToStore(this);
         }
 
         private void OnMouseEnter()
