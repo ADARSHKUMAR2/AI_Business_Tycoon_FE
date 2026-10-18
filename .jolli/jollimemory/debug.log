@@ -4904,3 +4904,57 @@
 [2026-10-18T11:08:35.558Z] INFO  [QueueWorker] [trace=704bbb0ee568c2d42dd00f0939fcdecf] === Queue worker finished ===
 [2026-10-18T11:08:35.559Z] INFO  [SessionStartHook] [trace=704bbb0ee568c2d42dd00f0939fcdecf] Briefing cache not warmed — nothing to brief on this branch
 [2026-10-18T11:08:35.588Z] INFO  [SessionSync] [trace=704bbb0ee568c2d42dd00f0939fcdecf] session sync: not uploading — no API key configured
+[2026-10-18T12:16:10.789Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook started (source: message) ===
+[2026-10-18T12:16:10.796Z] INFO  [RepoProfile] manual-disable read → false (by=manuallyDisabled, pid=42752, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-10-18T12:16:10.805Z] INFO  [PrepareMsgHook] === Prepare-commit-msg hook finished ===
+[2026-10-18T12:16:10.909Z] INFO  [RepoProfile] [trace=b1128325ca38d0ba07afde56b3035515] manual-disable read → false (by=manuallyDisabled, pid=42759, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-10-18T12:16:10.916Z] INFO  [PostCommitHook] [trace=b1128325ca38d0ba07afde56b3035515] Detected operation: commit
+[2026-10-18T12:16:10.926Z] INFO  [PostCommitHook] [trace=b1128325ca38d0ba07afde56b3035515] Enqueued: type=commit hash=ba44204b
+[2026-10-18T12:16:10.926Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Launching background worker
+[2026-10-18T12:16:10.927Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Background worker spawned (PID: 42764)
+[2026-10-18T12:16:10.927Z] INFO  [EnsureGlobalDaemon] [trace=b1128325ca38d0ba07afde56b3035515] spawned global daemon ensure helper (pid 42765)
+[2026-10-18T12:16:11.022Z] INFO  [RepoProfile] [trace=b1128325ca38d0ba07afde56b3035515] manual-disable read → false (by=manuallyDisabled, pid=42764, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-10-18T12:16:11.069Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] === Queue worker started === node=24.13.0 kind=vscode-plugin source=vscode pkgVer=0.99.18 cliVer=0.99.18 dist=/Users/adarsh/.vscode/extensions/jolli.jollimemory-vscode-0.99.18/dist
+[2026-10-18T12:16:11.077Z] INFO  [StorageFactory] [trace=b1128325ca38d0ba07afde56b3035515] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-10-18T12:16:11.161Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Processing queue entry: type=commit hash=ba44204b
+[2026-10-18T12:16:11.171Z] INFO  [GitOps] [trace=b1128325ca38d0ba07afde56b3035515] Commit ba44204b: fix for restocker ai not working in city view, update for st
+[2026-10-18T12:16:11.171Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Commit: ba44204b - fix for restocker ai not working in city view, update for store while not inside for the suply zones (9ms)
+[2026-10-18T12:16:11.235Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] No active sessions found — will infer topics from diff if available
+[2026-10-18T12:16:11.262Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Git diff: 10 files changed, +234 -50 (26ms)
+[2026-10-18T12:16:11.283Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Prompt blocks: plans=0 notes=0 references=0 (+0 track-only archived, not prompted) (AI soft-excluded 0)
+[2026-10-18T12:16:11.283Z] INFO  [Summarizer] [trace=b1128325ca38d0ba07afde56b3035515] Generating summary for commit ba44204b
+[2026-10-18T12:16:11.283Z] INFO  [Summarizer] [trace=b1128325ca38d0ba07afde56b3035515] Context: transcript=0, files=10, lines=234+50
+[2026-10-18T12:16:11.283Z] WARN  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] First API attempt failed: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).. Retrying in 2000ms...
+[2026-10-18T12:16:13.057Z] INFO  [PrePushHook] [trace=5f9899fd801ac094fc0757178684696a] pre-push hook: remote=origin budget=3000ms
+[2026-10-18T12:16:13.059Z] INFO  [RepoProfile] [trace=5f9899fd801ac094fc0757178684696a] manual-disable read → false (by=manuallyDisabled, pid=42819, cwd=/Users/adarsh/AI_Business_Tycoon_FE, profile=/Users/adarsh/AI_Business_Tycoon_FE/.jolli/jollimemory/profile.json, raw: userDisabled=undefined manuallyDisabled=false fence=2026-09-17T14:53:14.093Z)
+[2026-10-18T12:16:13.068Z] INFO  [PushPendingStore] [trace=5f9899fd801ac094fc0757178684696a] Enqueued 1 new push-pending entries (branch=main)
+[2026-10-18T12:16:13.068Z] INFO  [PrePushHook] [trace=5f9899fd801ac094fc0757178684696a] pre-push: recorded 1 commit(s) across 1 pushed ref(s)
+[2026-10-18T12:16:13.075Z] INFO  [PrePushHook] [trace=5f9899fd801ac094fc0757178684696a] Recorded 1 commit(s) for later sync — not signed in to Jolli
+[2026-10-18T12:16:13.090Z] INFO  [StorageFactory] [trace=5f9899fd801ac094fc0757178684696a] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-10-18T12:16:13.285Z] INFO  [Summarizer] [trace=b1128325ca38d0ba07afde56b3035515] Generating summary for commit ba44204b
+[2026-10-18T12:16:13.285Z] INFO  [Summarizer] [trace=b1128325ca38d0ba07afde56b3035515] Context: transcript=0, files=10, lines=234+50
+[2026-10-18T12:16:13.285Z] ERROR [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] API call failed after retry: No LLM provider available. Set an Anthropic API key (ANTHROPIC_API_KEY) or configure a Jolli Space API key (jolliApiKey).
+[2026-10-18T12:16:13.286Z] WARN  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Saving summary with empty topics + llm-failed marker for commit ba44204b
+[2026-10-18T12:16:13.286Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] API summary generated (2.0s)
+[2026-10-18T12:16:13.286Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Plan registry scan: found 0 uncommitted slug(s) on main: []
+[2026-10-18T12:16:13.286Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Plan association: detected 0 slug(s) from transcripts: []
+[2026-10-18T12:16:13.286Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Note registry scan: found 0 uncommitted note(s) on main: []
+[2026-10-18T12:16:13.286Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Note association: detected 0 note(s): []
+[2026-10-18T12:16:13.287Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Reference association: detected 0 ref(s) for branch main
+[2026-10-18T12:16:13.288Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Summary built for ba44204b: recap=no, topics=0, plans=absent, notes=absent, references=absent
+[2026-10-18T12:16:13.352Z] INFO  [MetadataManager] [trace=b1128325ca38d0ba07afde56b3035515] Manifest updated: main/fix-for-restocker-ai-not-working-in-city-view-upda-ba44204b.md (commit)
+[2026-10-18T12:16:13.352Z] INFO  [FolderStorage] [trace=b1128325ca38d0ba07afde56b3035515] Markdown generated: main/fix-for-restocker-ai-not-working-in-city-view-upda-ba44204b.md
+[2026-10-18T12:16:13.352Z] INFO  [FolderStorage] [trace=b1128325ca38d0ba07afde56b3035515] Wrote 3 files, deleted 0 (Add summary for ba44204b: fix for restocker ai not working in city view, upd)
+[2026-10-18T12:16:13.352Z] INFO  [SummaryStore] [trace=b1128325ca38d0ba07afde56b3035515] Summary stored successfully for commit ba44204b
+[2026-10-18T12:16:13.353Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Summary stored successfully for commit ba44204b (65ms, 0 plans, 0 notes, 0 references)
+[2026-10-18T12:16:13.353Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] === Pipeline completed in 2.2s ===
+[2026-10-18T12:16:13.353Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] === Summary content (0 topics) ===
+[2026-10-18T12:16:13.356Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] Processed 1 queue entries
+[2026-10-18T12:16:13.357Z] INFO  [PushExecutor] [trace=b1128325ca38d0ba07afde56b3035515] Post-queue push trigger: scheduling drain for 1 newly generated summar(ies)
+[2026-10-18T12:16:13.358Z] INFO  [PushExecutor] [trace=b1128325ca38d0ba07afde56b3035515] processPushPending(post-queue): 22 pending entr(ies) (filtered to 1 hash(es))
+[2026-10-18T12:16:13.362Z] INFO  [PushExecutor] [trace=b1128325ca38d0ba07afde56b3035515] processPushPending(post-queue): not signed in — keeping 22 entries for later
+[2026-10-18T12:16:13.387Z] INFO  [GitOps] [trace=b1128325ca38d0ba07afde56b3035515] Commit ba44204b: fix for restocker ai not working in city view, update for st
+[2026-10-18T12:16:13.442Z] INFO  [StorageFactory] [trace=b1128325ca38d0ba07afde56b3035515] StorageFactory.create: route=cutover, projectPath=/Users/adarsh/AI_Business_Tycoon_FE
+[2026-10-18T12:16:13.479Z] INFO  [QueueWorker] [trace=b1128325ca38d0ba07afde56b3035515] === Queue worker finished ===
+[2026-10-18T12:16:13.480Z] INFO  [SessionStartHook] [trace=b1128325ca38d0ba07afde56b3035515] Briefing cache not warmed — nothing to brief on this branch
+[2026-10-18T12:16:13.481Z] INFO  [SessionSync] [trace=b1128325ca38d0ba07afde56b3035515] session sync: not uploading — no API key configured

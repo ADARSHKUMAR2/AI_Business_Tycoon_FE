@@ -24,6 +24,8 @@ namespace AIBusinessTycoon.Managers
         private int currentCarrying = 0;
         private InteractableShelf targetShelf;
         private StoreInteractionManager currentStore;
+        private Coroutine restockerLoopCoroutine;
+        private bool supplyZonesChanged;
 
         // Visuals
         private TextMeshProUGUI floatingLabel;
@@ -46,13 +48,31 @@ namespace AIBusinessTycoon.Managers
 
             yield return new WaitForSeconds(0.5f);
 
-            StartCoroutine(RestockerLoop());
+            restockerLoopCoroutine = StartCoroutine(RestockerLoop());
+        }
+
+        public void NotifySupplyZonesChanged()
+        {
+            supplyZonesChanged = true;
         }
 
         private IEnumerator RestockerLoop()
         {
             while (true)
             {
+                if (supplyZonesChanged)
+                {
+                    supplyZonesChanged = false;
+                    currentState = RestockerState.Idle;
+                }
+
+                if (currentStore == null)
+                {
+                    currentState = RestockerState.Idle;
+                    yield return new WaitForSeconds(1f);
+                    continue;
+                }
+
                 targetShelf = FindShelfNeedingRestock();
 
                 if (targetShelf == null)
@@ -60,6 +80,13 @@ namespace AIBusinessTycoon.Managers
                     ShowLabel("😴", Color.gray);
                     currentState = RestockerState.Idle;
                     yield return new WaitForSeconds(2f);
+                    continue;
+                }
+
+                if (agent == null || !agent.isOnNavMesh)
+                {
+                    currentState = RestockerState.Idle;
+                    yield return new WaitForSeconds(0.5f);
                     continue;
                 }
 
@@ -115,10 +142,41 @@ namespace AIBusinessTycoon.Managers
                 ShowLabel("🛠️", Color.yellow);
                 currentState = RestockerState.Filling;
 
-                while (currentCarrying > 0 && targetShelf != null && targetShelf.CanAcceptStock())
+                int depositWaitCycles = 0;
+                while (currentCarrying > 0)
                 {
+                    if (targetShelf == null ||
+                        !targetShelf.isActiveAndEnabled ||
+                        !targetShelf.CanAcceptStock())
+                    {
+                        targetShelf = FindShelfNeedingRestock();
+                        if (targetShelf == null)
+                        {
+                            ShowLabel("⏳", Color.gray);
+                            depositWaitCycles++;
+                            if (depositWaitCycles >= 10)
+                            {
+                                currentCarrying = 0;
+                                UpdateVisuals();
+                                Debug.LogWarning("[RestockerAI] Aborting deposit: no valid shelf available.");
+                                break;
+                            }
+                            yield return new WaitForSeconds(1f);
+                            continue;
+                        }
+                    }
+
                     yield return new WaitForSeconds(fillTime);
-                    DepositCarriedItem();
+
+                    if (targetShelf != null &&
+                        targetShelf.isActiveAndEnabled &&
+                        targetShelf.CanAcceptStock())
+                    {
+                        if (!DepositCarriedItem())
+                            depositWaitCycles++;
+                        else
+                            depositWaitCycles = 0;
+                    }
                 }
 
                 ShowLabel("✅", Color.green);
@@ -149,6 +207,13 @@ namespace AIBusinessTycoon.Managers
             while (agent != null && agent.isOnNavMesh &&
                    (agent.pathPending || agent.remainingDistance > arrivalThreshold))
             {
+                if (agent.hasPath && agent.pathStatus == NavMeshPathStatus.PathInvalid)
+                {
+                    Debug.LogWarning($"[RestockerAI] Invalid path to {destination}; abandoning movement.");
+                    agent.ResetPath();
+                    yield break;
+                }
+
                 yield return null;
             }
 
@@ -156,10 +221,13 @@ namespace AIBusinessTycoon.Managers
                 agent.ResetPath();
         }
 
-        private void DepositCarriedItem()
+        private bool DepositCarriedItem()
         {
             if (targetShelf == null || currentStore == null)
-                return;
+                return false;
+
+            if (!targetShelf.isActiveAndEnabled || !targetShelf.CanAcceptStock())
+                return false;
 
             // Deposit is purely local — TransactionSyncManager reconciles with BE every 10s.
             // No money is charged here; the delivery fee covers supply zone restocking.
@@ -182,11 +250,13 @@ namespace AIBusinessTycoon.Managers
             syncManager?.RecordRestock(targetShelf.itemKey, 1);
             
             Debug.Log($"[RestockerAI] Deposited 1x '{targetShelf.itemKey}' locally. Shelf stock: {targetShelf.currentStock}, carrying: {currentCarrying}");
+            return true;
         }
 
         public void BindToStore(StoreInteractionManager store)
         {
             currentStore = store;
+            supplyZonesChanged = true;
             Debug.Log($"[RestockerAI] Bound to store: {store?.BusinessData?.business_id}");
         }
 

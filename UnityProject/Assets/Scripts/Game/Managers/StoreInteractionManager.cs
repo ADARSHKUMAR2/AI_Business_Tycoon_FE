@@ -52,6 +52,7 @@ namespace AIBusinessTycoon.Managers
             if (status == null || !status.supply_available)
             {
                 Debug.Log($"[StoreInteractionManager] Supply not available for {BusinessData?.business_id}");
+                NotifyRestockers();
                 return;
             }
 
@@ -71,6 +72,14 @@ namespace AIBusinessTycoon.Managers
                 }
                 Debug.Log($"[StoreInteractionManager] Total active supply zones: {activeZones}");
             }
+
+            NotifyRestockers();
+        }
+
+        private void NotifyRestockers()
+        {
+            foreach (RestockerAI restockerAI in GetComponentsInChildren<RestockerAI>(true))
+                restockerAI.NotifySupplyZonesChanged();
         }
 
         public void HideSupplyZones()

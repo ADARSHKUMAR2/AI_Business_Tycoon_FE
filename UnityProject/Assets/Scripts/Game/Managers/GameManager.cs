@@ -325,7 +325,10 @@ namespace AIBusinessTycoon.Managers
                 var restockers = currentStore.GetComponentsInChildren<RestockerAI>(true);
                 foreach (var restocker in restockers)
                 {
-                    restocker.BindToStore(null);
+                    // Restockers continue simulating in city view. Do not unbind them
+                    // when the player leaves the store; only the player's camera/UI state
+                    // changes here.
+                    restocker.BindToStore(currentStore);
                 }
             }
 
