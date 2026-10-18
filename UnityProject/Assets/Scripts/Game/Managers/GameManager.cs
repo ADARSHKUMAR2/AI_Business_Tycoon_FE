@@ -78,6 +78,18 @@ namespace AIBusinessTycoon.Managers
             InitializeServices();
         }
 
+        private void OnApplicationPause(bool paused)
+        {
+            if (!paused)
+                RefreshAllStoresDeliveryStatus();
+        }
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            if (hasFocus)
+                RefreshAllStoresDeliveryStatus();
+        }
+
         private void Start()
         {
             // Read player_id from PlayerPrefs set by TycoonAuthService on login
@@ -329,31 +341,26 @@ namespace AIBusinessTycoon.Managers
             if (TycoonAPIService.Instance == null || string.IsNullOrEmpty(CurrentPlayerId))
                 return;
 
-            foreach (var pair in storesByBusinessId)
-            {
-                StoreInteractionManager store = pair.Value;
-                if (store == null || store.BusinessData == null)
-                    continue;
-
-                PollSingleStore(store);
-            }
-        }
-
-        private void PollSingleStore(StoreInteractionManager store)
-        {
-            TycoonAPIService.Instance.GetDeliveryStatus(
+            TycoonAPIService.Instance.GetAllDeliveryStatuses(
                 CurrentPlayerId,
-                store.BusinessData.business_id,
                 response =>
                 {
-                    if (response != null)
-                        store.ApplyDeliveryStatus(response);
+                    if (response?.businesses == null)
+                        return;
+
+                    foreach (DeliveryStatusResponse status in response.businesses)
+                    {
+                        if (status != null && storesByBusinessId.TryGetValue(status.business_id, out StoreInteractionManager store))
+                            store.ApplyDeliveryStatus(status);
+                    }
                 },
-                error =>
-                {
-                    Debug.LogWarning($"Delivery poll failed for {store.BusinessData.business_id}: {error}");
-                }
+                error => Debug.LogWarning($"[GameManager] Batch delivery refresh failed: {error}")
             );
+        }
+
+        private void RefreshAllStoresAtDeliveryBoundary()
+        {
+            RefreshAllStoresDeliveryStatus();
         }
         public void RefreshPlayerData()
         {

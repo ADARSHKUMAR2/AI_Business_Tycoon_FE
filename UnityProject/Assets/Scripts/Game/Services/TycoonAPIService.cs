@@ -681,6 +681,21 @@ namespace AIBusinessTycoon.Services
             StartCoroutine(GetRequest(url, onSuccess, onError));
         }
 
+        public void GetAllDeliveryStatuses(
+            string playerId,
+            Action<DeliveryStatusesResponse> onSuccess,
+            Action<string> onError)
+        {
+            if (backendConfig == null)
+            {
+                onError?.Invoke("BackendConfig not assigned!");
+                return;
+            }
+
+            string url = $"{backendConfig.GetActiveURL()}/api/game/delivery/{playerId}/status";
+            StartCoroutine(GetRequest(url, onSuccess, onError));
+        }
+
         /// <summary>
         /// Pays the express fee and immediately triggers a supply delivery.
         /// POST /api/game/delivery/{playerId}/{businessId}/express

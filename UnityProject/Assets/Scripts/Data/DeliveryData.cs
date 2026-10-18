@@ -38,6 +38,13 @@ namespace AIBusinessTycoon.Data
     }
 
     [Serializable]
+    public class DeliveryStatusesResponse
+    {
+        public string server_time;
+        public DeliveryStatusResponse[] businesses;
+    }
+
+    [Serializable]
     public class WorldStateResponse
     {
         public string time_of_day;
