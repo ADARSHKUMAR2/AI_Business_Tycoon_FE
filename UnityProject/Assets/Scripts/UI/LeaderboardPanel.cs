@@ -57,6 +57,8 @@ namespace AIBusinessTycoon.UI
         private static readonly Color ColDefault     = new Color(1.00f, 1.00f, 1.00f, 0.90f);
         private static readonly Color ColLive        = new Color(0.27f, 0.90f, 0.45f, 1.00f);
         private static readonly Color ColConnecting  = new Color(1.00f, 0.65f, 0.10f, 1.00f);
+        private static readonly Color ColWon         = new Color(0.27f, 0.90f, 0.45f, 1.00f);
+        private static readonly Color ColLost        = new Color(1.00f, 0.35f, 0.35f, 1.00f);
 
         // ── Unity lifecycle ───────────────────────────────────────────────────
 
@@ -290,22 +292,42 @@ namespace AIBusinessTycoon.UI
                 else                      { nameColor = ColDefault; rankText = "#" + entry.rank; }
 
                 string valueText = string.Format("Rs.{0:N0}", entry.value);
+                string playerNameText = GetPlayerNameText(entry, out Color resultColor);
 
-                ApplyRowData(row, rankText, entry.display_name, valueText, nameColor, entry.rank);
+                ApplyRowData(row, rankText, playerNameText, valueText, nameColor, resultColor, entry.rank);
             }
+        }
+
+        private string GetPlayerNameText(LeaderboardEntry entry, out Color resultColor)
+        {
+            resultColor = ColDefault;
+
+            var currentEvent = EventManager.Instance?.CurrentEvent;
+            string localPlayerId = GameManager.Instance?.CurrentPlayer?.player_id;
+            bool isLocalPlayer = !string.IsNullOrEmpty(localPlayerId)
+                              && string.Equals(entry.player_id, localPlayerId, StringComparison.Ordinal);
+
+            if (!isLocalPlayer || currentEvent == null || !currentEvent.IsCompleted)
+                return entry.display_name;
+
+            bool didWin = currentEvent.winners != null
+                       && Array.IndexOf(currentEvent.winners, localPlayerId) >= 0;
+
+            resultColor = didWin ? ColWon : ColLost;
+            return $"{entry.display_name} {(didWin ? " WON" : " LOST")}";
         }
 
         private static void ApplyRowData(
             GameObject row,
             string rank, string playerName, string value,
-            Color nameColor, int rowIndex)
+            Color nameColor, Color resultColor, int rowIndex)
         {
             var labels = row.GetComponentsInChildren<TextMeshProUGUI>(true);
             if (labels.Length >= 3)
             {
                 labels[0].text  = rank;
                 labels[1].text  = playerName;
-                labels[1].color = nameColor;
+                labels[1].color = resultColor != ColDefault ? resultColor : nameColor;
                 labels[2].text  = value;
             }
 

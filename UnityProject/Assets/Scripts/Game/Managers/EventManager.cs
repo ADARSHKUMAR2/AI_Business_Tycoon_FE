@@ -288,6 +288,13 @@ namespace AIBusinessTycoon.Managers
             if (enableDebugLogs)
                 Debug.Log($"[EventManager] Player chose ({placedBusiness.position_x},{placedBusiness.position_y}) — calling backend.");
 
+            if (!GameManager.Instance.HasOwnedLandTile(placedBusiness.position_x, placedBusiness.position_y))
+            {
+                Debug.LogWarning($"[EventManager] Cannot place event store: tile ({placedBusiness.position_x},{placedBusiness.position_y}) is not confirmed as owned locally.");
+                cb?.Invoke(false);
+                return;
+            }
+
             TycoonAPIService.Instance.CreateEventBusiness(
                 eventId,
                 playerId,

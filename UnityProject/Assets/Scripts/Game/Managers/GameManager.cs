@@ -453,10 +453,63 @@ namespace AIBusinessTycoon.Managers
         {
             RefreshAllStoresDeliveryStatus();
         }
-        public void RefreshPlayerData()
+        public void RefreshPlayerData(Action<PlayerTycoonData> onSuccess = null, Action<string> onError = null)
         {
-            if (IsLoading) return;
-            apiService.GetPlayerData(currentPlayerId, OnPlayerDataRefreshed, OnPlayerDataRefreshError);
+            if (IsLoading)
+            {
+                onError?.Invoke("Player data is still loading.");
+                return;
+            }
+
+            apiService.GetPlayerData(
+                currentPlayerId,
+                data =>
+                {
+                    OnPlayerDataRefreshed(data);
+                    onSuccess?.Invoke(data);
+                },
+                error =>
+                {
+                    OnPlayerDataRefreshError(error);
+                    onError?.Invoke(error);
+                });
+        }
+
+        public bool HasOwnedLandTile(int x, int y)
+        {
+            if (CurrentPlayer?.land_tiles == null)
+                return false;
+
+            foreach (LandTile tile in CurrentPlayer.land_tiles)
+            {
+                if (tile?.position != null && tile.position.x == x && tile.position.y == y)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public void AddOwnedLandTile(LandTile purchasedTile)
+        {
+            if (CurrentPlayer == null || purchasedTile?.position == null)
+                return;
+
+            if (CurrentPlayer.land_tiles == null)
+                CurrentPlayer.land_tiles = new List<LandTile>();
+
+            for (int i = 0; i < CurrentPlayer.land_tiles.Count; i++)
+            {
+                LandTile existingTile = CurrentPlayer.land_tiles[i];
+                if (existingTile?.position != null
+                    && existingTile.position.x == purchasedTile.position.x
+                    && existingTile.position.y == purchasedTile.position.y)
+                {
+                    CurrentPlayer.land_tiles[i] = purchasedTile;
+                    return;
+                }
+            }
+
+            CurrentPlayer.land_tiles.Add(purchasedTile);
         }
 
         private void OnPlayerDataRefreshed(PlayerTycoonData data)

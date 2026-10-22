@@ -179,7 +179,11 @@ namespace AIBusinessTycoon.UI
             if (gridManager != null)
                 gridManager.OnLandPurchaseSuccess(tile);
             
-            // Refresh player data to sync stats
+            // Merge the authoritative purchase response immediately so subsequent
+            // placement requests do not depend on a second GET finishing first.
+            gameManager.AddOwnedLandTile(tile);
+
+            // Refresh player data to sync money and land statistics.
             gameManager.RefreshPlayerData();
             
             // Show notification
