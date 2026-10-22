@@ -312,6 +312,12 @@ namespace AIBusinessTycoon.Managers
                         yield break;
                     }
 
+                    if (inventory.TryGetValue(currentItem, out InventoryItem inventoryItem) &&
+                        inventoryItem != null)
+                    {
+                        inventoryItem.stock = targetShelf.currentStock;
+                    }
+
                     // TryTakeStock decrements both shelf.currentStock and itemData.stock.
                     // The latter is the same inventory object, so do not decrement it again.
                     itemsInCart.Add(currentItem);
@@ -387,6 +393,11 @@ namespace AIBusinessTycoon.Managers
                         // TryTakeStock already updates itemData.stock, which is the
                         // corresponding BusinessData.inventory entry. Avoid a second decrement.
                         itemsInCart.Add(itemKey);
+                        if (targetStore.BusinessData.inventory.TryGetValue(itemKey, out InventoryItem inventoryItem) &&
+                            inventoryItem != null)
+                        {
+                            inventoryItem.stock = targetShelf.currentStock;
+                        }
                         UpdateShelfVisuals(itemKey);
                         ShowEmoji("🛒", Color.white);
 

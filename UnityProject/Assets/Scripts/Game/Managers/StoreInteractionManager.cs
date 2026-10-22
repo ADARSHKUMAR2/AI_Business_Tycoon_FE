@@ -252,7 +252,14 @@ namespace AIBusinessTycoon.Managers
 
         public void SpawnSavedEmployees(GameObject cashierPrefab, GameObject restockerPrefab, GameObject cleanerPrefab)
         {
-            if (employeesSpawned || BusinessData == null || BusinessData.employees == null) return;
+            if (BusinessData == null)
+                return;
+
+            if (employeesSpawned)
+            {
+                RebindShelvesToBusinessInventory();
+                return;
+            }
 
             if (BusinessData.inventory != null)
             {
@@ -329,6 +336,18 @@ namespace AIBusinessTycoon.Managers
             // They should not depend on entering the store to receive their owner.
             foreach (RestockerAI restockerAI in GetComponentsInChildren<RestockerAI>(true))
                 restockerAI.BindToStore(this);
+        }
+
+        private void RebindShelvesToBusinessInventory()
+        {
+            if (BusinessData.inventory == null)
+                return;
+
+            foreach (InteractableShelf shelf in GetComponentsInChildren<InteractableShelf>(true))
+            {
+                if (BusinessData.inventory.TryGetValue(shelf.itemKey, out InventoryItem item))
+                    shelf.RebindInventoryItem(item);
+            }
         }
 
         private void OnMouseEnter()

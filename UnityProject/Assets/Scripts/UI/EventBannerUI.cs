@@ -57,6 +57,9 @@ namespace AIBusinessTycoon.UI
                 EventManager.Instance.OnEventUpdated += OnEventUpdated;
                 EventManager.Instance.OnEventEnded += OnEventEnded;
             }
+
+            if (GameManager.Instance != null)
+                GameManager.Instance.OnPlayerDataUpdated += OnPlayerDataUpdated;
         }
         
         private void OnDestroy()
@@ -66,6 +69,9 @@ namespace AIBusinessTycoon.UI
                 EventManager.Instance.OnEventUpdated -= OnEventUpdated;
                 EventManager.Instance.OnEventEnded -= OnEventEnded;
             }
+
+            if (GameManager.Instance != null)
+                GameManager.Instance.OnPlayerDataUpdated -= OnPlayerDataUpdated;
             
             if (joinButton != null)
                 joinButton.onClick.RemoveListener(OnJoinButtonClicked);
@@ -92,6 +98,11 @@ namespace AIBusinessTycoon.UI
             currentEvent = eventData;
             ShowBanner();
             UpdateUI();
+        }
+
+        private void OnPlayerDataUpdated(PlayerTycoonData playerData)
+        {
+            UpdateJoinButton();
         }
         
         private void OnEventEnded()
