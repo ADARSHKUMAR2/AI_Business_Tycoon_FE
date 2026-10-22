@@ -17,6 +17,10 @@ namespace AIBusinessTycoon.Managers
 
         [SerializeField] private float syncIntervalSeconds = 10f;
         private bool isSyncing = false;
+        private int retryAttempt;
+        private float nextRetryTime;
+        private const int MaxRetryAttempts = 6;
+        private const float MaxRetryDelaySeconds = 60f;
         private string PendingBatchKey => $"tycoon_pending_transactions_{store?.BusinessData?.business_id}";
 
         private void Awake()
@@ -61,6 +65,9 @@ namespace AIBusinessTycoon.Managers
             {
                 yield return new WaitForSeconds(syncIntervalSeconds);
 
+                if (Time.unscaledTime < nextRetryTime)
+                    continue;
+
                 if ((currentBatch.total_customers_served > 0 || currentBatch.items_restocked.Count > 0) && !isSyncing && GameManager.Instance.CurrentPlayer != null)
                 {
                     isSyncing = true;
@@ -81,7 +88,7 @@ namespace AIBusinessTycoon.Managers
                     string businessId = store.BusinessData.business_id;
                     string url = $"{TycoonAPIService.Instance.GetBaseURL()}/api/game/business/{playerId}/{businessId}/sync_transactions";
 
-                    StartCoroutine(TycoonAPIService.Instance.PostRequestRaw(url, jsonPayload,
+                    StartCoroutine(TycoonAPIService.Instance.PostRequestRawWithRetry(url, jsonPayload,
                         (response) => {
                             BusinessData syncedBusiness = JsonConvert.DeserializeObject<BusinessData>(response);
                             if (syncedBusiness != null)
@@ -94,12 +101,19 @@ namespace AIBusinessTycoon.Managers
                                 RebindShelvesToInventory(syncedBusiness);
                             }
                             DeletePendingBatch();
+                            retryAttempt = 0;
+                            nextRetryTime = 0f;
                             isSyncing = false;
                         },
                         (err) => {
                             Debug.LogError($"[SyncManager] Failed to sync batch: {err}");
                             MergeFailedBatch(batchToSend);
                             SavePendingBatch();
+                            retryAttempt = Mathf.Min(retryAttempt + 1, MaxRetryAttempts);
+                            float backoff = Mathf.Min(
+                                MaxRetryDelaySeconds,
+                                Mathf.Pow(2f, retryAttempt));
+                            nextRetryTime = Time.unscaledTime + backoff + UnityEngine.Random.Range(0f, 1f);
                             isSyncing = false;
                         }
                     ));

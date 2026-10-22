@@ -817,6 +817,94 @@ namespace AIBusinessTycoon.Services
                 }
             }
         }
+
+        public IEnumerator PostRequestRawWithRetry(
+            string url,
+            string jsonBody,
+            Action<string> onSuccess,
+            Action<string> onError,
+            int maxAttempts = 4)
+        {
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
+            {
+                bool completed = false;
+                string response = null;
+                string error = null;
+                long responseCode = 0;
+
+                yield return StartCoroutine(PostRequestRawWithResult(
+                    url,
+                    jsonBody,
+                    result =>
+                    {
+                        completed = true;
+                        response = result.Response;
+                        error = result.Error;
+                        responseCode = result.ResponseCode;
+                    }));
+
+                if (string.IsNullOrEmpty(error))
+                {
+                    onSuccess?.Invoke(response);
+                    yield break;
+                }
+
+                bool retryable = responseCode == 408 ||
+                    responseCode == 502 ||
+                    responseCode == 503 ||
+                    responseCode == 504 ||
+                    responseCode == 0;
+
+                if (!retryable || attempt == maxAttempts - 1)
+                {
+                    onError?.Invoke(error);
+                    yield break;
+                }
+
+                float delay = Mathf.Min(30f, Mathf.Pow(2f, attempt + 1));
+                yield return new WaitForSecondsRealtime(delay + UnityEngine.Random.Range(0f, 0.5f));
+            }
+        }
+
+        private struct RawPostResult
+        {
+            public string Response;
+            public string Error;
+            public long ResponseCode;
+        }
+
+        private IEnumerator PostRequestRawWithResult(
+            string url,
+            string jsonBody,
+            Action<RawPostResult> onComplete)
+        {
+            using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+            {
+                byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonBody);
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+                request.timeout = requestTimeout;
+
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    onComplete?.Invoke(new RawPostResult
+                    {
+                        Response = request.downloadHandler.text,
+                        ResponseCode = request.responseCode
+                    });
+                    yield break;
+                }
+
+                onComplete?.Invoke(new RawPostResult
+                {
+                    Error = $"{request.error} (Code: {request.responseCode})",
+                    ResponseCode = request.responseCode
+                });
+            }
+        }
         
         #region Event API Methods
         

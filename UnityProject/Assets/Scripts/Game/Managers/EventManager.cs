@@ -173,16 +173,11 @@ namespace AIBusinessTycoon.Managers
         {
             if (response == null)
             {
-                if (CurrentEvent != null)
-                {
-                    GameManager.Instance?.DespawnEventBusinesses(CurrentEvent.event_id);
-                    CurrentEvent = null;
-                    OnEventEnded?.Invoke();
-                }
-                else
-                {
-                    GameManager.Instance?.DespawnEventBusinesses(null);
-                }
+                // Player data is authoritative for winner/loser resolution.
+                // Refresh it before removing any event prefab so winners are preserved.
+                GameManager.Instance?.RefreshPlayerData();
+                CurrentEvent = null;
+                OnEventEnded?.Invoke();
                 return;
             }
 
@@ -196,7 +191,9 @@ namespace AIBusinessTycoon.Managers
 
             if (isNew)
             {
-                GameManager.Instance?.DespawnEventBusinesses(response.event_id, true);
+                // Do not remove the previous event blindly. The backend may have
+                // converted its winner into a permanent business.
+                GameManager.Instance?.RefreshPlayerData();
 
                 if (CurrentEvent.is_registered)
                 {

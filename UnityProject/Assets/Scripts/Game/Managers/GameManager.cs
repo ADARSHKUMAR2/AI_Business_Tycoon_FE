@@ -299,6 +299,9 @@ namespace AIBusinessTycoon.Managers
             if (playerController != null)
                 playerController.ActivateAtPosition(store.GetEntrancePosition());
 
+            CheckoutCounter checkoutCounter = store.GetComponentInChildren<CheckoutCounter>(true);
+            checkoutCounter?.SetPlayerAtRegister(true);
+
             if (cameraController != null && playerController != null)
                 cameraController.EnterMicroView(playerController.transform);
 
@@ -319,6 +322,9 @@ namespace AIBusinessTycoon.Managers
 
             if (currentStore != null)
             {
+                CheckoutCounter checkoutCounter = currentStore.GetComponentInChildren<CheckoutCounter>(true);
+                checkoutCounter?.SetPlayerAtRegister(false);
+
                 var storeCollider = currentStore.GetComponent<Collider>();
                 if (storeCollider != null) storeCollider.enabled = true;
 
@@ -456,6 +462,7 @@ namespace AIBusinessTycoon.Managers
         private void OnPlayerDataRefreshed(PlayerTycoonData data)
         {
             CurrentPlayer = data;
+            ReconcileEventBusinesses(data);
             OnPlayerDataUpdated?.Invoke(data);
         }
 
@@ -656,9 +663,7 @@ namespace AIBusinessTycoon.Managers
                 BusinessData biz = kvp.Value?.BusinessData;
                 if (biz != null && biz.is_event_business)
                 {
-                    if (eventId == null)
-                        toRemove.Add(kvp.Key);
-                    else if (!inverse && biz.event_id == eventId)
+                    if (eventId != null && !inverse && biz.event_id == eventId)
                         toRemove.Add(kvp.Key);
                     else if (inverse && biz.event_id != eventId)
                         toRemove.Add(kvp.Key);
@@ -674,6 +679,46 @@ namespace AIBusinessTycoon.Managers
                     spawnedBuildings.Remove(bizId);
                 }
                 storesByBusinessId.Remove(bizId);
+            }
+        }
+
+        public void ReconcileEventBusinesses(PlayerTycoonData refreshedPlayer)
+        {
+            if (refreshedPlayer?.businesses == null)
+                return;
+
+            var businessesById = new Dictionary<string, BusinessData>();
+            foreach (BusinessData business in refreshedPlayer.businesses)
+                businessesById[business.business_id] = business;
+
+            var toRemove = new List<string>();
+            foreach (KeyValuePair<string, StoreInteractionManager> entry in storesByBusinessId)
+            {
+                if (entry.Value == null ||
+                    entry.Value.BusinessData == null ||
+                    !entry.Value.BusinessData.is_event_business)
+                    continue;
+
+                if (!businessesById.TryGetValue(entry.Key, out BusinessData backendBusiness))
+                {
+                    toRemove.Add(entry.Key);
+                    continue;
+                }
+
+                entry.Value.BusinessData = backendBusiness;
+                if (!backendBusiness.is_event_business)
+                {
+                    entry.Value.gameObject.name = $"{backendBusiness.name} ({backendBusiness.business_id})";
+                }
+            }
+
+            foreach (string businessId in toRemove)
+            {
+                if (spawnedBuildings.TryGetValue(businessId, out GameObject building))
+                    Destroy(building);
+
+                spawnedBuildings.Remove(businessId);
+                storesByBusinessId.Remove(businessId);
             }
         }
 

@@ -62,6 +62,13 @@ namespace AIBusinessTycoon.Managers
 
         public bool HasCashier => isCashierPresent;
 
+        public void SetPlayerAtRegister(bool present)
+        {
+            isPlayerAtRegister = present;
+            if (!present)
+                processTimer = 0f;
+        }
+
         public Vector3? JoinQueue(CustomerAI customer)
         {
             if (activeLine.Count >= maxQueueSize)
