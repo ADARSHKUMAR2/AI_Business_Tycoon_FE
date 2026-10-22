@@ -66,6 +66,7 @@ namespace AIBusinessTycoon.Managers
                     isSyncing = true;
 
                     TransactionBatchData batchToSend = currentBatch;
+                    currentBatch = new TransactionBatchData();
                     Debug.Log(
                         "[ShelfStockTrace][SyncRequest] business=" + store.BusinessData.business_id +
                         " batchId=" + batchToSend.batch_id +
@@ -92,12 +93,13 @@ namespace AIBusinessTycoon.Managers
                                 store.BusinessData = syncedBusiness;
                                 RebindShelvesToInventory(syncedBusiness);
                             }
-                            currentBatch = new TransactionBatchData();
                             DeletePendingBatch();
                             isSyncing = false;
                         },
                         (err) => {
                             Debug.LogError($"[SyncManager] Failed to sync batch: {err}");
+                            MergeFailedBatch(batchToSend);
+                            SavePendingBatch();
                             isSyncing = false;
                         }
                     ));

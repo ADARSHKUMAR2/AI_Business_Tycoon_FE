@@ -518,6 +518,11 @@ namespace AIBusinessTycoon.Managers
             if (sim == null) sim = buildingObj.AddComponent<StoreInteractionManager>();
             sim.BusinessData = business;
 
+            gridManager?.UpdateTileAfterBuildingPlaced(
+                new Position { x = business.position_x, y = business.position_y },
+                business.business_id
+            );
+
             storesByBusinessId[business.business_id] = sim;
 
             spawnedBuildings[business.business_id] = buildingObj;
